@@ -1,0 +1,70 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+Usuario  --> "*" FiguritaColeccion
+FiguritaColeccion --> "1" Figurita
+Usuario --> "*" Figurita
+PublicacionIntercambio --> "1" Usuario
+PublicacionIntercambio --> "1" FiguritaColeccion
+PropuestaIntercambio --> PublicacionIntercambio
+PropuestaIntercambio --> Usuario
+PropuestaIntercambio --> "*" Figurita
+Subasta --> Figurita
+Subasta --> Usuario
+Subasta --> IReglastrategy
+Subasta --> OfertaSubasta
+OfertaSubasta --> Usuario
+OfertaSubasta --> "*" Figurita
+
+class Figurita{
+  - Integer numero
+  - Categoria categoria
+  - String nombre
+  - String seleccion
+  - String equipo
+  - String descripcion
+}
+
+class FiguritaColeccion {
+  - Integer cantidad
+  - Figurita figurita
+}
+
+class OfertaSubasta {
+  - Usuario usuario
+  - List<Figurita> figuritas
+}
+
+class PropuestaIntercambio {
+  - PublicacionIntercambio publicacion
+  - Usuario usuario
+  - List<Figurita> figuritas
+  - EstadoPropuesta estado
+}
+
+class PublicacionIntercambio {
+  - Usuario usuario
+  - FiguritaColeccion figurita
+  - EstadoPublicacion estado
+}
+
+class Subasta {
+  - Figurita figurita
+  - Usuario usuario
+  - LocalDateTime fechaCreacion
+  - LocalDateTime fechaCierre
+  - List<IReglastrategy> condicionesMinimas
+  - OfertaSubasta mejorApuesta
+}
+
+class Usuario {
+  - String nombre
+  - List<FiguritaColeccion> repetidas
+  - List<Figurita> faltantes
+}
+
+interface IReglastrategy{
+  + cumpleRegla(OfertaSubasta) : Boolean
+}
+
+@enduml
