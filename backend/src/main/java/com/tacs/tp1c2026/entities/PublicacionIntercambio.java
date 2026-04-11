@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 
 public class PublicacionIntercambio {
   private Usuario publicante;
-  private FiguritaColeccion figuritaColeccion;
+  private Publicacion publicacion;
   private LocalDateTime fechaCreacion;
   private EstadoPublicacion estado;
 }
