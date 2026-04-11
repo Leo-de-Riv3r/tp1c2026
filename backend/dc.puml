@@ -15,6 +15,15 @@ Subasta --> IReglastrategy
 Subasta --> OfertaSubasta
 OfertaSubasta --> Usuario
 OfertaSubasta --> "*" Figurita
+Feedback --> Usuario
+Feedback --> PublicacionIntercambio
+CalificadorUsuario ..> Usuario
+CalificadorUsuario ..> TipoReputacion
+Usuario --> TipoReputacion
+SeleccionStrategy --|> IReglastrategy
+CategoriaStrategy --|> IReglastrategy
+CantidadFiguritasStrategy --|> IReglastrategy
+EquipoStrategy --|> IReglastrategy
 
 class Figurita{
   - Integer numero
@@ -61,10 +70,41 @@ class Usuario {
   - String nombre
   - List<FiguritaColeccion> repetidas
   - List<Figurita> faltantes
+  - TipoReputacion reputacion
+}
+
+class Feedback {
+  - Usuario calificador
+  - PublicacionIntercambio publicacion
+  - Integer puntuacion
+  - LocalDateTime fecha
+}
+
+
+ ' Clase que sera llamada en cronjob¡
+class CalificadorUsuario{
+' obtendra calificacion segun el promedio de las ultimas x calificaciones
+  + asignarReputacion(Usuario) : TipoReputacion
+}
+
+enum TipoReputacion {
+  MALA, REGULAR, BUENA
 }
 
 interface IReglastrategy{
   + cumpleRegla(OfertaSubasta) : Boolean
 }
 
+class CantidadFiguritasStrategy {
+}
+
+class CategoriaStrategy {
+}
+
+class EquipoStrategy {
+}
+
+class SeleccionStrategy{
+
+}
 @enduml
