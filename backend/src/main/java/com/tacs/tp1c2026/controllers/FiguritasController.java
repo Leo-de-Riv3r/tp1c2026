@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -20,14 +21,14 @@ public class FiguritasController {
   }
 
   @PostMapping("/registrar-repetida")
-  public ResponseEntity<String> agregarFigurita(@RequestBody FiguritaRepetidaDto figuritaRepetidaDto, @PathVariable Integer userId) {
+  public ResponseEntity<String> agregarFigurita(@RequestBody FiguritaRepetidaDto figuritaRepetidaDto, @RequestParam Integer userId) {
     figuritasService.registrarFiguritaRepetida(figuritaRepetidaDto, userId);
     return ResponseEntity.ok().body("Figurita repetida agregada");
   }
 
 
   @PostMapping("/registrar-faltante")
-  public ResponseEntity<String> registrarFiguritaFaltante(@RequestBody FiguritaFaltanteDto figuritaFaltanteDto, @PathVariable Integer userId) {
+  public ResponseEntity<String> registrarFiguritaFaltante(@RequestBody FiguritaFaltanteDto figuritaFaltanteDto, @RequestParam Integer userId) {
     figuritasService.registrarFiguritaFaltante(figuritaFaltanteDto, userId);
     return ResponseEntity.ok().body("Figurita faltante registrada");
   }

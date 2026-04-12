@@ -10,11 +10,13 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.List;
+import lombok.Getter;
 import lombok.Setter;
 
 @Setter
 @Entity
 @Table
+@Getter
 public class PropuestaIntercambio {
   @Id @GeneratedValue(strategy = GenerationType.AUTO)
   private Integer id;
@@ -28,4 +30,12 @@ public class PropuestaIntercambio {
   @JoinColumn(name = "usuario_id", referencedColumnName = "id")
   private Usuario usuario;
   private EstadoPropuesta estado = EstadoPropuesta.PENDIENTE;
+
+  public void rechazar() {
+    this.estado = EstadoPropuesta.RECHAZADA;
+  }
+
+  public void aceptar() {
+    this.estado = EstadoPropuesta.ACEPTADA;
+  }
 }
