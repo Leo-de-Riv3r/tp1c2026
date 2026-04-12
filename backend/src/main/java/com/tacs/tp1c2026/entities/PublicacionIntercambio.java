@@ -10,8 +10,12 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import javax.net.ssl.SSLSession;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
@@ -19,6 +23,7 @@ import lombok.Setter;
 @Entity
 @Table
 @Setter
+@Getter
 public class PublicacionIntercambio {
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
@@ -31,6 +36,9 @@ public class PublicacionIntercambio {
   private FiguritaColeccion figuritaColeccion;
   @Column
   private LocalDateTime fechaCreacion;
+  @OneToOne
+  @JoinColumn(name = "propuesta_id", referencedColumnName = "id")
+  private PropuestaIntercambio propuestaAceptada;
   @Enumerated(EnumType.STRING)
   @Column
   private EstadoPublicacion estado = EstadoPublicacion.ACTIVA;

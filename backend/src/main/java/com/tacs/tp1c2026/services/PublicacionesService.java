@@ -5,9 +5,15 @@ import com.tacs.tp1c2026.entities.FiguritaColeccion;
 import com.tacs.tp1c2026.entities.PropuestaIntercambio;
 import com.tacs.tp1c2026.entities.PublicacionIntercambio;
 import com.tacs.tp1c2026.entities.Usuario;
+import com.tacs.tp1c2026.entities.enums.EstadoPropuesta;
+import com.tacs.tp1c2026.entities.enums.EstadoPublicacion;
+import com.tacs.tp1c2026.entities.enums.TipoParticipacion;
 import com.tacs.tp1c2026.exceptions.BadInputException;
+import com.tacs.tp1c2026.exceptions.ConflictException;
 import com.tacs.tp1c2026.exceptions.NotFoundException;
+import com.tacs.tp1c2026.exceptions.UnauthorizedException;
 import com.tacs.tp1c2026.exceptions.UserNotFoundException;
+import com.tacs.tp1c2026.repositories.PropuestasIntercambioRepository;
 import com.tacs.tp1c2026.repositories.PublicacionesIntercambioRepository;
 import com.tacs.tp1c2026.repositories.UsuariosRepository;
 import java.util.List;
@@ -16,10 +22,12 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class PublicacionesService {
+  private final PropuestasIntercambioRepository propuestasIntercambioRepository;
   private final UsuariosRepository usuariosRepository;
   private final PublicacionesIntercambioRepository publicacionesIntercambioRepository;
 
-  public PublicacionesService(UsuariosRepository usuariosRepository, PublicacionesIntercambioRepository publicacionesIntercambioRepository) {
+  public PublicacionesService(PropuestasIntercambioRepository propuestasIntercambioRepository, UsuariosRepository usuariosRepository, PublicacionesIntercambioRepository publicacionesIntercambioRepository) {
+    this.propuestasIntercambioRepository = propuestasIntercambioRepository;
     this.usuariosRepository = usuariosRepository;
     this.publicacionesIntercambioRepository = publicacionesIntercambioRepository;
   }
@@ -44,6 +52,8 @@ public class PublicacionesService {
 
     List<FiguritaColeccion> figuritas =
         usuario.getRepetidas().stream().filter(f -> idFiguritas.contains(f.getFigurita().getNumero())).toList();
+    //filtrar figus que esten para intercambio
+    figuritas = figuritas.stream().filter(figuritacoleccion -> figuritacoleccion.getTipoParticipacion().equals(TipoParticipacion.INTERCAMBIO)).toList();
 
     List<Figurita> figuritasOfrecidas = figuritas.stream().map(FiguritaColeccion::getFigurita).toList();
     if (figuritas.size() != idFiguritas.size()) {
@@ -58,6 +68,64 @@ public class PublicacionesService {
     propuesta.setFiguritas(figuritasOfrecidas);
     propuesta.setUsuario(usuario);
 
-    //save propuesta in repository
+    propuestasIntercambioRepository.save(propuesta);
+  }
+
+  public void rechazarPropuesta(Integer publicacionId, Integer propuestaId, Integer userId) {
+    Usuario usuario = usuariosRepository.findById(userId)
+        .orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
+
+    PropuestaIntercambio propuesta = propuestasIntercambioRepository.findById(propuestaId)
+        .orElseThrow(() -> new NotFoundException("No se encontro la propuesta"));
+
+    PublicacionIntercambio publicacion = publicacionesIntercambioRepository.findById(publicacionId)
+        .orElseThrow(() -> new NotFoundException("No se encontro la publicacion"));
+
+    if (!propuesta.getPublicacion().getId().equals(publicacion.getId())) {
+      throw new BadInputException("La publicacion no corresponde a la propuesta");
+    }
+
+    if (!propuesta.getUsuario().equals(usuario)) {
+      throw new UnauthorizedException("El usuario no es el dueño de la propuesta");
+    }
+
+    if(!propuesta.getEstado().equals(EstadoPropuesta.PENDIENTE)) {
+      throw new ConflictException("La propuesta ya fue aceptada o rechazada");
+    }
+
+    propuesta.rechazar();
+    propuestasIntercambioRepository.save(propuesta);
+  }
+
+  public void aceptarPropuesta(Integer publicacionId, Integer propuestaId, Integer userId) {
+    Usuario usuario = usuariosRepository.findById(userId)
+        .orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
+
+    PropuestaIntercambio propuesta = propuestasIntercambioRepository.findById(propuestaId)
+        .orElseThrow(() -> new NotFoundException("No se encontro la propuesta"));
+
+    PublicacionIntercambio publicacion = publicacionesIntercambioRepository.findById(publicacionId)
+        .orElseThrow(() -> new NotFoundException("No se encontro la publicacion"));
+
+    if (!propuesta.getPublicacion().getId().equals(publicacion.getId())) {
+      throw new BadInputException("La publicacion no corresponde a la propuesta");
+    }
+
+    if (!publicacion.getPublicante().equals(usuario)) {
+      throw new UnauthorizedException("El usuario no es el dueño de la publicacion");
+    }
+
+    if(!propuesta.getEstado().equals(EstadoPropuesta.PENDIENTE)) {
+      throw new ConflictException("La propuesta ya fue aceptada o rechazada");
+    }
+
+    propuesta.aceptar();
+    publicacion.setEstado(EstadoPublicacion.FINALIZADA);
+    publicacion.setPropuestaAceptada(propuesta);
+    propuestasIntercambioRepository.save(propuesta);
+    publicacionesIntercambioRepository.save(publicacion);
+    List<PropuestaIntercambio> propuestas = propuestasIntercambioRepository.findByPublicacionId(publicacionId);
+    propuestas.stream().filter(p -> !p.getId().equals(propuestaId)).forEach(p -> p.rechazar());
+    propuestasIntercambioRepository.saveAll(propuestas);
   }
 }

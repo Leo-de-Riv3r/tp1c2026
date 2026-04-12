@@ -6,7 +6,7 @@ import com.tacs.tp1c2026.entities.Usuario;
 import com.tacs.tp1c2026.entities.dto.input.FiguritaFaltanteDto;
 import com.tacs.tp1c2026.entities.dto.input.FiguritaRepetidaDto;
 import com.tacs.tp1c2026.entities.enums.Categoria;
-import com.tacs.tp1c2026.exceptions.FiguritaConflictException;
+import com.tacs.tp1c2026.exceptions.ConflictException;
 import com.tacs.tp1c2026.exceptions.UserNotFoundException;
 import com.tacs.tp1c2026.repositories.FiguritasRepository;
 import com.tacs.tp1c2026.repositories.UsuariosRepository;
@@ -30,7 +30,7 @@ public class FiguritasService {
 
     Optional tieneFigurita = usuario.getFaltantes().stream().filter(f -> f.getNumero().equals(dto.getNumero())).findFirst();
     if (tieneFigurita.isPresent()) {
-      throw new FiguritaConflictException("La figurita ya se encuentra registrada como faltante");
+      throw new ConflictException("La figurita ya se encuentra registrada como faltante");
     }
 
     usuario.agregarFaltantes(figurita);
