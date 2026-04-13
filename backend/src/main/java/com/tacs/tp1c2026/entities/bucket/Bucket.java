@@ -1,7 +1,8 @@
 package com.tacs.tp1c2026.entities.bucket;
 
 import com.tacs.tp1c2026.entities.VectorProfile;
-import com.tacs.tp1c2026.entities.VectorProfileConverter;
+import com.tacs.tp1c2026.repositories.VectorProfileConverter;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
