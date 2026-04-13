@@ -40,10 +40,6 @@ public class Bucket {
     )
     private Set<Usuario> vecinos = new HashSet<>();
 
-    public int calcularScoring(VectorProfile vectorUsuario) {
-        return vectorRepresentativo.agreement(vectorUsuario);
-    }
-
     public int calcularAfinidad(VectorProfile vectorUsuario) {
         return vectorRepresentativo.agreement(vectorUsuario);
     }

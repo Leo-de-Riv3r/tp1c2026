@@ -119,7 +119,7 @@ public class BucketService {
 
     private List<Bucket> obtenerBucketsMasCercanos(List<Bucket> buckets, com.tacs.tp1c2026.entities.VectorProfile vectorUsuario, Integer cantidadBuckets) {
         List<Bucket> sortedBuckets = new ArrayList<>(buckets);
-        sortedBuckets.sort(Comparator.comparingInt((Bucket bucket) -> bucket.calcularScoring(vectorUsuario)).reversed());
+        sortedBuckets.sort(Comparator.comparingInt((Bucket bucket) -> bucket.calcularAfinidad(vectorUsuario)).reversed());
         return sortedBuckets.subList(0, Math.min(cantidadBuckets, sortedBuckets.size()));
     }
 
