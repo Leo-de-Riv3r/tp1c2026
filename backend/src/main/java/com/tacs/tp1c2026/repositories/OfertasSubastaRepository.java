@@ -8,5 +8,5 @@ import java.util.List;
 
 public interface OfertasSubastaRepository extends JpaRepository<OfertaSubasta, Integer>{
   List<OfertaSubasta> findBySubastaId(Integer subastaId);
-  List<OfertaSubasta> findByPostorId(Integer postorId);
+  List<OfertaSubasta> findByUsuarioPostorId(Integer userId);
 }

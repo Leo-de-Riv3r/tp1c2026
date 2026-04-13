@@ -131,7 +131,7 @@ public class SubastasService {
       throw new BadInputException("La duracion de la subasta debe ser mayor a 1 hora");
     }
 
-    if (dto.getCantidadMinFiguritas() == null || dto.getCantidadMinFiguritas() <= 1) {
+    if (dto.getCantidadMinFiguritas() == null || dto.getCantidadMinFiguritas() < 1) {
       throw new BadInputException("La cantidad minima de figuritas debe ser mayor que 0");
     }
   }

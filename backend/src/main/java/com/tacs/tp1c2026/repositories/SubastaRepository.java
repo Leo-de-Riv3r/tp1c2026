@@ -7,6 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface SubastaRepository extends JpaRepository<Subasta, Integer> {
-   List<Subasta> findByPublicanteId(Integer publicanteId);
+   List<Subasta> findByUsuarioPublicanteId(Integer userId);
    List<Subasta> findByEstado(EstadoSubasta estado);
 }
