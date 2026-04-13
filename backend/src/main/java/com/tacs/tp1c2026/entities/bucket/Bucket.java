@@ -1,30 +1,60 @@
 package com.tacs.tp1c2026.entities.bucket;
 
+import com.tacs.tp1c2026.entities.VectorProfile;
+import com.tacs.tp1c2026.entities.VectorProfileConverter;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import com.tacs.tp1c2026.entities.Usuario;
-
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.Table;
 
+
+@Entity
+@Table(name = "buckets")
 public class Bucket {
 
-    private short[] vectorRepresentativo = new short[BucketManager.CANTIDAD_FIGURITAS];
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
+    @Column(name = "vector_representativo")
+    @Convert(converter = VectorProfileConverter.class)
+    private VectorProfile vectorRepresentativo = VectorProfile.empty();
+
+    @ManyToMany
+    @JoinTable(
+        name = "bucket_vecinos",
+        joinColumns = @JoinColumn(name = "bucket_id"),
+        inverseJoinColumns = @JoinColumn(name = "usuario_id")
+    )
     private Set<Usuario> vecinos = new HashSet<>();
 
-    public int calcularScoring(short[] vectorUsuario) {
-        int score = 0;
-        for (int i = 0; i < BucketManager.CANTIDAD_FIGURITAS; i++) {
-            if ((vectorUsuario[i] == 1 && vectorRepresentativo[i] == 1) || (vectorUsuario[i] == -1 && vectorRepresentativo[i] == -1)) {
-                score++;
-            }
-        }
-        return score;
+    public int calcularScoring(VectorProfile vectorUsuario) {
+        return vectorRepresentativo.agreement(vectorUsuario);
+    }
+
+    public int calcularAfinidad(VectorProfile vectorUsuario) {
+        return vectorRepresentativo.agreement(vectorUsuario);
+    }
+
+    public VectorProfile getVectorProfile() {
+        return vectorRepresentativo;
     }
 
     public void agregarVecino(Usuario usuario) {
+        if (this.vecinos.isEmpty() && this.vectorRepresentativo.isEmpty() && usuario.getVectorProfile() != null) {
+            this.vectorRepresentativo = usuario.getVectorProfile();
+        }
         this.vecinos.add(usuario);
     }
 
@@ -36,35 +66,13 @@ public class Bucket {
         return vecinos;
     }
 
-    public void updateVector(List<short[]> vectors) {
-
-        if (vectors.isEmpty()) {;
+    public void updateVector(List<VectorProfile> profiles) {
+        if (profiles == null || profiles.isEmpty()) {
+            this.vectorRepresentativo = VectorProfile.empty();
             return;
         }
 
-        // compute average vector
-        short[] newVector = new short[BucketManager.CANTIDAD_FIGURITAS];
-        for (short[] vector : vectors) {
-            for (int i = 0; i < BucketManager.CANTIDAD_FIGURITAS; i++) {
-                newVector[i] += vector[i];
-            }
-        }
-        for (int i = 0; i < BucketManager.CANTIDAD_FIGURITAS; i++) {
-            newVector[i] = (short) (newVector[i] / vectors.size());
-        }
-
-        // round to nearest {-1, 0, 1}
-        for (int i = 0; i < BucketManager.CANTIDAD_FIGURITAS; i++) {
-            if (newVector[i] > 0) {
-                newVector[i] = 1;
-            } else if (newVector[i] < 0) {
-                newVector[i] = -1;
-            } else {
-                newVector[i] = 0;
-            }
-        }
-
-        this.vectorRepresentativo = newVector;
+        this.vectorRepresentativo = VectorProfile.averageSign(profiles);
     }
 
 }

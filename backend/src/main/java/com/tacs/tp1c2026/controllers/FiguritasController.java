@@ -2,9 +2,9 @@ package com.tacs.tp1c2026.controllers;
 
 import com.tacs.tp1c2026.entities.dto.input.FiguritaFaltanteDto;
 import com.tacs.tp1c2026.entities.dto.input.FiguritaRepetidaDto;
+import com.tacs.tp1c2026.services.BucketService;
 import com.tacs.tp1c2026.services.FiguritasService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,14 +15,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/figuritas")
 public class FiguritasController {
   private final FiguritasService figuritasService;
+  private final BucketService bucketService;
 
-  public FiguritasController(FiguritasService figuritasService) {
+  public FiguritasController(FiguritasService figuritasService, BucketService bucketService) {
     this.figuritasService = figuritasService;
+    this.bucketService = bucketService;
   }
 
   @PostMapping("/registrar-repetida")
   public ResponseEntity<String> agregarFigurita(@RequestBody FiguritaRepetidaDto figuritaRepetidaDto, @RequestParam Integer userId) {
     figuritasService.registrarFiguritaRepetida(figuritaRepetidaDto, userId);
+    bucketService.actualizarBucketsUsuario(userId);
     return ResponseEntity.ok().body("Figurita repetida agregada");
   }
 
@@ -30,6 +33,7 @@ public class FiguritasController {
   @PostMapping("/registrar-faltante")
   public ResponseEntity<String> registrarFiguritaFaltante(@RequestBody FiguritaFaltanteDto figuritaFaltanteDto, @RequestParam Integer userId) {
     figuritasService.registrarFiguritaFaltante(figuritaFaltanteDto, userId);
+    bucketService.actualizarBucketsUsuario(userId);
     return ResponseEntity.ok().body("Figurita faltante registrada");
   }
 
