@@ -127,14 +127,8 @@ public class VectorProfile {
 
         Map<Integer, Integer> averageSignMap = new HashMap<>();
         for (Map.Entry<Integer, Integer> entry : sumMap.entrySet()) {
-            int value = entry.getValue() / profileCount;
-            if (value > 0) {
-                averageSignMap.put(entry.getKey(), 1);
-            } else if (value < 0) {
-                averageSignMap.put(entry.getKey(), -1);
-            } else {
-                averageSignMap.put(entry.getKey(), 0);
-            }
+            long value = Math.round(entry.getValue() / (double) profileCount);
+            averageSignMap.put(entry.getKey(), (int) value);
         }
 
         return new VectorProfile(averageSignMap);
