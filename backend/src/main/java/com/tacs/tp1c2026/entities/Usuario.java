@@ -7,11 +7,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.PostLoad;
-import jakarta.persistence.PostPersist;
-import jakarta.persistence.PostUpdate;
 import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
 
 import java.util.List;
 
@@ -44,17 +40,12 @@ public class Usuario {
   @JoinColumn(name = "usuario_id", referencedColumnName = "id")
   private List<Usuario> sugerenciasIntercambios;
 
-  @Transient
-  private VectorProfile vectorProfile = VectorProfile.empty();
-
   public void agregarRepetidas(FiguritaColeccion figuritaColeccion) {
     this.repetidas.add(figuritaColeccion);
-    this.sincronizarPerfilVector();
   }
 
   public void agregarFaltantes(Figurita figurita) {
     this.faltantes.add(figurita);
-    this.sincronizarPerfilVector();
   }
 
   public void agregarSugerencia(Usuario sugerencias) {
@@ -65,10 +56,7 @@ public class Usuario {
     this.sugerenciasIntercambios.clear();
   }
 
-  @PostLoad
-  @PostPersist
-  @PostUpdate
-  private void sincronizarPerfilVector() {
+  public VectorProfile getVectorProfile() {
     VectorProfile.Builder builder = new VectorProfile.Builder();
 
     if (this.faltantes != null) {
@@ -83,14 +71,7 @@ public class Usuario {
       }
     }
 
-    this.vectorProfile = builder.build();
-  }
-
-  public VectorProfile getVectorProfile() {
-    if (this.vectorProfile == null) {
-      sincronizarPerfilVector();
-    }
-    return this.vectorProfile;
+    return builder.build();
   }
 
 }
