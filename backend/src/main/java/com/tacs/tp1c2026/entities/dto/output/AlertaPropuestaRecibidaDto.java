@@ -2,7 +2,7 @@ package com.tacs.tp1c2026.entities.dto.output;
 
 import java.util.List;
 
-public class AlertaPorpuestaRecibidaDto extends AlertaDto {
+public class AlertaPropuestaRecibidaDto extends AlertaDto {
 
   private final Integer fromUserId;
   private final String fromUserName;
@@ -10,7 +10,7 @@ public class AlertaPorpuestaRecibidaDto extends AlertaDto {
   private final Integer publicacionId;
   private final List<Integer> figuritaNumeros;
 
-  public AlertaPorpuestaRecibidaDto(
+  public AlertaPropuestaRecibidaDto(
       Integer id,
       Integer fromUserId,
       String fromUserName,
