@@ -42,5 +42,11 @@ public abstract class IReglaStrategy {
     this.subasta = subasta;
   }
 
+  /**
+   * Verifica si una oferta de subasta cumple con la regla definida por la implementación concreta.
+   *
+   * @param ofertaSubasta oferta de subasta a evaluar
+   * @return {@code true} si la oferta cumple la regla; {@code false} en caso contrario
+   */
   public abstract Boolean cumpleRegla(OfertaSubasta ofertaSubasta);
 }

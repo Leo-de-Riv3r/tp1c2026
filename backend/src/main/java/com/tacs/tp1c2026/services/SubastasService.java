@@ -36,6 +36,19 @@ public class SubastasService {
     this.ofertasSubastaRepository = ofertasSubastaRepository;
   }
 
+  /**
+   * Crea una nueva subasta para una figurita repetida del usuario.
+   * Valida los datos mínimos requeridos, verifica que el usuario posea la figurita indicada
+   * y que ésta esté habilitada para participar en subastas.
+   *
+   * @param userId identificador del usuario que crea la subasta
+   * @param sub    datos de la nueva subasta (figurita, duración y cantidad mínima)
+   * @return identificador de la subasta recién creada
+   * @throws UserNotFoundException si el usuario no existe
+   * @throws NotFoundException     si el usuario no posee la figurita indicada como repetida
+   * @throws ConflictException     si la figurita no está habilitada para participar en subastas
+   * @throws BadInputException     si los datos de la subasta no cumplen los requisitos mínimos
+   */
   public Integer crearSubasta(Integer userId, NuevaSubastaDto sub) {
 
     // chequeo si cumple con los requisitos minimos para subastar una carta
@@ -64,6 +77,21 @@ public class SubastasService {
     return subastaRepository.save(subasta).getId();
   }
 
+  /**
+   * Registra una oferta sobre una subasta activa.
+   * Verifica que la subasta exista y esté activa, que el postor no sea el dueño de la subasta,
+   * que la subasta no haya vencido y que las figuritas ofrecidas pertenezcan al postor
+   * y estén habilitadas para subastas. Actualiza la mejor oferta si corresponde.
+   *
+   * @param userId       identificador del usuario postor
+   * @param subastaId    identificador de la subasta
+   * @param nuevaOferta  datos de la oferta, incluyendo la lista de figuritas a ofrecer
+   * @throws UserNotFoundException  si el usuario no existe
+   * @throws NotFoundException      si la subasta no existe
+   * @throws UnauthorizedException  si el postor intenta ofertar en su propia subasta
+   * @throws ConflictException      si la subasta no está activa o ya venció
+   * @throws BadInputException      si las figuritas son inválidas o insuficientes
+   */
   public void ofertarSubasta(Integer userId, Integer subastaId, NuevaSubastaOfertaDto nuevaOferta){
 
     // chequeo que la lista de las cartas a subastar sea mayor o igual a 1
@@ -122,6 +150,19 @@ public class SubastasService {
     //return ofertaGuardada.getId();
   }
 
+  /**
+   * Acepta una oferta de subasta pendiente y adjudica la subasta al postor.
+   * Rechaza automáticamente las demás ofertas pendientes de la misma subasta.
+   *
+   * @param userId    identificador del usuario dueño de la subasta
+   * @param subastaId identificador de la subasta
+   * @param ofertaId  identificador de la oferta a aceptar
+   * @throws UserNotFoundException  si el usuario no existe
+   * @throws NotFoundException      si la subasta o la oferta no existen
+   * @throws BadInputException      si la oferta no corresponde a la subasta indicada
+   * @throws UnauthorizedException  si el usuario no es el dueño de la subasta
+   * @throws ConflictException      si la subasta no permite aceptar ofertas o la oferta ya fue procesada
+   */
   public void aceptarOfertaSubasta(Integer userId, Integer subastaId, Integer ofertaId) {
     Usuario usuario = usuariosRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
     Subasta subasta = subastaRepository.findById(subastaId).orElseThrow(() -> new NotFoundException("No se encontro la subasta"));
@@ -157,6 +198,19 @@ public class SubastasService {
     ofertasSubastaRepository.saveAll(ofertasSubasta);
   }
 
+  /**
+   * Rechaza una oferta de subasta pendiente.
+   * Sólo el dueño de la subasta puede rechazar ofertas.
+   *
+   * @param userId    identificador del usuario dueño de la subasta
+   * @param subastaId identificador de la subasta
+   * @param ofertaId  identificador de la oferta a rechazar
+   * @throws UserNotFoundException  si el usuario no existe
+   * @throws NotFoundException      si la subasta o la oferta no existen
+   * @throws BadInputException      si la oferta no corresponde a la subasta indicada
+   * @throws UnauthorizedException  si el usuario no es el dueño de la subasta
+   * @throws ConflictException      si la oferta ya fue aceptada o rechazada previamente
+   */
   public void rechazarOfertaSubasta(Integer userId, Integer subastaId, Integer ofertaId) {
     Usuario usuario = usuariosRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
     Subasta subasta = subastaRepository.findById(subastaId).orElseThrow(() -> new NotFoundException("No se encontro la subasta"));
@@ -178,6 +232,13 @@ public class SubastasService {
     ofertasSubastaRepository.save(oferta);
   }
 
+  /**
+   * Valida que los datos mínimos requeridos para crear una subasta sean correctos.
+   *
+   * @param dto datos del DTO de nueva subasta
+   * @throws BadInputException si falta la figurita, la duración es insuficiente
+   *                           o la cantidad mínima de figuritas es inválida
+   */
   private void validarCreacionSubasta(NuevaSubastaDto dto) {
 
     if (dto.getNumFiguritaPublicada() == null) {
@@ -193,6 +254,13 @@ public class SubastasService {
     }
   }
 
+  /**
+   * Actualiza la mejor oferta de la subasta si la nueva oferta supera en cantidad de figuritas
+   * a la oferta actual.
+   *
+   * @param subasta     subasta cuya mejor oferta se desea actualizar
+   * @param nuevaOferta oferta recién registrada
+   */
   private void actualizarMejorOferta(Subasta subasta, OfertaSubasta nuevaOferta) {
 
     Optional<OfertaSubasta> mejorOfertaActual = Optional.ofNullable(subasta.getMejorOferta());

@@ -56,6 +56,13 @@ public class UsuariosService {
 //	  }
 
       /*publicaciones de INTERCAMBIO de figus propias del usuario */
+  /**
+   * Retorna las publicaciones de intercambio creadas por el usuario.
+   *
+   * @param userId identificador del usuario
+   * @return lista de {@link PublicacionIntercambioDto} con las publicaciones del usuario
+   * @throws UserNotFoundException si el usuario no existe
+   */
 	  public List<PublicacionIntercambioDto> obtenerPublicacionesPropias(Integer userId) {
 			validarUsuarioExiste(userId);
 			return publicacionesIntercambioRepository.findByPublicanteId(userId).stream().map(this::mapPublicacion).toList();
@@ -63,6 +70,13 @@ public class UsuariosService {
 
 
 	// PROPUESTAS de INTERCAMBIO de figus ENVIADAS por el usuario las mapea para enviarla al front
+  /**
+   * Retorna las propuestas de intercambio enviadas por el usuario a publicaciones ajenas.
+   *
+   * @param userId identificador del usuario
+   * @return lista de {@link PropuestaIntercambioDto} con las propuestas enviadas
+   * @throws UserNotFoundException si el usuario no existe
+   */
 	  public List<PropuestaIntercambioDto> obtenerPropuestasEnviadas(Integer userId) {
 			validarUsuarioExiste(userId);
 			return propuestasIntercambioRepository.findByUsuarioId(userId).stream().map(this::mapPropuesta).toList();
@@ -70,18 +84,42 @@ public class UsuariosService {
 
 
 	// PROPUESTAS de INTERCAMBIO de figus RECIBIDAS
+  /**
+   * Retorna las propuestas de intercambio recibidas en las publicaciones propias del usuario.
+   *
+   * @param userId identificador del usuario
+   * @return lista de {@link PropuestaIntercambioDto} con las propuestas recibidas
+   * @throws UserNotFoundException si el usuario no existe
+   */
 	  public List<PropuestaIntercambioDto> obtenerPropuestasRecibidas(Integer userId) {
 			validarUsuarioExiste(userId);
 			return propuestasIntercambioRepository.findByPublicacionPublicanteId(userId).stream().map(this::mapPropuesta).toList();
 	  }
 
 
+  /**
+   * Retorna las subastas en estado ACTIVA creadas por el usuario.
+   *
+   * @param userId identificador del usuario
+   * @return lista de {@link SubastaDto} con las subastas activas del usuario
+   * @throws UserNotFoundException si el usuario no existe
+   */
 	  public List<SubastaDto> obtenerSubastasActivas(Integer userId) {
 			validarUsuarioExiste(userId);
 			return subastaRepository.findByUsuarioPublicanteIdAndEstado(userId, EstadoSubasta.ACTIVA).stream().map(this::mapSubasta).toList();
 	  }
 
 
+  /**
+   * Retorna las subastas del usuario filtradas por estado.
+   * Si el parámetro {@code estado} es nulo o vacío, devuelve todas las subastas del usuario.
+   *
+   * @param userId identificador del usuario
+   * @param estado nombre del estado ({@link EstadoSubasta}) a filtrar; {@code null} o vacío devuelve todas
+   * @return lista de {@link SubastaDto} correspondientes al criterio de búsqueda
+   * @throws UserNotFoundException si el usuario no existe
+   * @throws BadInputException     si el valor de {@code estado} no es válido
+   */
 	  public List<SubastaDto> obtenerSubastasPorEstado(Integer userId, String estado) {
 			validarUsuarioExiste(userId);
 
@@ -98,12 +136,26 @@ public class UsuariosService {
 	  }
 
 
+  /**
+   * Retorna las ofertas de subasta enviadas por el usuario a subastas ajenas.
+   *
+   * @param userId identificador del usuario postor
+   * @return lista de {@link OfertaSubastaDto} con las ofertas enviadas
+   * @throws UserNotFoundException si el usuario no existe
+   */
 	  public List<OfertaSubastaDto> obtenerOfertasSubastaEnviadas(Integer userId) {
 			validarUsuarioExiste(userId);
 			return ofertasSubastaRepository.findByUsuarioPostorId(userId).stream().map(this::mapOfertaSubasta).toList();
 	  }
 
 
+  /**
+   * Retorna las ofertas de subasta recibidas en las subastas creadas por el usuario.
+   *
+   * @param userId identificador del usuario publicante
+   * @return lista de {@link OfertaSubastaDto} con las ofertas recibidas
+   * @throws UserNotFoundException si el usuario no existe
+   */
 	  public List<OfertaSubastaDto> obtenerOfertasSubastaRecibidas(Integer userId) {
 			validarUsuarioExiste(userId);
 			return ofertasSubastaRepository.findBySubastaUsuarioPublicanteId(userId).stream().map(this::mapOfertaSubasta).toList();
@@ -113,10 +165,22 @@ public class UsuariosService {
 
 
 
+  /**
+   * Valida que el usuario con el identificador indicado exista en el repositorio.
+   *
+   * @param userId identificador del usuario a validar
+   * @throws UserNotFoundException si el usuario no existe
+   */
 	  private void validarUsuarioExiste(Integer userId) {
 			usuariosRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
 	  }
 
+  /**
+   * Convierte una {@link PublicacionIntercambio} a su representación DTO.
+   *
+   * @param publicacion entidad de publicación de intercambio
+   * @return {@link PublicacionIntercambioDto} con los datos básicos de la publicación
+   */
 	  private PublicacionIntercambioDto mapPublicacion(PublicacionIntercambio publicacion) {
 
 		  PublicacionIntercambioDto dto = new PublicacionIntercambioDto(); // creo el dto vacio
@@ -128,6 +192,12 @@ public class UsuariosService {
 		  return dto;
 	  }
 
+  /**
+   * Convierte una {@link PropuestaIntercambio} a su representación DTO.
+   *
+   * @param propuesta entidad de propuesta de intercambio
+   * @return {@link PropuestaIntercambioDto} con el estado, figuritas ofrecidas y referencias asociadas
+   */
 	  private PropuestaIntercambioDto mapPropuesta(PropuestaIntercambio propuesta) {
 		PropuestaIntercambioDto dto = new PropuestaIntercambioDto();
 		List<Figurita> figuritasOfrecidas = propuesta.getFiguritas() == null ? List.of() : propuesta.getFiguritas(); // obtengo las figuritas de la propuesta
@@ -152,6 +222,12 @@ public class UsuariosService {
 		return dto;
 	  }
 
+  /**
+   * Convierte una {@link Subasta} a su representación DTO.
+   *
+   * @param subasta entidad de subasta
+   * @return {@link SubastaDto} con las propiedades principales de la subasta
+   */
 	  private SubastaDto mapSubasta(Subasta subasta) {
 		SubastaDto dto = new SubastaDto();
 		dto.setSubastaId(subasta.getId());
@@ -168,6 +244,12 @@ public class UsuariosService {
 		return dto;
 	  }
 	  // mapeo
+  /**
+   * Convierte una {@link OfertaSubasta} a su representación DTO.
+   *
+   * @param ofertaSubasta entidad de oferta de subasta
+   * @return {@link OfertaSubastaDto} con el estado, figuritas ofrecidas y referencias asociadas
+   */
 	  private OfertaSubastaDto mapOfertaSubasta(OfertaSubasta ofertaSubasta) {
 			OfertaSubastaDto dto = new OfertaSubastaDto();
 			dto.setOfertaId(ofertaSubasta.getId());

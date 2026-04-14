@@ -8,6 +8,13 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class PublicacionMapper {
+  /**
+   * Convierte una lista de {@link PublicacionIntercambio} a una lista de {@link PublicacionDto},
+   * mapeando los datos básicos de la figurita y la cantidad disponible.
+   *
+   * @param publicaciones lista de entidades de publicación de intercambio
+   * @return lista de DTOs correspondientes
+   */
   public List<PublicacionDto> mapToDto(List<PublicacionIntercambio> publicaciones) {
     return publicaciones.stream()
         .map(publicacion -> {

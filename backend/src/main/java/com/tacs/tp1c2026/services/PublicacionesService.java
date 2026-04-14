@@ -45,6 +45,15 @@ public class PublicacionesService {
     this.propuestaMapper = propuestaMapper;
   }
 
+  /**
+   * Crea una publicación de intercambio para una figurita repetida del usuario.
+   * Verifica que el usuario exista y que la figurita indicada esté en su colección de repetidas.
+   *
+   * @param userId     identificador del usuario que realiza la publicación
+   * @param numFigurita número de la figurita repetida a publicar
+   * @throws UserNotFoundException si el usuario no existe
+   * @throws NotFoundException     si la figurita no se encuentra entre las repetidas del usuario
+   */
   public void publicarIntercambioFigurita(Integer userId, Integer numFigurita){
     Usuario usuario = usuariosRepository.findById(userId)
         .orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
@@ -59,6 +68,20 @@ public class PublicacionesService {
     publicacionesIntercambioRepository.save(publicacion);
   }
 
+  /**
+   * Registra una propuesta de intercambio sobre una publicación existente.
+   * Valida que haya cupos disponibles, que las figuritas ofrecidas pertenezcan al proponente
+   * y que estén habilitadas para participar en intercambios.
+   *
+   * @param userId        identificador del usuario que realiza la propuesta
+   * @param publicacionId identificador de la publicación sobre la que se propone el intercambio
+   * @param idFiguritas   lista de números de figurita que se ofrecen como contraprestación
+   * @return la {@link PropuestaIntercambio} persistida
+   * @throws UserNotFoundException si el usuario no existe
+   * @throws NotFoundException     si la publicación no existe
+   * @throws ConflictException     si ya no hay cupos disponibles en la publicación
+   * @throws BadInputException     si alguna de las figuritas no se encuentra o no está habilitada para intercambio
+   */
   public PropuestaIntercambio ofrecerPropuestaIntercambio(Integer userId, Integer publicacionId, List<Integer> idFiguritas) {
     Usuario usuario = usuariosRepository.findById(userId)
         .orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
@@ -91,6 +114,13 @@ public class PublicacionesService {
     return propuesta;
   }
 
+  /**
+   * Retorna todas las propuestas de intercambio recibidas sobre las publicaciones propias del usuario.
+   *
+   * @param userId identificador del usuario publicante
+   * @return lista de {@link PropuestaRecibidaDto} con los datos de cada propuesta recibida
+   * @throws UserNotFoundException si el usuario no existe
+   */
   public List<PropuestaRecibidaDto> obtenerPropuestasRecibidas(Integer userId) {
     Usuario usuario = usuariosRepository.findById(userId)
         .orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
@@ -105,6 +135,20 @@ public class PublicacionesService {
 
     return propuestaMapper.toDtoList(propuestasRecibidas);
   }
+  /**
+   * Rechaza una propuesta de intercambio pendiente.
+   * Verifica que la propuesta y la publicación estén relacionadas, que el usuario sea el dueño
+   * de la publicación y que la propuesta aún se encuentre en estado PENDIENTE.
+   *
+   * @param publicacionId identificador de la publicación de intercambio
+   * @param propuestaId   identificador de la propuesta a rechazar
+   * @param userId        identificador del usuario dueño de la publicación
+   * @throws UserNotFoundException   si el usuario no existe
+   * @throws NotFoundException       si la propuesta o la publicación no existen
+   * @throws BadInputException       si la propuesta no corresponde a la publicación indicada
+   * @throws UnauthorizedException   si el usuario no es el dueño de la publicación
+   * @throws ConflictException       si la propuesta ya fue aceptada o rechazada previamente
+   */
   public void rechazarPropuesta(Integer publicacionId, Integer propuestaId, Integer userId) {
     Usuario usuario = usuariosRepository.findById(userId)
         .orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
@@ -131,6 +175,22 @@ public class PublicacionesService {
     propuestasIntercambioRepository.save(propuesta);
   }
 
+  /**
+   * Acepta una propuesta de intercambio pendiente y ejecuta la transferencia de figuritas.
+   * Al aceptar: reduce el stock de la figurita publicada, agrega las figuritas ofrecidas
+   * a la colección del publicante, elimina la figurita de sus faltantes si corresponde,
+   * cierra la publicación cuando el stock llega a cero y rechaza automáticamente el resto
+   * de propuestas pendientes.
+   *
+   * @param publicacionId identificador de la publicación de intercambio
+   * @param propuestaId   identificador de la propuesta a aceptar
+   * @param userId        identificador del usuario dueño de la publicación
+   * @throws UserNotFoundException   si el usuario no existe
+   * @throws NotFoundException       si la propuesta o la publicación no existen
+   * @throws BadInputException       si la propuesta no corresponde a la publicación indicada
+   * @throws UnauthorizedException   si el usuario no es el dueño de la publicación
+   * @throws ConflictException       si la propuesta ya fue aceptada o rechazada previamente
+   */
   public void aceptarPropuesta(Integer publicacionId, Integer propuestaId, Integer userId) {
     Usuario usuario = usuariosRepository.findById(userId)
         .orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
@@ -185,6 +245,17 @@ public class PublicacionesService {
     propuestasIntercambioRepository.saveAll(propuestas);
   }
 
+  /**
+   * Busca publicaciones de intercambio activas aplicando filtros opcionales y devuelve el resultado paginado.
+   *
+   * @param seleccion     filtra por nombre de selección (subcadena, puede ser {@code null})
+   * @param nombreJugador filtra por nombre de jugador (subcadena, puede ser {@code null})
+   * @param equipo        filtra por nombre de equipo (subcadena, puede ser {@code null})
+   * @param categoria     filtra por categoría de la figurita (puede ser {@code null})
+   * @param page          número de página solicitada (1-based)
+   * @param per_page      cantidad de resultados por página
+   * @return {@link PaginacionDto} con la lista de {@link PublicacionDto} correspondiente a la página solicitada
+   */
   public PaginacionDto<PublicacionDto> buscarPublicaciones(
       String seleccion, String nombreJugador, String equipo, Categoria categoria, Integer page, Integer per_page
   ) {

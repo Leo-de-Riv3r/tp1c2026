@@ -40,6 +40,13 @@ public class Bucket {
     )
     private Set<Usuario> vecinos = new HashSet<>();
 
+    /**
+     * Calcula la afinidad del bucket con un perfil vectorial de usuario
+     * usando la métrica de acuerdo sobre el vector representativo del bucket.
+     *
+     * @param vectorUsuario perfil vectorial del usuario
+     * @return puntaje de afinidad (mayor indica mayor similitud)
+     */
     public int calcularAfinidad(VectorProfile vectorUsuario) {
         return vectorRepresentativo.agreement(vectorUsuario);
     }
@@ -48,6 +55,13 @@ public class Bucket {
         return vectorRepresentativo;
     }
 
+    /**
+     * Agrega un usuario como vecino del bucket.
+     * Si el bucket no tenía vecinos ni vector representativo, inicializa el vector
+     * con el perfil del primer vecino agregado.
+     *
+     * @param usuario usuario a agregar como vecino
+     */
     public void agregarVecino(Usuario usuario) {
         if (this.vecinos.isEmpty() && this.vectorRepresentativo.isEmpty() && usuario.getVectorProfile() != null) {
             this.vectorRepresentativo = usuario.getVectorProfile();
@@ -55,6 +69,11 @@ public class Bucket {
         this.vecinos.add(usuario);
     }
 
+    /**
+     * Elimina al usuario de la lista de vecinos del bucket.
+     *
+     * @param usuario usuario a remover
+     */
     public void removerVecino(Usuario usuario) {
         this.vecinos.remove(usuario);
     }
@@ -63,6 +82,13 @@ public class Bucket {
         return vecinos;
     }
 
+    /**
+     * Actualiza el vector representativo del bucket calculando el promedio con signo
+     * de los perfiles vectoriales recibidos.
+     * Si la lista es nula o vacía, el vector se resetea a uno vacío.
+     *
+     * @param profiles lista de perfiles vectoriales a promediar
+     */
     public void updateVector(List<VectorProfile> profiles) {
         if (profiles == null || profiles.isEmpty()) {
             this.vectorRepresentativo = VectorProfile.empty();

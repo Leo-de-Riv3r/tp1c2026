@@ -12,6 +12,11 @@ public class VectorProfile {
         this.values = values == null ? new HashMap<>() : new HashMap<>(values);
     }
 
+    /**
+     * Crea un {@code VectorProfile} vacío sin ninguna entrada.
+     *
+     * @return perfil vectorial vacío
+     */
     public static VectorProfile empty() {
         return new VectorProfile(new HashMap<>());
     }
@@ -20,6 +25,12 @@ public class VectorProfile {
         return values.isEmpty();
     }
 
+    /**
+     * Serializa el perfil vectorial a una cadena de texto con el formato
+     * {@code clave:valor;clave:valor}, omitiendo las entradas con valor cero.
+     *
+     * @return cadena serializada o {@code null} si el vector está vacío o todos sus valores son cero
+     */
     public String serialize() {
         if (values.isEmpty()) {
             return null;
@@ -39,6 +50,13 @@ public class VectorProfile {
         return builder.length() == 0 ? null : builder.toString();
     }
 
+    /**
+     * Reconstruye un {@code VectorProfile} a partir de su representación serializada.
+     * Las entradas que no puedan parsearse o cuyo valor sea cero son ignoradas.
+     *
+     * @param dbData cadena con formato {@code clave:valor;clave:valor}
+     * @return perfil vectorial reconstruido; perfil vacío si la cadena es nula o vacía
+     */
     public static VectorProfile deserialize(String dbData) {
         if (dbData == null || dbData.isBlank()) {
             return VectorProfile.empty();
@@ -85,6 +103,14 @@ public class VectorProfile {
         }
     }
 
+    /**
+     * Calcula el puntaje de complementariedad entre este perfil y {@code other}.
+     * Por cada clave presente en ambos perfiles, suma 1 si los signos son opuestos
+     * ({@code -1} vs {@code 1} o {@code 1} vs {@code -1}).
+     *
+     * @param other perfil vectorial con el que se compara
+     * @return puntaje de complementariedad (entero &ge; 0)
+     */
     public int complement(VectorProfile other) {
         int score = 0;
         for (Map.Entry<Integer, Integer> entry : values.entrySet()) {
@@ -105,6 +131,13 @@ public class VectorProfile {
         return score;
     }
 
+    /**
+     * Calcula el promedio con signo de una lista de perfiles vectoriales.
+     * Para cada clave presente en algún perfil, promedia los valores y redondea al entero más cercano.
+     *
+     * @param profiles lista de perfiles a promediar; si es nula o vacía retorna un perfil vacío
+     * @return perfil vectorial resultante del promedio
+     */
     public static VectorProfile averageSign(List<VectorProfile> profiles) {
         if (profiles == null || profiles.isEmpty()) {
             return VectorProfile.empty();
@@ -134,6 +167,13 @@ public class VectorProfile {
         return new VectorProfile(averageSignMap);
     }
 
+    /**
+     * Calcula el puntaje de acuerdo entre este perfil y {@code other}.
+     * Por cada clave donde este perfil tiene valor {@code 1} y {@code other} también tiene {@code 1}, suma 1.
+     *
+     * @param other perfil vectorial con el que se compara
+     * @return puntaje de acuerdo (entero &ge; 0)
+     */
     public int agreement(VectorProfile other) {
         int score = 0;
         for (Map.Entry<Integer, Integer> entry : values.entrySet()) {

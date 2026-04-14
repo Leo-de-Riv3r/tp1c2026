@@ -32,6 +32,16 @@ public class FiguritasService {
     this.repetidasMapper = repetidasMapper;
   }
 
+  /**
+   * Registra una figurita como faltante en la colección del usuario.
+   * Si la figurita no existe en el catálogo se crea automáticamente.
+   * Lanza una excepción si la figurita ya estaba registrada como faltante.
+   *
+   * @param dto    datos de la figurita faltante
+   * @param userId identificador del usuario
+   * @throws UserNotFoundException si el usuario no existe
+   * @throws ConflictException     si la figurita ya se encuentra registrada como faltante
+   */
   public void registrarFiguritaFaltante(FiguritaFaltanteDto dto, Integer userId) {
     Figurita figurita = obtenerFigurita(dto.getNumero(), dto.getJugador(), dto.getDescripcion(), dto.getSeleccion(), dto.getEquipo(), dto.getCategoria());
     Usuario usuario = usuariosRepository.findById(userId)
@@ -47,6 +57,16 @@ public class FiguritasService {
 
   }
 
+  /**
+   * Registra una figurita como repetida en la colección del usuario.
+   * Si la figurita no existe en el catálogo se crea automáticamente.
+   * Lanza una excepción si la figurita ya estaba registrada como repetida.
+   *
+   * @param dto    datos de la figurita repetida, incluyendo cantidad y tipo de participación
+   * @param userId identificador del usuario
+   * @throws UserNotFoundException si el usuario no existe
+   * @throws ConflictException     si la figurita ya se encuentra registrada como repetida
+   */
   public void registrarFiguritaRepetida(FiguritaRepetidaDto dto, Integer userId) {
     Usuario usuario = usuariosRepository.findById(userId)
         .orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
@@ -66,6 +86,18 @@ public class FiguritasService {
 
   }
 
+  /**
+   * Obtiene la {@link Figurita} del repositorio por su número.
+   * Si no existe la crea con los datos proporcionados y la persiste.
+   *
+   * @param numero      número único de la figurita
+   * @param jugador     nombre del jugador
+   * @param descripcion descripción de la figurita
+   * @param seleccion   selección o país representado
+   * @param equipo      equipo de club del jugador
+   * @param categoria   categoría de la figurita
+   * @return la {@link Figurita} existente o recién creada
+   */
   private Figurita obtenerFigurita(Integer numero, String jugador, String descripcion, String seleccion, String equipo, Categoria categoria) {
     Optional<Figurita> figuritaOptional = figuritasRepository.findByNumero(numero);
     Figurita figurita;
@@ -85,6 +117,13 @@ public class FiguritasService {
     return figurita;
   }
 
+  /**
+   * Retorna la lista de figuritas repetidas del usuario, mapeadas a DTOs.
+   *
+   * @param userId identificador del usuario
+   * @return lista de {@link RepetidaDto} con las figuritas repetidas del usuario
+   * @throws UserNotFoundException si el usuario no existe
+   */
   public List<RepetidaDto> obtenerFiguritasRepetidas(Integer userId) {
     Usuario usuario = usuariosRepository.findById(userId)
         .orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
@@ -94,6 +133,13 @@ public class FiguritasService {
     return repetidasMapper.toDTOList(figuritas);
   }
 
+  /**
+   * Retorna la lista de figuritas faltantes del usuario, mapeadas a DTOs.
+   *
+   * @param userId identificador del usuario
+   * @return lista de {@link FiguritaDto} con las figuritas faltantes del usuario
+   * @throws UserNotFoundException si el usuario no existe
+   */
   public List<FiguritaDto> obtenerFaltantes(Integer userId) {
     Usuario usuario = usuariosRepository.findById(userId)
         .orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));

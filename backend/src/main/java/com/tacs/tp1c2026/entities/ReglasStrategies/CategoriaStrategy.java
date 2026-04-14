@@ -26,6 +26,13 @@ public class CategoriaStrategy extends IReglaStrategy {
     this.categoriaRequerida = categoriaRequerida;
   }
 
+  /**
+   * Verifica que la oferta tenga más de {@code cantidadMinima} figuritas pertenecientes
+   * a la categoría requerida.
+   *
+   * @param ofertaSubasta oferta de subasta a evaluar
+   * @return {@code true} si la cantidad de figuritas de la categoría requerida supera el mínimo
+   */
   @Override
   public Boolean cumpleRegla(OfertaSubasta ofertaSubasta) {
     return ofertaSubasta.getFiguritasOfrecidas().stream()

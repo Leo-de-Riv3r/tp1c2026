@@ -22,6 +22,14 @@ public class FiguritasController {
     this.bucketService = bucketService;
   }
 
+  /**
+   * {@code POST /api/figuritas/registrar-repetida} &mdash; Registra una figurita como repetida
+   * en la colección del usuario y actualiza su asignación de buckets.
+   *
+   * @param figuritaRepetidaDto datos de la figurita repetida a registrar
+   * @param userId              identificador del usuario
+   * @return 200 OK con mensaje de confirmación
+   */
   @PostMapping("/registrar-repetida")
   public ResponseEntity<String> agregarFigurita(@RequestBody FiguritaRepetidaDto figuritaRepetidaDto, @RequestParam Integer userId) {
     figuritasService.registrarFiguritaRepetida(figuritaRepetidaDto, userId);
@@ -30,6 +38,14 @@ public class FiguritasController {
   }
 
 
+  /**
+   * {@code POST /api/figuritas/registrar-faltante} &mdash; Registra una figurita como faltante
+   * en la colección del usuario y actualiza su asignación de buckets.
+   *
+   * @param figuritaFaltanteDto datos de la figurita faltante a registrar
+   * @param userId              identificador del usuario
+   * @return 200 OK con mensaje de confirmación
+   */
   @PostMapping("/registrar-faltante")
   public ResponseEntity<String> registrarFiguritaFaltante(@RequestBody FiguritaFaltanteDto figuritaFaltanteDto, @RequestParam Integer userId) {
     figuritasService.registrarFiguritaFaltante(figuritaFaltanteDto, userId);

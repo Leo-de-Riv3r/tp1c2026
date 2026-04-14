@@ -28,6 +28,18 @@ public class FeedbackService {
     this.feedbackRepository = feedbackRepository;
   }
 
+  /**
+   * Publica un feedback (calificación y comentario) sobre una publicación de intercambio finalizada.
+   * Sólo pueden calificar los participantes directos del intercambio.
+   * Verifica que el usuario no haya dejado previamente un feedback en la misma publicación.
+   *
+   * @param dto    datos del feedback: identificador de publicación, calificación y comentario
+   * @param userId identificador del usuario que califica
+   * @throws UserNotFoundException  si el usuario no existe
+   * @throws NotFoundException      si la publicación no existe
+   * @throws UnauthorizedException  si el usuario no tiene permiso para calificar esa publicación
+   * @throws ConflictException      si el usuario ya dejó un feedback en esa publicación
+   */
   public void publicarFeedback(NuevoFeedbackDto dto, Integer userId){
     Usuario usuario = usuariosRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("Usuario no encontrado"));
     PublicacionIntercambio publicacion = publicacionesIntercambioRepository.findById(dto.getPublicacionId()).orElseThrow(() -> new NotFoundException("Publicacion no encontrada"));

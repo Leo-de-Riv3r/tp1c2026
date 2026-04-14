@@ -19,6 +19,14 @@ public class FeedbackController {
     this.feedbackService = feedbackService;
   }
 
+  /**
+   * {@code POST /api/feedback/} &mdash; Publica una calificación y comentario sobre
+   * una publicación de intercambio finalizada.
+   *
+   * @param userId             identificador del usuario que califica
+   * @param nuevoFeedbackDto   datos del feedback: publicación objetivo, calificación y comentario
+   * @return 200 OK con mensaje de confirmación
+   */
   @PostMapping("/")
   public ResponseEntity<String> createFeedback(@RequestParam Integer userId, @RequestBody NuevoFeedbackDto nuevoFeedbackDto) {
     feedbackService.publicarFeedback(nuevoFeedbackDto, userId);

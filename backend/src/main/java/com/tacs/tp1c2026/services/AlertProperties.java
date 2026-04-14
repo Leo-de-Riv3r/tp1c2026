@@ -26,10 +26,20 @@ public class AlertProperties {
     this.warningThresholdMinutes = warningThresholdMinutes;
   }
 
+  /**
+   * Retorna el retardo de ejecución del proceso de alertas expresado en milisegundos.
+   *
+   * @return retardo en milisegundos equivalente a {@link #delayMinutes} minutos
+   */
   public long getDelayMillis() {
     return delayMinutes * 60L * 1000L;
   }
 
+  /**
+   * Retorna el umbral de advertencia de subastas próximas expresado en milisegundos.
+   *
+   * @return umbral de advertencia en milisegundos equivalente a {@link #warningThresholdMinutes} minutos
+   */
   public long getWarningThresholdMillis() {
     return warningThresholdMinutes * 60L * 1000L;
   }

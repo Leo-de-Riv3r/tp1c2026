@@ -33,6 +33,14 @@ public class AlertService {
         this.alertaVisitor = alertaVisitor;
     }
 
+    /**
+     * Notifica a todos los usuarios que tienen a una figurita como faltante que hay
+     * un nuevo usuario con esa figurita disponible para intercambio.
+     * No notifica al propio usuario que la publicó.
+     *
+     * @param usuario           usuario que posee la figurita disponible
+     * @param figuritaColeccion figurita de la colección que origina la notificación
+     */
     public void notificarUsuariosDeFigurita(Usuario usuario, FiguritaColeccion figuritaColeccion) {
 
         List<Usuario> usuariosFaltantes = figuritaColeccion.getFigurita().getUsuariosFaltantes();
@@ -44,12 +52,22 @@ public class AlertService {
 
     }
 
+    /**
+     * Notifica al dueño de una publicación que recibió una nueva propuesta de intercambio.
+     *
+     * @param propuesta propuesta de intercambio recibida
+     */
     public void notificarPropuestaRecibida(PropuestaIntercambio propuesta) {
         Usuario receptor = propuesta.getPublicacion().getPublicante();
         Usuario proponente = propuesta.getUsuario();
         receptor.agregarAlerta(new AlertaPorpuestaRecibida(proponente, propuesta));
     }
 
+    /**
+     * Genera alertas de subasta próxima para todos los usuarios interesados en subastas
+     * cuyo cierre ocurre dentro del umbral configurado en {@link AlertProperties}.
+     * Se ejecuta de forma transaccional.
+     */
     @Transactional
     public void alertarSubastasProximas() {
         LocalDateTime now = LocalDateTime.now();
@@ -65,6 +83,13 @@ public class AlertService {
         }
     }
 
+    /**
+     * Retorna todas las alertas pendientes del usuario, mapeadas a DTOs.
+     *
+     * @param userId identificador del usuario
+     * @return lista de {@link AlertaDto} con las alertas del usuario; lista vacía si no tiene alertas
+     * @throws UserNotFoundException si el usuario no existe
+     */
     @Transactional(readOnly = true)
     public List<AlertaDto> obtenerAlertasUsuario(Integer userId) {
         Usuario usuario = usuariosRepository.findById(userId)

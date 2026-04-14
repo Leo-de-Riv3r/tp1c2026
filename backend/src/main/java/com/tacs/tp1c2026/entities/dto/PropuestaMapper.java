@@ -9,10 +9,23 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class PropuestaMapper {
+  /**
+   * Convierte una lista de {@link PropuestaIntercambio} a una lista de {@link PropuestaRecibidaDto}.
+   *
+   * @param propuestas lista de entidades de propuesta
+   * @return lista de DTOs correspondientes
+   */
   public List<PropuestaRecibidaDto> toDtoList(List<PropuestaIntercambio> propuestas){
     return propuestas.stream().map(this::toDto).toList();
   }
 
+  /**
+   * Convierte una {@link PropuestaIntercambio} a {@link PropuestaRecibidaDto}, incluyendo
+   * la lista de figuritas ofrecidas y los datos básicos del usuario proponente.
+   *
+   * @param propuesta entidad de propuesta a convertir
+   * @return DTO con los datos de la propuesta
+   */
   public PropuestaRecibidaDto toDto(PropuestaIntercambio propuesta){
     PropuestaRecibidaDto dto = new PropuestaRecibidaDto();
     dto.setId(propuesta.getId());

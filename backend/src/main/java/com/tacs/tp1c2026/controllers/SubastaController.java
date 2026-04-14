@@ -19,6 +19,14 @@ public class SubastaController {
     this.subastaService = subastaService;
   }
 
+  /**
+   * {@code POST /api/subastas/{subastaId}/interesados} &mdash; Registra al usuario como interesado
+   * en una subasta para recibir alertas cuando esté próxima a cerrar.
+   *
+   * @param subastaId identificador de la subasta
+   * @param dto       DTO con el identificador del usuario interesado
+   * @return 200 OK con mensaje de confirmación
+   */
   @PostMapping("/{subastaId}/interesados")
   public ResponseEntity<String> agregarUsuarioInteresado(
       @PathVariable Integer subastaId,

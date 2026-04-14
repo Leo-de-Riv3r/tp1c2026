@@ -9,6 +9,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class RepetidasMapper {
 
+    /**
+     * Convierte una lista de {@link FiguritaColeccion} a una lista de {@link RepetidaDto},
+     * incluyendo la cantidad y los datos descriptivos de cada figurita.
+     *
+     * @param repetidas lista de entidades de figurita en colección
+     * @return lista de DTOs correspondientes
+     */
     public List<RepetidaDto> toDTOList(List<FiguritaColeccion> repetidas) {
         return repetidas.stream()
             .map(figuritaColeccion -> {

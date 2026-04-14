@@ -19,6 +19,14 @@ public class SubastaService {
     this.usuariosRepository = usuariosRepository;
   }
 
+  /**
+   * Agrega al usuario como interesado en una subasta.
+   * Los usuarios interesados recibirán alertas cuando la subasta esté próxima a cerrar.
+   *
+   * @param subastaId identificador de la subasta
+   * @param userId    identificador del usuario que desea seguir la subasta
+   * @throws NotFoundException si el usuario o la subasta no existen
+   */
   @Transactional
   public void agregarUsuarioInteresado(Integer subastaId, Integer userId) {
     Usuario usuario = usuariosRepository.findById(userId)
