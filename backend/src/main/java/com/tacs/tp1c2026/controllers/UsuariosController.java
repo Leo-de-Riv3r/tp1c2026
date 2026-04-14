@@ -1,5 +1,12 @@
 package com.tacs.tp1c2026.controllers;
 
+import com.tacs.tp1c2026.entities.dto.output.AlertaDto;
+import com.tacs.tp1c2026.services.AlertService;
+import java.util.List;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,24 +28,35 @@ import com.tacs.tp1c2026.repositories.UsuariosRepository;
 @RequestMapping("/usuario")
 public class UsuariosController {
 
+  private final AlertService alertService;
+
+  public UsuariosController(AlertService alertService) {
+    this.alertService = alertService;
+  }
+
+  @GetMapping("/{userId}/alertas")
+  public ResponseEntity<List<AlertaDto>> obtenerAlertas(@PathVariable Integer userId) {
+    return ResponseEntity.ok(alertService.obtenerAlertasUsuario(userId));
+  }
+
   @Autowired
   private UsuariosRepository usuariosRepository;
 
   @GetMapping("/{id}/sugerencias")
   public SugerenciasResponseDto obtenerSugerencias(@PathVariable Integer id) {
     Usuario usuario = usuariosRepository.findById(id).orElseThrow();
-    
+
     List<SugerenciaIntercambioDto> sugerencias = usuario.getSugerenciasIntercambios()
         .stream()
         .map(sugerido -> mapearSugerencia(usuario, sugerido))
         .collect(Collectors.toList());
-    
+
     return new SugerenciasResponseDto(sugerencias);
   }
 
   private SugerenciaIntercambioDto mapearSugerencia(Usuario usuarioActual, Usuario usuarioSugerido) {
     UsuarioBasicoDto usuarioDto = new UsuarioBasicoDto(usuarioSugerido.getId(), usuarioSugerido.getNombre());
-    
+
     // Figuritas que el sugerido tiene (repetidas) y el usuario actual no tiene (faltantes)
     List<FiguritaRepetidaDto> figuritasQueTiene = usuarioSugerido.getRepetidas()
         .stream()

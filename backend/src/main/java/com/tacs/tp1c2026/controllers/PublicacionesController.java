@@ -1,12 +1,10 @@
 package com.tacs.tp1c2026.controllers;
 
+import com.tacs.tp1c2026.entities.PropuestaIntercambio;
 import com.tacs.tp1c2026.entities.dto.input.PropuestaIntercambioDto;
-import com.tacs.tp1c2026.entities.dto.output.PaginacionDto;
-import com.tacs.tp1c2026.entities.dto.output.PropuestaRecibidaDto;
-import com.tacs.tp1c2026.entities.dto.output.PublicacionDto;
+
 import com.tacs.tp1c2026.entities.enums.Categoria;
-import com.tacs.tp1c2026.services.PublicacionesService;
-import java.util.List;
+import com.tacs.tp1c2026.services.AlertService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,9 +19,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/publicaciones")
 public class PublicacionesController {
   private final PublicacionesService publicacionesService;
+  private final AlertService alertService;
 
-  public PublicacionesController(PublicacionesService publicacionesService) {
+  public PublicacionesController(PublicacionesService publicacionesService, AlertService alertService) {
     this.publicacionesService = publicacionesService;
+    this.alertService = alertService;
   }
 
   @PostMapping("/intercambios")
@@ -34,7 +34,8 @@ public class PublicacionesController {
 
   @PostMapping("/intercambios/{publicacionId}/propuestas")
   public ResponseEntity<String> ofrecerPropuestaIntercambio(@PathVariable Integer publicacionId, @RequestParam Integer userId, @RequestBody PropuestaIntercambioDto dto){
-    publicacionesService.ofrecerPropuestaIntercambio(userId, publicacionId, dto.getNumfiguritas());
+    PropuestaIntercambio propuesta = publicacionesService.ofrecerPropuestaIntercambio(publicacionId, userId, dto.getNumfiguritas());
+    alertService.notificarPropuestaRecibida(propuesta);
     return ResponseEntity.ok().body("Propuesta de intercambio realizada");
   }
 
