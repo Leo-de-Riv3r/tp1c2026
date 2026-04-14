@@ -46,7 +46,7 @@ public class PublicacionesService {
     publicacionesIntercambioRepository.save(publicacion);
   }
 
-  public void ofrecerPropuestaIntercambio(Integer userId, Integer publicacionId, List<Integer> idFiguritas) {
+  public PropuestaIntercambio ofrecerPropuestaIntercambio(Integer userId, Integer publicacionId, List<Integer> idFiguritas) {
     Usuario usuario = usuariosRepository.findById(userId)
         .orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
 
@@ -69,6 +69,7 @@ public class PublicacionesService {
     propuesta.setUsuario(usuario);
 
     propuestasIntercambioRepository.save(propuesta);
+    return propuesta;
   }
 
   public void rechazarPropuesta(Integer publicacionId, Integer propuestaId, Integer userId) {
