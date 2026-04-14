@@ -1,8 +1,6 @@
 package com.tacs.tp1c2026.controllers;
 
-import com.tacs.tp1c2026.entities.PropuestaIntercambio;
 import com.tacs.tp1c2026.entities.dto.input.PropuestaIntercambioDto;
-import com.tacs.tp1c2026.services.AlertService;
 import com.tacs.tp1c2026.services.PublicacionesService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,11 +15,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/publicaciones")
 public class PublicacionesController {
   private final PublicacionesService publicacionesService;
-  private final AlertService alertService;
 
-  public PublicacionesController(PublicacionesService publicacionesService, AlertService alertService) {
+  public PublicacionesController(PublicacionesService publicacionesService) {
     this.publicacionesService = publicacionesService;
-    this.alertService = alertService;
   }
 
   @PostMapping("/intercambios")
@@ -32,15 +28,19 @@ public class PublicacionesController {
 
   @PostMapping("/intercambios/{publicacionId}/propuestas")
   public ResponseEntity<String> ofrecerPropuestaIntercambio(@PathVariable Integer publicacionId, @RequestParam Integer userId, @RequestBody PropuestaIntercambioDto dto){
-    PropuestaIntercambio propuesta = publicacionesService.ofrecerPropuestaIntercambio(publicacionId, userId, dto.getNumfiguritas());
-    alertService.notificarPropuestaRecibida(propuesta);
+    publicacionesService.ofrecerPropuestaIntercambio(userId, publicacionId, dto.getNumfiguritas());
     return ResponseEntity.ok().body("Propuesta de intercambio realizada");
   }
 
+  @PutMapping("/intercambios/{publicacionId}/propuestas/{propuestaId}/aceptar")
+  public ResponseEntity<String> aceptarPropuestaIntercambio(@PathVariable Integer publicacionId, @PathVariable Integer propuestaId, @RequestParam Integer userId){
+    publicacionesService.aceptarPropuesta(publicacionId, propuestaId, userId);
+    return ResponseEntity.ok().body("Propuesta de intercambio aceptada");
+  }
+
   @PutMapping("/intercambios/{publicacionId}/propuestas/{propuestaId}/rechazar")
-  public ResponseEntity<String> rechazarPropuestaIntercambio(@PathVariable Integer publicacionId, @PathVariable Integer propuestaId, @PathVariable Integer userId){
+  public ResponseEntity<String> rechazarPropuestaIntercambio(@PathVariable Integer publicacionId, @PathVariable Integer propuestaId, @RequestParam Integer userId){
     publicacionesService.rechazarPropuesta(publicacionId, propuestaId, userId);
     return ResponseEntity.ok().body("Propuesta de intercambio rechazada");
   }
-
 }

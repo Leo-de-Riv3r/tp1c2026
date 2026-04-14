@@ -119,8 +119,8 @@ public class PublicacionesService {
       throw new BadInputException("La publicacion no corresponde a la propuesta");
     }
 
-    if (!propuesta.getUsuario().equals(usuario)) {
-      throw new UnauthorizedException("El usuario no es el dueño de la propuesta");
+    if (!publicacion.getPublicante().equals(usuario)) {
+      throw new UnauthorizedException("El usuario no es el dueño de la publicacion");
     }
 
     if(!propuesta.getEstado().equals(EstadoPropuesta.PENDIENTE)) {

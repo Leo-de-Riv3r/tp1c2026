@@ -1,0 +1,15 @@
+package com.tacs.tp1c2026.entities.dto.output;
+
+import lombok.Data;
+
+import java.util.List;
+
+@Data
+public class OfertaSubastaDto {
+  private Integer ofertaId;
+  private Integer subastaId;
+  private Integer usuarioPostorId;
+  private Integer cantidadFiguritasOfrecidas;
+  private List<Integer> numerosFiguritasOfrecidas;
+  private String estado;
+}
