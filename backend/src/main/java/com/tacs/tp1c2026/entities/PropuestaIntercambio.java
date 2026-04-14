@@ -9,6 +9,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
@@ -25,7 +26,7 @@ public class PropuestaIntercambio {
   private PublicacionIntercambio publicacion;
   @OneToMany
   @JoinColumn(name = "figurita_id", referencedColumnName = "id")
-  private List<Figurita> figuritas;
+  private List<Figurita> figuritas = new ArrayList<>();
   @ManyToOne
   @JoinColumn(name = "usuario_id", referencedColumnName = "id")
   private Usuario usuario;

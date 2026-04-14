@@ -9,10 +9,13 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -55,4 +58,18 @@ public class Subasta {
 
   @OneToMany(mappedBy = "subasta")
   private List<OfertaSubasta> ofertas;
+
+  @ManyToMany
+  @JoinTable(
+      name = "subasta_usuario_interesado",
+      joinColumns = @JoinColumn(name = "subasta_id", referencedColumnName = "id"),
+      inverseJoinColumns = @JoinColumn(name = "usuario_id", referencedColumnName = "id")
+  )
+  private List<Usuario> usuariosInteresados = new ArrayList<>();
+
+  public void agregarInteresado(Usuario usuario) {
+    if (!this.usuariosInteresados.contains(usuario)) {
+      this.usuariosInteresados.add(usuario);
+    }
+  }
 }

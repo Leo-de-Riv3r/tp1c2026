@@ -13,6 +13,7 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -41,7 +42,7 @@ public class OfertaSubasta {
       name = "oferta_subasta_figuritas",
       joinColumns = @JoinColumn(name = "oferta_subasta_id"),
       inverseJoinColumns = @JoinColumn(name = "figurita_id"))
-  private List<Figurita> figuritasOfrecidas;
+  private List<Figurita> figuritasOfrecidas = new ArrayList<>();
 
   @Enumerated(EnumType.STRING)
   @Column
