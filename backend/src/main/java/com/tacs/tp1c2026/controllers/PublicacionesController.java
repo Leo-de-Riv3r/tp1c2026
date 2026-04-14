@@ -3,8 +3,12 @@ package com.tacs.tp1c2026.controllers;
 import com.tacs.tp1c2026.entities.PropuestaIntercambio;
 import com.tacs.tp1c2026.entities.dto.input.PropuestaIntercambioDto;
 
+import com.tacs.tp1c2026.entities.dto.output.PaginacionDto;
+import com.tacs.tp1c2026.entities.dto.output.PropuestaRecibidaDto;
+import com.tacs.tp1c2026.entities.dto.output.PublicacionDto;
 import com.tacs.tp1c2026.entities.enums.Categoria;
 import com.tacs.tp1c2026.services.AlertService;
+import com.tacs.tp1c2026.services.PublicacionesService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/publicaciones")
