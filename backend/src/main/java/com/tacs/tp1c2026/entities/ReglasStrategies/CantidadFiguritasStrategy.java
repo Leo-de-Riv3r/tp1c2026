@@ -1,14 +1,24 @@
 package com.tacs.tp1c2026.entities.ReglasStrategies;
 
 import com.tacs.tp1c2026.entities.OfertaSubasta;
+import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
 
-public class CantidadFiguritasStrategy implements IReglaStrategy {
+@Entity
+@DiscriminatorValue("CANTIDAD")
+public class CantidadFiguritasStrategy extends IReglaStrategy {
+
+  @Column
   private Integer cantidadMinimaFiguritas;
+
+  protected CantidadFiguritasStrategy() {}
 
   public CantidadFiguritasStrategy(Integer cantidadMinimaFiguritas) {
     this.cantidadMinimaFiguritas = cantidadMinimaFiguritas;
   }
 
+  @Override
   public Boolean cumpleRegla(OfertaSubasta oferta) {
     return oferta.getFiguritasOfrecidas().size() >= this.cantidadMinimaFiguritas;
   }
