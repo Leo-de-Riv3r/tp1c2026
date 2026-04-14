@@ -12,5 +12,6 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Integer> {
       Integer publicacionId,
       Integer usuarioId
   );
-
+  //find by publicacion id and usuario id
+  Optional<Feedback> findByPublicacionIntercambioIdAndCalificadorId(Integer publicacionId, Integer calificadorId);
 }

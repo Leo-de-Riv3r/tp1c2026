@@ -35,4 +35,12 @@ public class FiguritaColeccion {
     this.tipoParticipacion = tipoParticipacion;
     this.figurita = figurita;
   }
+
+  public void reducirCantidad() {
+    this.cantidad--;
+  }
+
+  public void aumentarCantidad() {
+    this.cantidad++;
+  }
 }
