@@ -1,5 +1,6 @@
 package com.tacs.tp1c2026.entities;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -25,7 +26,7 @@ public class Usuario {
   @Column
   private String nombre;
 
-  @OneToMany
+  @OneToMany(cascade = CascadeType.ALL)
   @JoinColumn(name = "figurita_coleccion_id", referencedColumnName = "id")
   private List<FiguritaColeccion> repetidas;
 
