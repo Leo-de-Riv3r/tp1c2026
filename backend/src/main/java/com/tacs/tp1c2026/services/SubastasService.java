@@ -7,6 +7,7 @@ import com.tacs.tp1c2026.entities.Subasta;
 import com.tacs.tp1c2026.entities.Usuario;
 import com.tacs.tp1c2026.entities.dto.input.NuevaSubastaDto;
 import com.tacs.tp1c2026.entities.dto.input.NuevaSubastaOfertaDto;
+import com.tacs.tp1c2026.entities.enums.EstadoOfertaSubasta;
 import com.tacs.tp1c2026.entities.enums.EstadoSubasta;
 import com.tacs.tp1c2026.entities.enums.TipoParticipacion;
 import com.tacs.tp1c2026.exceptions.BadInputException;
@@ -119,6 +120,62 @@ public class SubastasService {
     actualizarMejorOferta(subasta, ofertaGuardada);
 
     //return ofertaGuardada.getId();
+  }
+
+  public void aceptarOfertaSubasta(Integer userId, Integer subastaId, Integer ofertaId) {
+    Usuario usuario = usuariosRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
+    Subasta subasta = subastaRepository.findById(subastaId).orElseThrow(() -> new NotFoundException("No se encontro la subasta"));
+    OfertaSubasta oferta = ofertasSubastaRepository.findById(ofertaId).orElseThrow(() -> new NotFoundException("No se encontro la oferta"));
+
+    if (!oferta.getSubasta().getId().equals(subasta.getId())) {
+      throw new BadInputException("La oferta no corresponde a la subasta");
+    }
+
+    if (!subasta.getUsuarioPublicante().equals(usuario)) {
+      throw new UnauthorizedException("El usuario no es el dueño de la subasta");
+    }
+
+    if (EstadoSubasta.CERRADA.equals(subasta.getEstado()) || EstadoSubasta.ADJUDICADA.equals(subasta.getEstado())) {
+      throw new ConflictException("La subasta no permite aceptar ofertas");
+    }
+
+    if (!EstadoOfertaSubasta.PENDIENTE.equals(oferta.getEstado())) {
+      throw new ConflictException("La oferta ya fue aceptada o rechazada");
+    }
+
+    oferta.aceptar();
+    subasta.setEstado(EstadoSubasta.ADJUDICADA);
+    subasta.setMejorOferta(oferta);
+    ofertasSubastaRepository.save(oferta);
+    subastaRepository.save(subasta);
+
+    List<OfertaSubasta> ofertasSubasta = ofertasSubastaRepository.findBySubastaId(subastaId);
+    ofertasSubasta.stream()
+        .filter(o -> !o.getId().equals(ofertaId))
+        .filter(o -> EstadoOfertaSubasta.PENDIENTE.equals(o.getEstado()))
+        .forEach(OfertaSubasta::rechazar);
+    ofertasSubastaRepository.saveAll(ofertasSubasta);
+  }
+
+  public void rechazarOfertaSubasta(Integer userId, Integer subastaId, Integer ofertaId) {
+    Usuario usuario = usuariosRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
+    Subasta subasta = subastaRepository.findById(subastaId).orElseThrow(() -> new NotFoundException("No se encontro la subasta"));
+    OfertaSubasta oferta = ofertasSubastaRepository.findById(ofertaId).orElseThrow(() -> new NotFoundException("No se encontro la oferta"));
+
+    if (!oferta.getSubasta().getId().equals(subasta.getId())) {
+      throw new BadInputException("La oferta no corresponde a la subasta");
+    }
+
+    if (!subasta.getUsuarioPublicante().equals(usuario)) {
+      throw new UnauthorizedException("El usuario no es el dueño de la subasta");
+    }
+
+    if (!EstadoOfertaSubasta.PENDIENTE.equals(oferta.getEstado())) {
+      throw new ConflictException("La oferta ya fue aceptada o rechazada");
+    }
+
+    oferta.rechazar();
+    ofertasSubastaRepository.save(oferta);
   }
 
   private void validarCreacionSubasta(NuevaSubastaDto dto) {
