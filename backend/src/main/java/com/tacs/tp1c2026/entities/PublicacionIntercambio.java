@@ -35,7 +35,7 @@ public class PublicacionIntercambio {
   @JoinColumn(name = "figurita_id", referencedColumnName = "id")
   private FiguritaColeccion figuritaColeccion;
   @Column
-  private LocalDateTime fechaCreacion;
+  private LocalDateTime fechaCreacion = LocalDateTime.now();
   @OneToOne
   @JoinColumn(name = "propuesta_id", referencedColumnName = "id")
   private PropuestaIntercambio propuestaAceptada;

@@ -8,6 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Getter;
 
@@ -26,6 +27,8 @@ public class Usuario {
   @JoinColumn(name = "figurita_id", referencedColumnName = "id")
   private List<Figurita> faltantes;
 
+  @Column
+  private LocalDateTime fechaAlta = LocalDateTime.now();
   public void agregarRepetidas(FiguritaColeccion figuritaColeccion) {
     this.repetidas.add(figuritaColeccion);
   }

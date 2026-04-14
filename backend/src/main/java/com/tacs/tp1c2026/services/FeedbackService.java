@@ -5,6 +5,7 @@ import com.tacs.tp1c2026.entities.PublicacionIntercambio;
 import com.tacs.tp1c2026.entities.Usuario;
 import com.tacs.tp1c2026.entities.dto.input.NuevoFeedbackDto;
 import com.tacs.tp1c2026.entities.enums.EstadoPublicacion;
+import com.tacs.tp1c2026.exceptions.ConflictException;
 import com.tacs.tp1c2026.exceptions.NotFoundException;
 import com.tacs.tp1c2026.exceptions.UnauthorizedException;
 import com.tacs.tp1c2026.exceptions.UserNotFoundException;
@@ -31,12 +32,14 @@ public class FeedbackService {
     Usuario usuario = usuariosRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("Usuario no encontrado"));
     PublicacionIntercambio publicacion = publicacionesIntercambioRepository.findById(dto.getPublicacionId()).orElseThrow(() -> new NotFoundException("Publicacion no encontrada"));
 
-    //falta validar si ya publico un feedback(ya sea publicante o ofertador aceptado
-
-    if (!publicacion.getEstado().equals(EstadoPublicacion.FINALIZADA) && !publicacion.getPublicante().getId().equals(userId) || publicacion.getPropuestaAceptada().getUsuario().getId().equals(userId)) {
+    if (!publicacion.getEstado().equals(EstadoPublicacion.FINALIZADA) && !publicacion.getPublicante().getId().equals(userId) || !publicacion.getPropuestaAceptada().getUsuario().getId().equals(userId)) {
       throw new UnauthorizedException("No tienes permisos para dejar un feedback en esta publicacion");
     }
 
+    Optional<Feedback> feedbackExistente = feedbackRepository.findByPublicacionIntercambioIdAndCalificadorId(publicacion.getId(), userId);
+    if (feedbackExistente.isPresent()) {
+      throw new ConflictException("Ya has dejado un feedback en esta publicacion");
+    }
 
     Feedback feedback = new Feedback();
     feedback.setComentario(dto.getComentario());

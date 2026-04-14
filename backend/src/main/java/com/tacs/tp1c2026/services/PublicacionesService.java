@@ -5,6 +5,12 @@ import com.tacs.tp1c2026.entities.FiguritaColeccion;
 import com.tacs.tp1c2026.entities.PropuestaIntercambio;
 import com.tacs.tp1c2026.entities.PublicacionIntercambio;
 import com.tacs.tp1c2026.entities.Usuario;
+import com.tacs.tp1c2026.entities.dto.PropuestaMapper;
+import com.tacs.tp1c2026.entities.dto.PublicacionMapper;
+import com.tacs.tp1c2026.entities.dto.output.PaginacionDto;
+import com.tacs.tp1c2026.entities.dto.output.PropuestaRecibidaDto;
+import com.tacs.tp1c2026.entities.dto.output.PublicacionDto;
+import com.tacs.tp1c2026.entities.enums.Categoria;
 import com.tacs.tp1c2026.entities.enums.EstadoPropuesta;
 import com.tacs.tp1c2026.entities.enums.EstadoPublicacion;
 import com.tacs.tp1c2026.entities.enums.TipoParticipacion;
@@ -16,20 +22,25 @@ import com.tacs.tp1c2026.exceptions.UserNotFoundException;
 import com.tacs.tp1c2026.repositories.PropuestasIntercambioRepository;
 import com.tacs.tp1c2026.repositories.PublicacionesIntercambioRepository;
 import com.tacs.tp1c2026.repositories.UsuariosRepository;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 @Service
 public class PublicacionesService {
+  private final PublicacionMapper publicacionMapper;
   private final PropuestasIntercambioRepository propuestasIntercambioRepository;
   private final UsuariosRepository usuariosRepository;
   private final PublicacionesIntercambioRepository publicacionesIntercambioRepository;
+  private final PropuestaMapper propuestaMapper;
 
-  public PublicacionesService(PropuestasIntercambioRepository propuestasIntercambioRepository, UsuariosRepository usuariosRepository, PublicacionesIntercambioRepository publicacionesIntercambioRepository) {
+  public PublicacionesService(PublicacionMapper publicacionMapper, PropuestasIntercambioRepository propuestasIntercambioRepository, UsuariosRepository usuariosRepository, PublicacionesIntercambioRepository publicacionesIntercambioRepository, PropuestaMapper propuestaMapper) {
+    this.publicacionMapper = publicacionMapper;
     this.propuestasIntercambioRepository = propuestasIntercambioRepository;
     this.usuariosRepository = usuariosRepository;
     this.publicacionesIntercambioRepository = publicacionesIntercambioRepository;
+    this.propuestaMapper = propuestaMapper;
   }
 
   public void publicarIntercambioFigurita(Integer userId, Integer numFigurita){
@@ -50,6 +61,14 @@ public class PublicacionesService {
     Usuario usuario = usuariosRepository.findById(userId)
         .orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
 
+    PublicacionIntercambio publicacion = publicacionesIntercambioRepository.findById(publicacionId)
+        .orElseThrow(() -> new NotFoundException("No se encontro la publicacion con id " + publicacionId));
+    //controlar que las ofertas no superen la cantidad disponibe
+    List<PropuestaIntercambio> propuestasActuales = propuestasIntercambioRepository.findByPublicacionId(publicacionId);
+    if (propuestasActuales.size() == publicacion.getFiguritaColeccion().getCantidad()) {
+      throw new ConflictException("Ya no hay cupos para nuevas propuestas");
+    }
+
     List<FiguritaColeccion> figuritas =
         usuario.getRepetidas().stream().filter(f -> idFiguritas.contains(f.getFigurita().getNumero())).toList();
     //filtrar figus que esten para intercambio
@@ -61,8 +80,6 @@ public class PublicacionesService {
     }
 
     PropuestaIntercambio propuesta = new PropuestaIntercambio();
-    PublicacionIntercambio publicacion = publicacionesIntercambioRepository.findById(publicacionId)
-        .orElseThrow(() -> new NotFoundException("No se encontro la publicacion"));
 
     propuesta.setPublicacion(publicacion);
     propuesta.setFiguritas(figuritasOfrecidas);
@@ -71,6 +88,20 @@ public class PublicacionesService {
     propuestasIntercambioRepository.save(propuesta);
   }
 
+  public List<PropuestaRecibidaDto> obtenerPropuestasRecibidas(Integer userId) {
+    Usuario usuario = usuariosRepository.findById(userId)
+        .orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
+
+    List<PropuestaIntercambio> propuestasRecibidas = new ArrayList<>();
+    List<PublicacionIntercambio> publicaciones = publicacionesIntercambioRepository.findByPublicanteId(userId);
+
+    publicaciones.forEach(publicacion -> {
+      List<PropuestaIntercambio> propuestas = propuestasIntercambioRepository.findByPublicacionId(publicacion.getId());
+      propuestasRecibidas.addAll(propuestas);
+    });
+
+    return propuestaMapper.toDtoList(propuestasRecibidas);
+  }
   public void rechazarPropuesta(Integer publicacionId, Integer propuestaId, Integer userId) {
     Usuario usuario = usuariosRepository.findById(userId)
         .orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
@@ -122,10 +153,63 @@ public class PublicacionesService {
     propuesta.aceptar();
     publicacion.setEstado(EstadoPublicacion.FINALIZADA);
     publicacion.setPropuestaAceptada(propuesta);
+    publicacion.getFiguritaColeccion().reducirCantidad();
     propuestasIntercambioRepository.save(propuesta);
     publicacionesIntercambioRepository.save(publicacion);
+    //rechazo las otras propuestas
+    //se deberia realizar luego de responder al user
     List<PropuestaIntercambio> propuestas = propuestasIntercambioRepository.findByPublicacionId(publicacionId);
     propuestas.stream().filter(p -> !p.getId().equals(propuestaId)).forEach(p -> p.rechazar());
+    //figurita coleccion es de usuario
     propuestasIntercambioRepository.saveAll(propuestas);
+  }
+
+  public PaginacionDto<PublicacionDto> buscarPublicaciones(
+      String seleccion, String nombreJugador, String equipo, Categoria categoria, Integer page, Integer per_page
+  ) {
+    //primero obtener publicaciones activas
+    List<PublicacionIntercambio> publicaciones = publicacionesIntercambioRepository.findByEstado(EstadoPublicacion.ACTIVA);
+
+    //podria dejar el filtrado en otra seccion del codigo para no cargar mucho el service
+
+    if(!publicaciones.isEmpty()) {
+      //luego reemplazar por filtros de mongodb
+
+      if(seleccion != null) {
+        publicaciones = publicaciones.stream().filter(publicacion ->
+        publicacion.getFiguritaColeccion().getFigurita().getSeleccion().contains(seleccion)
+        ).toList();
+      }
+
+      if(nombreJugador != null) {
+        publicaciones = publicaciones.stream().filter(publicacion ->
+            publicacion.getFiguritaColeccion().getFigurita().getJugador().contains(seleccion)
+        ).toList();
+      }
+
+      if(equipo != null) {
+        publicaciones = publicaciones.stream().filter(publicacion ->
+            publicacion.getFiguritaColeccion().getFigurita().getEquipo().contains(equipo)
+        ).toList();
+      }
+
+      if (categoria != null) {
+        publicaciones = publicaciones.stream().filter(publicacion ->
+            publicacion.getFiguritaColeccion().getFigurita().getCategoria().equals(categoria)
+        ).toList();
+      }
+      //verificar num paginas y armar resultado paginado
+      int totalPages = (int) Math.ceil((double) publicaciones.size() / per_page);
+      int startIndex = (page - 1) * per_page;
+      int endIndex = Math.min(startIndex + per_page, publicaciones.size());
+      List<PublicacionIntercambio> paginatedPublicaciones = publicaciones.subList(startIndex, endIndex);
+      //map publicaciones to dtos
+      List<PublicacionDto> mapeados = publicacionMapper.mapToDto(paginatedPublicaciones);
+
+      return new PaginacionDto<>(mapeados, page, totalPages);
+    } else {
+      return new PaginacionDto<>(null, 1, 1);
+    }
+
   }
 }
