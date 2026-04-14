@@ -25,8 +25,10 @@ import com.tacs.tp1c2026.repositories.UsuariosRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class PublicacionesService {
   private final PublicacionMapper publicacionMapper;
@@ -151,9 +153,27 @@ public class PublicacionesService {
     }
 
     propuesta.aceptar();
-    publicacion.setEstado(EstadoPublicacion.FINALIZADA);
     publicacion.setPropuestaAceptada(propuesta);
     publicacion.getFiguritaColeccion().reducirCantidad();
+    //verificar figuritas de propuestas y agregar a coleccion
+    propuesta.getFiguritas().forEach(figu -> {
+      Optional<FiguritaColeccion> figuritaOptional = usuario.getRepetidas().stream().filter(
+          f -> f.getFigurita().getNumero().equals(figu.getNumero())
+      ).findFirst();
+
+      if (figuritaOptional.isPresent()) {
+        FiguritaColeccion figuritaColeccion = figuritaOptional.get();
+        figuritaColeccion.aumentarCantidad();
+      }
+
+      if (usuario.getFaltantes().contains(figu)) {
+        usuario.getFaltantes().remove(figu);
+      }
+    });
+
+    if (publicacion.getFiguritaColeccion().getCantidad() == 0){
+      publicacion.setEstado(EstadoPublicacion.FINALIZADA);
+    }
     propuestasIntercambioRepository.save(propuesta);
     publicacionesIntercambioRepository.save(publicacion);
     //rechazo las otras propuestas

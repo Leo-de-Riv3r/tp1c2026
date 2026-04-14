@@ -16,8 +16,10 @@ import com.tacs.tp1c2026.repositories.FiguritasRepository;
 import com.tacs.tp1c2026.repositories.UsuariosRepository;
 import java.util.List;
 import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class FiguritasService {
   private final FiguritasRepository figuritasRepository;
@@ -54,9 +56,12 @@ public class FiguritasService {
     if (tieneFigurita.isPresent()) {
       throw new ConflictException("La figurita " + dto.getNumero() + " ya esta registrada como repetida");
     } else {
+      log.info("Registro figurita repetida");
       FiguritaColeccion figuritaColeccion = new FiguritaColeccion(dto.getCantidad(), dto.getTipoParticipacion(), figurita);
       usuario.agregarRepetidas(figuritaColeccion);
+      log.info("Almaceno figurita repetida en coleccion de usuario");
       usuariosRepository.save(usuario);
+      log.info("Figurita repetida registrada");
     }
 
   }

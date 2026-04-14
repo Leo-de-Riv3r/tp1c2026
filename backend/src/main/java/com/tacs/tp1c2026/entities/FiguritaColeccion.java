@@ -39,4 +39,8 @@ public class FiguritaColeccion {
   public void reducirCantidad() {
     this.cantidad--;
   }
+
+  public void aumentarCantidad() {
+    this.cantidad++;
+  }
 }

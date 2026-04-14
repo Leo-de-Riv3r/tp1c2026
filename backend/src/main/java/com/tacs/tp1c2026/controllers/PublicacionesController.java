@@ -34,13 +34,19 @@ public class PublicacionesController {
 
   @PostMapping("/intercambios/{publicacionId}/propuestas")
   public ResponseEntity<String> ofrecerPropuestaIntercambio(@PathVariable Integer publicacionId, @RequestParam Integer userId, @RequestBody PropuestaIntercambioDto dto){
-    publicacionesService.ofrecerPropuestaIntercambio(publicacionId, userId, dto.getNumfiguritas());
+    publicacionesService.ofrecerPropuestaIntercambio(userId, publicacionId, dto.getNumfiguritas());
     return ResponseEntity.ok().body("Propuesta de intercambio realizada");
   }
 
   @PutMapping("/intercambios/{publicacionId}/propuestas/{propuestaId}/rechazar")
   public ResponseEntity<String> rechazarPropuestaIntercambio(@PathVariable Integer publicacionId, @PathVariable Integer propuestaId, @RequestParam Integer userId){
     publicacionesService.rechazarPropuesta(publicacionId, propuestaId, userId);
+    return ResponseEntity.ok().body("Propuesta de intercambio rechazada");
+  }
+
+  @PutMapping("/intercambios/{publicacionId}/propuestas/{propuestaId}/aceptar")
+  public ResponseEntity<String> aceptarPropuestaIntercambio(@PathVariable Integer publicacionId, @PathVariable Integer propuestaId, @RequestParam Integer userId){
+    publicacionesService.aceptarPropuesta(publicacionId, propuestaId, userId);
     return ResponseEntity.ok().body("Propuesta de intercambio rechazada");
   }
 
