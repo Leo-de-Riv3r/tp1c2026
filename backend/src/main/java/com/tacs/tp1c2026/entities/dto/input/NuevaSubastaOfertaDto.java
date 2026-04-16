@@ -5,5 +5,11 @@ import java.util.List;
 
 @Data
 public class NuevaSubastaOfertaDto {
-    private List<Integer> idFiguritasOfertadas;
+    private List<ItemOfertaDto> itemsOfertados;
+
+    @Data
+    public static class ItemOfertaDto {
+        private Integer figuritaId;
+        private Integer cantidad;
+    }
 }

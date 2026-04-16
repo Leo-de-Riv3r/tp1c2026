@@ -10,6 +10,15 @@ public class OfertaSubastaDto {
   private Integer subastaId;
   private Integer usuarioPostorId;
   private Integer cantidadFiguritasOfrecidas;
-  private List<Integer> numerosFiguritasOfrecidas;
+  private List<Integer> idsFiguritasOfrecidas;
+//  private List<Integer> numerosFiguritasOfrecidas;
+  private List<ItemOfertaDetalleDto> itemsOfrecidos;
   private String estado;
+
+  @Data
+  public static class ItemOfertaDetalleDto {
+    private Integer figuritaId;
+    private Integer numeroFigurita;
+    private Integer cantidad;
+  }
 }

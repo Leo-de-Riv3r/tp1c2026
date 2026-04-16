@@ -1,18 +1,14 @@
 package com.tacs.tp1c2026.controllers;
 
 
-import com.tacs.tp1c2026.entities.dto.output.OfertaSubastaDto;
-import com.tacs.tp1c2026.entities.dto.output.PropuestaIntercambioDto;
-import com.tacs.tp1c2026.entities.dto.output.PublicacionIntercambioDto;
-import com.tacs.tp1c2026.entities.dto.output.SubastaDto;
+import com.tacs.tp1c2026.entities.Usuario;
+import com.tacs.tp1c2026.entities.dto.input.UserDto;
+import com.tacs.tp1c2026.entities.dto.output.*;
+
 import java.util.List;
 import com.tacs.tp1c2026.services.UsuariosService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/usuarios")
@@ -25,21 +21,32 @@ public class UsuariosController {
     }
 
 
-//    @GetMapping("/{userId}/operaciones")
-//    public ResponseEntity<OperacionesUsuarioDto> obtenerOperaciones(@PathVariable Integer userId) {
-//        return ResponseEntity.ok(usuariosService.obtenerOperaciones(userId));
-//    }
+    // DSP BORRAR
+    @PostMapping("/create")
+    public ResponseEntity<UsuarioDto> crearUsuario(@RequestBody UserDto dto) {
+        // El usuario devuelto por el service YA DEBE tener el ID
+        Usuario usuarioPersistido = usuariosService.crearUsuario(dto.getNombre());
 
+        UsuarioDto response = new UsuarioDto();
+        response.setId(usuarioPersistido.getId());
+        response.setNombre(usuarioPersistido.getNombre());
+        response.setFechaAlta(usuarioPersistido.getFechaAlta());
 
-    // envio las publicaciones de INTERCAMBIO de figus PROPIAS del usuario
+        return ResponseEntity.ok(response);
+    }
+
+    // DSP BORRAR
+    @GetMapping
+    public ResponseEntity<List<UsuarioDto>> listarUsuarios() {
+        return ResponseEntity.ok(usuariosService.listarUsuarios());
+    }
+
     /**
-     * {@code GET /api/usuarios/{userId}/publicaciones} &mdash; Retorna las publicaciones de
-     * intercambio creadas por el usuario.
-     *
+     * {@code GET /api/usuarios/{userId}/publicacionesIntercambio} &mdash; Retorna las publicaciones de intercambio creadas por el usuario.
      * @param userId identificador del usuario
      * @return 200 OK con la lista de publicaciones de intercambio del usuario
      */
-    @GetMapping("/{userId}/publicaciones")
+    @GetMapping("/{userId}/publicacionesIntercambio")
     public ResponseEntity<List<PublicacionIntercambioDto>> obtenerPublicacionesPropias(@PathVariable Integer userId) {
         return ResponseEntity.ok(usuariosService.obtenerPublicacionesPropias(userId));
     }
@@ -73,18 +80,18 @@ public class UsuariosController {
     }
 
 
-    // envios las SUBASTAS activas
-    /**
-     * {@code GET /api/usuarios/{userId}/subastas/activas} &mdash; Retorna las subastas activas
-     * del usuario.
-     *
-     * @param userId identificador del usuario
-     * @return 200 OK con la lista de subastas activas
-     */
-    @GetMapping("/{userId}/subastas/activas")
-    public ResponseEntity<List<SubastaDto>> obtenerSubastasActivas(@PathVariable Integer userId) {
-        return ResponseEntity.ok(usuariosService.obtenerSubastasActivas(userId));
-    }
+//    // envios las SUBASTAS activas
+//    /**
+//     * {@code GET /api/usuarios/{userId}/subastas/activas} &mdash; Retorna las subastas activas
+//     * del usuario.
+//     *
+//     * @param userId identificador del usuario
+//     * @return 200 OK con la lista de subastas activas
+//     */
+//    @GetMapping("/{userId}/subastas/activas")
+//    public ResponseEntity<List<SubastaDto>> obtenerSubastasActivas(@PathVariable Integer userId) {
+//        return ResponseEntity.ok(usuariosService.obtenerSubastasActivas(userId));
+//    }
 
 
     // envio todas las subastas que hice segun un estado, Si estado (ACTIVA,VENCIDA,ETC) no se envia, devuelve todas las subastas del usuario publicante

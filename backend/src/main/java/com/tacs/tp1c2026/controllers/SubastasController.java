@@ -2,15 +2,12 @@ package com.tacs.tp1c2026.controllers;
 
 import com.tacs.tp1c2026.entities.dto.input.NuevaSubastaDto;
 import com.tacs.tp1c2026.entities.dto.input.NuevaSubastaOfertaDto;
+import com.tacs.tp1c2026.entities.dto.output.SubastaDto;
 import com.tacs.tp1c2026.services.SubastasService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/subastas")
@@ -28,7 +25,7 @@ public class SubastasController {
    * @param nuevaSubastaDto datos de la nueva subasta (figurita, duración y mínimo de figuritas)
    * @return 200 OK con mensaje de confirmación indicando el ID de la subasta creada
    */
-  @PostMapping
+  @PostMapping("/create")
   public ResponseEntity<String> crearSubasta(@RequestParam Integer userId, @RequestBody NuevaSubastaDto nuevaSubastaDto) {
 
     Integer subastaId = subastasService.crearSubasta(userId, nuevaSubastaDto);
@@ -36,15 +33,21 @@ public class SubastasController {
 
   }
 
+  @GetMapping("/activas")
+  public ResponseEntity<List<SubastaDto>> obtenerSubastasActivasGlobales() {
+    return ResponseEntity.ok(subastasService.obtenerSubastasActivasGlobales());
+  }
+
+
   /**
-   * {@code POST /api/subastas/{subastaId}/ofertas} &mdash; Registra una oferta sobre una subasta activa.
+   * {@code POST /api/subastas/{subastaId}/ofertar} &mdash; Registra una oferta sobre una subasta activa.
    *
    * @param subastaId              identificador de la subasta
    * @param userId                 identificador del usuario postor
    * @param nuevaSubastaOfertaDto  figuritas ofrecidas como parte de la oferta
    * @return 200 OK con mensaje de confirmación
    */
-  @PostMapping("/{subastaId}/ofertas")
+  @PostMapping("/{subastaId}/ofertar")
   public ResponseEntity<String> ofertarSubasta(@PathVariable Integer subastaId, @RequestParam Integer userId, @RequestBody NuevaSubastaOfertaDto nuevaSubastaOfertaDto) {
 
     subastasService.ofertarSubasta(userId, subastaId, nuevaSubastaOfertaDto);
@@ -70,7 +73,7 @@ public class SubastasController {
   /**
    * {@code PUT /api/subastas/{subastaId}/ofertas/{ofertaId}/rechazar} &mdash;
    * Rechaza una oferta de subasta pendiente.
-   *
+   *Z
    * @param subastaId identificador de la subasta
    * @param ofertaId  identificador de la oferta a rechazar
    * @param userId    identificador del usuario dueño de la subasta

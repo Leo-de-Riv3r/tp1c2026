@@ -1,14 +1,7 @@
 package com.tacs.tp1c2026.services;
 
-import com.tacs.tp1c2026.entities.Figurita;
-import com.tacs.tp1c2026.entities.OfertaSubasta;
-import com.tacs.tp1c2026.entities.PropuestaIntercambio;
-import com.tacs.tp1c2026.entities.PublicacionIntercambio;
-import com.tacs.tp1c2026.entities.Subasta;
-import com.tacs.tp1c2026.entities.dto.output.OfertaSubastaDto;
-import com.tacs.tp1c2026.entities.dto.output.PropuestaIntercambioDto;
-import com.tacs.tp1c2026.entities.dto.output.PublicacionIntercambioDto;
-import com.tacs.tp1c2026.entities.dto.output.SubastaDto;
+import com.tacs.tp1c2026.entities.*;
+import com.tacs.tp1c2026.entities.dto.output.*;
 import com.tacs.tp1c2026.entities.enums.EstadoSubasta;
 import com.tacs.tp1c2026.exceptions.BadInputException;
 import com.tacs.tp1c2026.exceptions.UserNotFoundException;
@@ -43,17 +36,22 @@ public class UsuariosService {
 		  this.ofertasSubastaRepository = ofertasSubastaRepository;
 	  }
 
-//	  public OperacionesUsuarioDto obtenerOperaciones(Integer userId) {
-//			validarUsuarioExiste(userId);
-//
-//			OperacionesUsuarioDto dto = new OperacionesUsuarioDto();
-//			dto.setPublicacionesIntercambioPropias(obtenerPublicacionesPropias(userId));
-//			dto.setPropuestasEnviadas(obtenerPropuestasEnviadas(userId));
-//			dto.setPropuestasRecibidas(obtenerPropuestasRecibidas(userId));
-//			dto.setSubastasActivas(obtenerSubastasActivas(userId));
-//			dto.setOfertasSubastaEnviadas(obtenerOfertasSubastaEnviadas(userId));
-//			return dto;
-//	  }
+	public Usuario crearUsuario(String nombre) {
+		Usuario usuario = new Usuario();
+		usuario.setNombre(nombre);
+		usuario.setFechaAlta(java.time.LocalDateTime.now());
+		return usuariosRepository.save(usuario);
+	}
+
+	public List<UsuarioDto> listarUsuarios() {
+		return usuariosRepository.findAll().stream().map(u -> {
+			UsuarioDto dto = new UsuarioDto();
+			dto.setId(u.getId());
+			dto.setNombre(u.getNombre());
+			dto.setFechaAlta(u.getFechaAlta());
+			return dto;
+		}).toList();
+	}
 
       /*publicaciones de INTERCAMBIO de figus propias del usuario */
   /**
@@ -97,17 +95,17 @@ public class UsuariosService {
 	  }
 
 
-  /**
-   * Retorna las subastas en estado ACTIVA creadas por el usuario.
-   *
-   * @param userId identificador del usuario
-   * @return lista de {@link SubastaDto} con las subastas activas del usuario
-   * @throws UserNotFoundException si el usuario no existe
-   */
-	  public List<SubastaDto> obtenerSubastasActivas(Integer userId) {
-			validarUsuarioExiste(userId);
-			return subastaRepository.findByUsuarioPublicanteIdAndEstado(userId, EstadoSubasta.ACTIVA).stream().map(this::mapSubasta).toList();
-	  }
+//  /**
+//   * Retorna las subastas en estado ACTIVA creadas por el usuario.
+//   *
+//   * @param userId identificador del usuario
+//   * @return lista de {@link SubastaDto} con las subastas activas del usuario
+//   * @throws UserNotFoundException si el usuario no existe
+//   */
+//	  public List<SubastaDto> obtenerSubastasActivas(Integer userId) {
+//			validarUsuarioExiste(userId);
+//			return subastaRepository.findByUsuarioPublicanteIdAndEstado(userId, EstadoSubasta.ACTIVA).stream().map(this::mapSubasta).toList();
+//	  }
 
 
   /**
@@ -257,17 +255,38 @@ public class UsuariosService {
 			if (ofertaSubasta.getUsuarioPostor() != null) {
 			  dto.setUsuarioPostorId(ofertaSubasta.getUsuarioPostor().getId());
 			}
-			List<Figurita> figuritas = ofertaSubasta.getFiguritasOfrecidas();
-			dto.setCantidadFiguritasOfrecidas(figuritas == null ? 0 : figuritas.size());
-			dto.setNumerosFiguritasOfrecidas(figuritas == null ? List.of() : figuritas.stream()
+			List<ItemOfertaSubasta> items = ofertaSubasta.getItemsOfrecidos() == null ? List.of() : ofertaSubasta.getItemsOfrecidos();
+			dto.setCantidadFiguritasOfrecidas(items.stream()
 					.filter(Objects::nonNull)
-					.map(Figurita::getNumero)
+					.map(ItemOfertaSubasta::getCantidad)
 					.filter(Objects::nonNull)
+					.reduce(0, Integer::sum));
+			dto.setIdsFiguritasOfrecidas(items.stream()
+					.filter(Objects::nonNull)
+					.filter(i -> i.getFigurita() != null)
+					.map(i -> i.getFigurita().getId())
+					.filter(Objects::nonNull)
+					.toList());
+//			dto.setNumerosFiguritasOfrecidas(items.stream()
+//					.filter(Objects::nonNull)
+//					.filter(i -> i.getFigurita() != null)
+//					.map(i -> i.getFigurita().getNumero())
+//					.filter(Objects::nonNull)
+//					.toList());
+			dto.setItemsOfrecidos(items.stream()
+					.filter(Objects::nonNull)
+					.filter(i -> i.getFigurita() != null)
+					.map(i -> {
+						OfertaSubastaDto.ItemOfertaDetalleDto itemDto = new OfertaSubastaDto.ItemOfertaDetalleDto();
+						itemDto.setFiguritaId(i.getFigurita().getId());
+						itemDto.setNumeroFigurita(i.getFigurita().getNumero());
+						itemDto.setCantidad(i.getCantidad());
+						return itemDto;
+					})
 					.toList());
 			if (ofertaSubasta.getSubasta() != null) {
 			  dto.setSubastaId(ofertaSubasta.getSubasta().getId());
 			}
 			return dto;
 	  }
-
 }

@@ -22,7 +22,9 @@ import lombok.Setter;
 @Entity
 @Table
 public class Usuario {
-  @Id @GeneratedValue(strategy = GenerationType.AUTO)
+  @Id
+//  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @GeneratedValue(strategy = GenerationType.AUTO)
   private Integer id;
   @Column
   private String nombre;

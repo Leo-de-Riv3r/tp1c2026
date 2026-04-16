@@ -35,9 +35,11 @@ public class CategoriaStrategy extends IReglaStrategy {
    */
   @Override
   public Boolean cumpleRegla(OfertaSubasta ofertaSubasta) {
-    return ofertaSubasta.getFiguritasOfrecidas().stream()
-        .filter(figurita -> figurita.getCategoria() == categoriaRequerida)
-        .toList()
-        .size() > cantidadMinima;
+    Integer cantidadCategoria = ofertaSubasta.getItemsOfrecidos().stream()
+        .filter(item -> item.getFigurita() != null)
+        .filter(item -> item.getFigurita().getCategoria() == categoriaRequerida)
+        .map(item -> item.getCantidad() == null ? 0 : item.getCantidad())
+        .reduce(0, Integer::sum);
+    return cantidadCategoria > cantidadMinima;
   }
 }

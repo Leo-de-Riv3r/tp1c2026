@@ -26,6 +26,6 @@ public class CantidadFiguritasStrategy extends IReglaStrategy {
    */
   @Override
   public Boolean cumpleRegla(OfertaSubasta oferta) {
-    return oferta.getFiguritasOfrecidas().size() >= this.cantidadMinimaFiguritas;
+    return oferta.getTotalFiguritas() >= this.cantidadMinimaFiguritas;
   }
 }

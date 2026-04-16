@@ -1,12 +1,13 @@
 package com.tacs.tp1c2026.services;
 
-import com.tacs.tp1c2026.entities.Figurita;
 import com.tacs.tp1c2026.entities.FiguritaColeccion;
+import com.tacs.tp1c2026.entities.ItemOfertaSubasta;
 import com.tacs.tp1c2026.entities.OfertaSubasta;
 import com.tacs.tp1c2026.entities.Subasta;
 import com.tacs.tp1c2026.entities.Usuario;
 import com.tacs.tp1c2026.entities.dto.input.NuevaSubastaDto;
 import com.tacs.tp1c2026.entities.dto.input.NuevaSubastaOfertaDto;
+import com.tacs.tp1c2026.entities.dto.output.SubastaDto;
 import com.tacs.tp1c2026.entities.enums.EstadoOfertaSubasta;
 import com.tacs.tp1c2026.entities.enums.EstadoSubasta;
 import com.tacs.tp1c2026.entities.enums.TipoParticipacion;
@@ -19,13 +20,17 @@ import com.tacs.tp1c2026.repositories.OfertasSubastaRepository;
 import com.tacs.tp1c2026.repositories.SubastaRepository;
 import com.tacs.tp1c2026.repositories.UsuariosRepository;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 @Service
 public class SubastasService {
+
   private final UsuariosRepository usuariosRepository;
   private final SubastaRepository subastaRepository;
   private final OfertasSubastaRepository ofertasSubastaRepository;
@@ -35,6 +40,7 @@ public class SubastasService {
     this.subastaRepository = subastaRepository;
     this.ofertasSubastaRepository = ofertasSubastaRepository;
   }
+
 
   /**
    * Crea una nueva subasta para una figurita repetida del usuario.
@@ -77,6 +83,7 @@ public class SubastasService {
     return subastaRepository.save(subasta).getId();
   }
 
+
   /**
    * Registra una oferta sobre una subasta activa.
    * Verifica que la subasta exista y esté activa, que el postor no sea el dueño de la subasta,
@@ -94,9 +101,9 @@ public class SubastasService {
    */
   public void ofertarSubasta(Integer userId, Integer subastaId, NuevaSubastaOfertaDto nuevaOferta){
 
-    // chequeo que la lista de las cartas a subastar sea mayor o igual a 1
-    if (nuevaOferta.getIdFiguritasOfertadas() == null || nuevaOferta.getIdFiguritasOfertadas().isEmpty()) {
-      throw new BadInputException("Se necesita ofrecer como minimo 1 figurita");
+    // chequeo que la lista de items ofertados sea mayor o igual a 1
+    if (nuevaOferta == null || nuevaOferta.getItemsOfertados() == null || nuevaOferta.getItemsOfertados().isEmpty()) {
+      throw new BadInputException("Se necesita ofrecer como minimo 1 item");
     }
 
     // busco el usuario que hace la oferta
@@ -105,7 +112,7 @@ public class SubastasService {
     // verifico que sea la subasta realmente exista
     Subasta subasta = subastaRepository.findById(subastaId).orElseThrow(() -> new NotFoundException("No se encontro la subasta"));
 
-
+    // verfico que el postor no sea el dueño de la subasta
     if (subasta.getUsuarioPublicante() != null && subasta.getUsuarioPublicante().getId().equals(userId)) {
       throw new UnauthorizedException("No puedes ofertar en tu propia subasta");
     }
@@ -123,32 +130,59 @@ public class SubastasService {
     // veo si el usuario tiene figuritas repetidas porque en teoria deberia ofertar solo con las repetidas
     List<FiguritaColeccion> repetidasPostor = postor.getRepetidas() == null ? Collections.emptyList() : postor.getRepetidas();
 
-    // filtro las figuritas repetidas del postor para obtener solo las que estan siendo ofertadas en la subasta y que esten habilitadas para participar en la subasta
-    List<Figurita> figuritasOfrecidas = repetidasPostor.stream()
-            .filter(fc -> nuevaOferta.getIdFiguritasOfertadas().contains(fc.getFigurita().getNumero()))
-            .filter(fc -> TipoParticipacion.SUBASTA.equals(fc.getTipoParticipacion()))
-            .map(FiguritaColeccion::getFigurita)
-            .toList();
+    // Normalizo el request para que cada figurita aparezca una sola vez con cantidad acumulada.
+    Map<Integer, Integer> cantidadesPorFiguritaId = new LinkedHashMap<>();
 
-    // chequeo que la cantidad de figuritas seleccionadas para ofertar sea la misma que la cantidad real de figuritas APTAS y HABILITADAS que tengo
-    if (figuritasOfrecidas.size() != nuevaOferta.getIdFiguritasOfertadas().size()) {
-      throw new BadInputException("No se encontraron todas las figuritas ofrecidas o no estan habilitadas para participar en una subasta");
+    for (NuevaSubastaOfertaDto.ItemOfertaDto itemDto : nuevaOferta.getItemsOfertados()) {
+      if (itemDto == null || itemDto.getFiguritaId() == null || itemDto.getCantidad() == null || itemDto.getCantidad() < 1) {
+        throw new BadInputException("Cada item debe incluir figuritaId y cantidad mayor a 0");
+      }
+
+      cantidadesPorFiguritaId.merge(itemDto.getFiguritaId(), itemDto.getCantidad(), Integer::sum);
     }
 
-    if (subasta.getCantidadMinFiguritas() != null && figuritasOfrecidas.size() < subasta.getCantidadMinFiguritas()) {
+    List<ItemOfertaSubasta> itemsOfrecidos = new ArrayList<>();
+    int totalFiguritasOfrecidas = 0;
+
+    for (Map.Entry<Integer, Integer> entry : cantidadesPorFiguritaId.entrySet()) {
+      Integer figuritaId = entry.getKey();
+      Integer cantidadTotal = entry.getValue();
+
+      FiguritaColeccion figuritaColeccion = repetidasPostor.stream()
+          .filter(fc -> fc.getFigurita() != null && fc.getFigurita().getId().equals(figuritaId))
+          .findFirst()
+          .orElseThrow(() -> new BadInputException("La figurita " + figuritaId + " no esta en tus repetidas"));
+
+      if (!TipoParticipacion.SUBASTA.equals(figuritaColeccion.getTipoParticipacion())) {
+        throw new BadInputException("La figurita " + figuritaId + " no esta habilitada para subasta");
+      }
+
+      if (figuritaColeccion.getCantidad() == null || figuritaColeccion.getCantidad() < cantidadTotal) {
+        throw new BadInputException("No tienes cantidad suficiente de la figurita " + figuritaId);
+      }
+
+      ItemOfertaSubasta item = new ItemOfertaSubasta();
+      item.setFigurita(figuritaColeccion.getFigurita());
+      item.setCantidad(cantidadTotal);
+      itemsOfrecidos.add(item);
+      totalFiguritasOfrecidas += cantidadTotal;
+    }
+
+    if (subasta.getCantidadMinFiguritas() != null && totalFiguritasOfrecidas < subasta.getCantidadMinFiguritas()) {
       throw new BadInputException("La oferta no cumple la cantidad minima de figuritas");
     }
 
     OfertaSubasta oferta = new OfertaSubasta();
     oferta.setSubasta(subasta);
     oferta.setUsuarioPostor(postor);
-    oferta.setFiguritasOfrecidas(figuritasOfrecidas);
+    itemsOfrecidos.forEach(oferta::agregarItem);
     OfertaSubasta ofertaGuardada = ofertasSubastaRepository.save(oferta);
 
     actualizarMejorOferta(subasta, ofertaGuardada);
 
     //return ofertaGuardada.getId();
   }
+
 
   /**
    * Acepta una oferta de subasta pendiente y adjudica la subasta al postor.
@@ -198,6 +232,7 @@ public class SubastasService {
     ofertasSubastaRepository.saveAll(ofertasSubasta);
   }
 
+
   /**
    * Rechaza una oferta de subasta pendiente.
    * Sólo el dueño de la subasta puede rechazar ofertas.
@@ -232,6 +267,7 @@ public class SubastasService {
     ofertasSubastaRepository.save(oferta);
   }
 
+
   /**
    * Valida que los datos mínimos requeridos para crear una subasta sean correctos.
    *
@@ -254,6 +290,7 @@ public class SubastasService {
     }
   }
 
+
   /**
    * Actualiza la mejor oferta de la subasta si la nueva oferta supera en cantidad de figuritas
    * a la oferta actual.
@@ -265,10 +302,40 @@ public class SubastasService {
 
     Optional<OfertaSubasta> mejorOfertaActual = Optional.ofNullable(subasta.getMejorOferta());
 
-    if (mejorOfertaActual.isEmpty() || nuevaOferta.getFiguritasOfrecidas().size() > mejorOfertaActual.get().getFiguritasOfrecidas().size()) {
+    if (mejorOfertaActual.isEmpty() || nuevaOferta.getTotalFiguritas() > mejorOfertaActual.get().getTotalFiguritas()) {
       subasta.setMejorOferta(nuevaOferta);
       subastaRepository.save(subasta);
     }
   }
+
+
+  public List<SubastaDto> obtenerSubastasActivasGlobales() {
+    return subastaRepository.findByEstado(EstadoSubasta.ACTIVA)
+            .stream()
+            .map(this::mapSubasta)
+            .toList();
+  }
+
+  private SubastaDto mapSubasta(Subasta subasta) {
+    SubastaDto dto = new SubastaDto();
+    dto.setSubastaId(subasta.getId());
+
+    if (subasta.getUsuarioPublicante() != null) {
+      dto.setUsuarioPublicanteId(subasta.getUsuarioPublicante().getId());
+    }
+
+    dto.setCantidadMinFiguritas(subasta.getCantidadMinFiguritas());
+    dto.setFechaCreacion(subasta.getFechaCreacion());
+    dto.setFechaCierre(subasta.getFechaCierre());
+    dto.setEstado(subasta.getEstado() == null ? null : subasta.getEstado().name());
+
+    if (subasta.getFiguritaPublicada() != null && subasta.getFiguritaPublicada().getFigurita() != null) {
+      dto.setNumFiguritaPublicada(subasta.getFiguritaPublicada().getFigurita().getNumero());
+    }
+
+    return dto;
+  }
+  
+
 }
 

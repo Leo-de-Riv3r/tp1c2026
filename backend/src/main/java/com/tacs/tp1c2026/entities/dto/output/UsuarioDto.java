@@ -10,10 +10,14 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import java.time.LocalDateTime;
 import java.util.List;
+
+import lombok.Getter;
 import lombok.Setter;
 
 @Setter
+@Getter
 public class UsuarioDto {
+  private Integer id;
   private String nombre;
   private LocalDateTime fechaAlta;
 }
