@@ -42,7 +42,7 @@ public class FeedbackService {
    */
   public void publicarFeedback(NuevoFeedbackDto dto, Integer userId){
     Usuario usuario = usuariosRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("Usuario no encontrado"));
-    PublicacionIntercambio publicacion = publicacionesIntercambioRepository.findById(dto.getPublicacionId()).orElseThrow(() -> new NotFoundException("Publicacion no encontrada"));
+    PublicacionIntercambio publicacion = publicacionesIntercambioRepository.findById(dto.publicacionId()).orElseThrow(() -> new NotFoundException("Publicacion no encontrada"));
 
     if (!publicacion.getEstado().equals(EstadoPublicacion.FINALIZADA) && !publicacion.getPublicante().getId().equals(userId) || !publicacion.getPropuestaAceptada().getUsuario().getId().equals(userId)) {
       throw new UnauthorizedException("No tienes permisos para dejar un feedback en esta publicacion");
@@ -54,8 +54,8 @@ public class FeedbackService {
     }
 
     Feedback feedback = new Feedback();
-    feedback.setComentario(dto.getComentario());
-    feedback.setCalificacion(dto.getCalificacion());
+    feedback.setComentario(dto.comentario());
+    feedback.setCalificacion(dto.calificacion());
     feedback.setPublicacionIntercambio(publicacion);
     feedback.setCalificador(usuario);
     feedbackRepository.save(feedback);

@@ -2,7 +2,7 @@ package com.tacs.tp1c2026.entities;
 
 import com.tacs.tp1c2026.entities.dto.output.AlertaDto;
 import com.tacs.tp1c2026.entities.dto.output.AlertaFiguritaFaltanteDto;
-import com.tacs.tp1c2026.entities.dto.output.AlertaPorpuestaRecibidaDto;
+import com.tacs.tp1c2026.entities.dto.output.AlertaPropuestaRecibidaDto;
 import com.tacs.tp1c2026.entities.dto.output.AlertaSubastaProximaDto;
 import org.springframework.stereotype.Component;
 
@@ -24,7 +24,7 @@ public class AlertaVisitor {
   }
 
   public AlertaDto visit(AlertaPorpuestaRecibida alerta) {
-    return new AlertaPorpuestaRecibidaDto(
+    return new AlertaPropuestaRecibidaDto(
         alerta.getId(),
         alerta.getUsuario().getId(),
         alerta.getUsuario().getNombre(),

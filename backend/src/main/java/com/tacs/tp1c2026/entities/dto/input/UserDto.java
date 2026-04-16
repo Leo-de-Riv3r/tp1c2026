@@ -1,12 +1,7 @@
 package com.tacs.tp1c2026.entities.dto.input;
 
-import lombok.Data;
 
 import java.time.LocalDateTime;
-//BORRAR ESTE ARCHIVO DSP
-@Data
-public class UserDto{
-    private String nombre;
-    private LocalDateTime fechaAlta;
-}
+// TODO: BORRAR ESTE ARCHIVO DSP
+public record UserDto(String nombre, LocalDateTime fechaAlta) {}
 

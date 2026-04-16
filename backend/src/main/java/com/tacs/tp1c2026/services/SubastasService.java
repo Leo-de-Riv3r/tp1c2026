@@ -102,7 +102,7 @@ public class SubastasService {
   public void ofertarSubasta(Integer userId, Integer subastaId, NuevaSubastaOfertaDto nuevaOferta){
 
     // chequeo que la lista de items ofertados sea mayor o igual a 1
-    if (nuevaOferta == null || nuevaOferta.getItemsOfertados() == null || nuevaOferta.getItemsOfertados().isEmpty()) {
+    if (nuevaOferta == null || nuevaOferta.itemsOfertados() == null || nuevaOferta.itemsOfertados().isEmpty()) {
       throw new BadInputException("Se necesita ofrecer como minimo 1 item");
     }
 
@@ -133,12 +133,12 @@ public class SubastasService {
     // Normalizo el request para que cada figurita aparezca una sola vez con cantidad acumulada.
     Map<Integer, Integer> cantidadesPorFiguritaId = new LinkedHashMap<>();
 
-    for (NuevaSubastaOfertaDto.ItemOfertaDto itemDto : nuevaOferta.getItemsOfertados()) {
-      if (itemDto == null || itemDto.getFiguritaId() == null || itemDto.getCantidad() == null || itemDto.getCantidad() < 1) {
+    for (NuevaSubastaOfertaDto.ItemOfertaDto itemDto : nuevaOferta.itemsOfertados()) {
+      if (itemDto == null || itemDto.figuritaId() == null || itemDto.cantidad() == null || itemDto.cantidad() < 1) {
         throw new BadInputException("Cada item debe incluir figuritaId y cantidad mayor a 0");
       }
 
-      cantidadesPorFiguritaId.merge(itemDto.getFiguritaId(), itemDto.getCantidad(), Integer::sum);
+      cantidadesPorFiguritaId.merge(itemDto.figuritaId(), itemDto.cantidad(), Integer::sum);
     }
 
     List<ItemOfertaSubasta> itemsOfrecidos = new ArrayList<>();
@@ -317,25 +317,18 @@ public class SubastasService {
   }
 
   private SubastaDto mapSubasta(Subasta subasta) {
-    SubastaDto dto = new SubastaDto();
-    dto.setSubastaId(subasta.getId());
-
-    if (subasta.getUsuarioPublicante() != null) {
-      dto.setUsuarioPublicanteId(subasta.getUsuarioPublicante().getId());
-    }
-
-    dto.setCantidadMinFiguritas(subasta.getCantidadMinFiguritas());
-    dto.setFechaCreacion(subasta.getFechaCreacion());
-    dto.setFechaCierre(subasta.getFechaCierre());
-    dto.setEstado(subasta.getEstado() == null ? null : subasta.getEstado().name());
-
-    if (subasta.getFiguritaPublicada() != null && subasta.getFiguritaPublicada().getFigurita() != null) {
-      dto.setNumFiguritaPublicada(subasta.getFiguritaPublicada().getFigurita().getNumero());
-    }
+    SubastaDto dto = new SubastaDto(
+      subasta.getId(),
+      subasta.getUsuarioPublicante() == null ? null : subasta.getUsuarioPublicante().getId(),
+      subasta.getFiguritaPublicada() != null && subasta.getFiguritaPublicada().getFigurita() != null ? subasta.getFiguritaPublicada().getFigurita().getNumero() : null,
+      subasta.getCantidadMinFiguritas(),
+      subasta.getFechaCreacion(),
+      subasta.getFechaCierre(),
+      subasta.getEstado() == null ? null : subasta.getEstado().name()
+    );
 
     return dto;
   }
-  
 
 }
 

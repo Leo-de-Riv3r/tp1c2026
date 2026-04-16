@@ -1,8 +1,2 @@
 package com.tacs.tp1c2026.entities.dto.input;
-
-import lombok.Data;
-
-@Data
-public class PublicacionIntercambioDto {
-  private Integer numeroFigurita;
-}
+public record PublicacionIntercambioDto(Integer numeroFigurita) {}

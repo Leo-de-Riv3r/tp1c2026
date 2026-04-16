@@ -31,7 +31,7 @@ public class SubastaController {
   public ResponseEntity<String> agregarUsuarioInteresado(
       @PathVariable Integer subastaId,
       @RequestBody InteresadoDto dto) {
-    subastaService.agregarUsuarioInteresado(subastaId, dto.getUserId());
+    subastaService.agregarUsuarioInteresado(subastaId, dto.userId());
     return ResponseEntity.ok("Usuario agregado como interesado");
   }
 }

@@ -8,3 +8,4 @@ public class NuevaSubastaDto {
     private Integer duracionSubastaHs;
     private Integer cantidadMinFiguritas;
 }
+

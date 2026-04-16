@@ -45,11 +45,11 @@ public class UsuariosService {
 
 	public List<UsuarioDto> listarUsuarios() {
 		return usuariosRepository.findAll().stream().map(u -> {
-			UsuarioDto dto = new UsuarioDto();
-			dto.setId(u.getId());
-			dto.setNombre(u.getNombre());
-			dto.setFechaAlta(u.getFechaAlta());
-			return dto;
+			return new UsuarioDto(
+				u.getId(),
+				u.getNombre(),
+				u.getFechaAlta()
+			);
 		}).toList();
 	}
 
@@ -180,14 +180,16 @@ public class UsuariosService {
    * @return {@link PublicacionIntercambioDto} con los datos básicos de la publicación
    */
 	  private PublicacionIntercambioDto mapPublicacion(PublicacionIntercambio publicacion) {
-
-		  PublicacionIntercambioDto dto = new PublicacionIntercambioDto(); // creo el dto vacio
-		  dto.setPublicacionId(publicacion.getId()); // seteo el id de la publicacion
-		  dto.setEstado(publicacion.getEstado().name()); // seteo
+		  Integer numFiguritaPublicada = null;
 		  if (publicacion.getFiguritaColeccion() != null && publicacion.getFiguritaColeccion().getFigurita() != null) {
-			  dto.setNumFiguritaPublicada(publicacion.getFiguritaColeccion().getFigurita().getNumero());
+			  numFiguritaPublicada = publicacion.getFiguritaColeccion().getFigurita().getNumero();
 		  }
-		  return dto;
+
+		  return new PublicacionIntercambioDto(
+			  publicacion.getId(),
+			  numFiguritaPublicada,
+			  publicacion.getEstado().name()
+		  );
 	  }
 
   /**
@@ -197,27 +199,36 @@ public class UsuariosService {
    * @return {@link PropuestaIntercambioDto} con el estado, figuritas ofrecidas y referencias asociadas
    */
 	  private PropuestaIntercambioDto mapPropuesta(PropuestaIntercambio propuesta) {
-		PropuestaIntercambioDto dto = new PropuestaIntercambioDto();
 		List<Figurita> figuritasOfrecidas = propuesta.getFiguritas() == null ? List.of() : propuesta.getFiguritas(); // obtengo las figuritas de la propuesta
-		dto.setPropuestaId(propuesta.getId());
-		dto.setEstado(propuesta.getEstado().name());
-		dto.setCantidadFiguritasOfrecidas(figuritasOfrecidas.size());
-		dto.setNumerosFiguritasOfrecidas(figuritasOfrecidas.stream()
+		List<Integer> numerosFiguritasOfrecidas = figuritasOfrecidas.stream()
 				.filter(Objects::nonNull)
 				.map(Figurita::getNumero)
 				.filter(Objects::nonNull)
-				.toList());
+				.toList();
+
+		Integer usuarioId = null;
+		Integer publicacionId = null;
+		Integer numFiguritaPublicada = null;
 
 		if (propuesta.getUsuario() != null) {
-		  dto.setUsuarioId(propuesta.getUsuario().getId());
+		  usuarioId = propuesta.getUsuario().getId();
 		}
 		if (propuesta.getPublicacion() != null) {
-		  dto.setPublicacionId(propuesta.getPublicacion().getId());
+		  publicacionId = propuesta.getPublicacion().getId();
 		  if (propuesta.getPublicacion().getFiguritaColeccion() != null && propuesta.getPublicacion().getFiguritaColeccion().getFigurita() != null) {
-			dto.setNumFiguritaPublicada(propuesta.getPublicacion().getFiguritaColeccion().getFigurita().getNumero());
+			numFiguritaPublicada = propuesta.getPublicacion().getFiguritaColeccion().getFigurita().getNumero();
 		  }
 		}
-		return dto;
+
+		return new PropuestaIntercambioDto(
+			propuesta.getId(),
+			publicacionId,
+			numFiguritaPublicada,
+			figuritasOfrecidas.size(),
+			numerosFiguritasOfrecidas,
+			usuarioId,
+			propuesta.getEstado().name()
+		);
 	  }
 
   /**
@@ -227,19 +238,21 @@ public class UsuariosService {
    * @return {@link SubastaDto} con las propiedades principales de la subasta
    */
 	  private SubastaDto mapSubasta(Subasta subasta) {
-		SubastaDto dto = new SubastaDto();
-		dto.setSubastaId(subasta.getId());
-		if (subasta.getUsuarioPublicante() != null) {
-		  dto.setUsuarioPublicanteId(subasta.getUsuarioPublicante().getId());
-		}
-		dto.setCantidadMinFiguritas(subasta.getCantidadMinFiguritas());
-		dto.setFechaCreacion(subasta.getFechaCreacion());
-		dto.setFechaCierre(subasta.getFechaCierre());
-		dto.setEstado(subasta.getEstado().name());
+		Integer usuarioPublicanteId = subasta.getUsuarioPublicante() != null ? subasta.getUsuarioPublicante().getId() : null;
+		Integer numFiguritaPublicada = null;
 		if (subasta.getFiguritaPublicada() != null && subasta.getFiguritaPublicada().getFigurita() != null) {
-		  dto.setNumFiguritaPublicada(subasta.getFiguritaPublicada().getFigurita().getNumero());
+		  numFiguritaPublicada = subasta.getFiguritaPublicada().getFigurita().getNumero();
 		}
-		return dto;
+
+		return new SubastaDto(
+			subasta.getId(),
+			usuarioPublicanteId,
+			numFiguritaPublicada,
+			subasta.getCantidadMinFiguritas(),
+			subasta.getFechaCreacion(),
+			subasta.getFechaCierre(),
+			subasta.getEstado().name()
+		);
 	  }
 	  // mapeo
   /**
@@ -249,44 +262,44 @@ public class UsuariosService {
    * @return {@link OfertaSubastaDto} con el estado, figuritas ofrecidas y referencias asociadas
    */
 	  private OfertaSubastaDto mapOfertaSubasta(OfertaSubasta ofertaSubasta) {
-			OfertaSubastaDto dto = new OfertaSubastaDto();
-			dto.setOfertaId(ofertaSubasta.getId());
-			dto.setEstado(ofertaSubasta.getEstado().name());
-			if (ofertaSubasta.getUsuarioPostor() != null) {
-			  dto.setUsuarioPostorId(ofertaSubasta.getUsuarioPostor().getId());
-			}
+			Integer usuarioPostorId = ofertaSubasta.getUsuarioPostor() != null ? ofertaSubasta.getUsuarioPostor().getId() : null;
 			List<ItemOfertaSubasta> items = ofertaSubasta.getItemsOfrecidos() == null ? List.of() : ofertaSubasta.getItemsOfrecidos();
-			dto.setCantidadFiguritasOfrecidas(items.stream()
+			Integer cantidadFiguritasOfrecidas = items.stream()
 					.filter(Objects::nonNull)
 					.map(ItemOfertaSubasta::getCantidad)
 					.filter(Objects::nonNull)
-					.reduce(0, Integer::sum));
-			dto.setIdsFiguritasOfrecidas(items.stream()
+					.reduce(0, Integer::sum);
+			List<Integer> idsFiguritasOfrecidas = items.stream()
 					.filter(Objects::nonNull)
 					.filter(i -> i.getFigurita() != null)
 					.map(i -> i.getFigurita().getId())
 					.filter(Objects::nonNull)
-					.toList());
+					.toList();
 //			dto.setNumerosFiguritasOfrecidas(items.stream()
 //					.filter(Objects::nonNull)
 //					.filter(i -> i.getFigurita() != null)
 //					.map(i -> i.getFigurita().getNumero())
 //					.filter(Objects::nonNull)
 //					.toList());
-			dto.setItemsOfrecidos(items.stream()
+			List<OfertaSubastaDto.ItemOfertaDetalleDto> itemsOfrecidos = items.stream()
 					.filter(Objects::nonNull)
 					.filter(i -> i.getFigurita() != null)
-					.map(i -> {
-						OfertaSubastaDto.ItemOfertaDetalleDto itemDto = new OfertaSubastaDto.ItemOfertaDetalleDto();
-						itemDto.setFiguritaId(i.getFigurita().getId());
-						itemDto.setNumeroFigurita(i.getFigurita().getNumero());
-						itemDto.setCantidad(i.getCantidad());
-						return itemDto;
-					})
-					.toList());
-			if (ofertaSubasta.getSubasta() != null) {
-			  dto.setSubastaId(ofertaSubasta.getSubasta().getId());
-			}
-			return dto;
+					.map(i -> new OfertaSubastaDto.ItemOfertaDetalleDto(
+						i.getFigurita().getId(),
+						i.getFigurita().getNumero(),
+						i.getCantidad()
+					))
+					.toList();
+			Integer subastaId = ofertaSubasta.getSubasta() != null ? ofertaSubasta.getSubasta().getId() : null;
+
+			return new OfertaSubastaDto(
+				ofertaSubasta.getId(),
+				subastaId,
+				usuarioPostorId,
+				cantidadFiguritasOfrecidas,
+				idsFiguritasOfrecidas,
+				itemsOfrecidos,
+				ofertaSubasta.getEstado().name()
+			);
 	  }
 }

@@ -27,15 +27,15 @@ public class PropuestaMapper {
    * @return DTO con los datos de la propuesta
    */
   public PropuestaRecibidaDto toDto(PropuestaIntercambio propuesta){
-    PropuestaRecibidaDto dto = new PropuestaRecibidaDto();
-    dto.setId(propuesta.getId());
-    dto.setFiguritas(propuesta.getFiguritas().stream().map(f -> new FiguritaDto(
-        f.getNumero(), f.getDescripcion(), f.getJugador(), f.getSeleccion(), f.getEquipo(), f.getCategoria())).toList());
+    List<FiguritaDto> figuritas = propuesta.getFiguritas().stream().map(f -> new FiguritaDto(
+        f.getNumero(), f.getDescripcion(), f.getJugador(), f.getSeleccion(), f.getEquipo(), f.getCategoria())).toList();
 
-    UsuarioDto usuarioDto = new UsuarioDto();
-    usuarioDto.setFechaAlta(propuesta.getUsuario().getFechaAlta());
-    usuarioDto.setNombre(propuesta.getUsuario().getNombre());
-    dto.setUsuario(usuarioDto);
-    return dto;
+    UsuarioDto usuarioDto = new UsuarioDto(
+        propuesta.getUsuario().getId(),
+        propuesta.getUsuario().getNombre(),
+        propuesta.getUsuario().getFechaAlta()
+    );
+
+    return new PropuestaRecibidaDto(propuesta.getId(), figuritas, usuarioDto);
   }
 }

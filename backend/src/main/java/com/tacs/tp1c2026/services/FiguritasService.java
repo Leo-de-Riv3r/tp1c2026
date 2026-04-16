@@ -43,11 +43,11 @@ public class FiguritasService {
    * @throws ConflictException     si la figurita ya se encuentra registrada como faltante
    */
   public void registrarFiguritaFaltante(FiguritaFaltanteDto dto, Integer userId) {
-    Figurita figurita = obtenerFigurita(dto.getNumero(), dto.getJugador(), dto.getDescripcion(), dto.getSeleccion(), dto.getEquipo(), dto.getCategoria());
+    Figurita figurita = obtenerFigurita(dto.numero(), dto.jugador(), dto.descripcion(), dto.seleccion(), dto.equipo(), dto.categoria());
     Usuario usuario = usuariosRepository.findById(userId)
         .orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
 
-    Optional<Figurita> tieneFigurita = usuario.getFaltantes().stream().filter(f -> f.getNumero().equals(dto.getNumero())).findFirst();
+    Optional<Figurita> tieneFigurita = usuario.getFaltantes().stream().filter(f -> f.getNumero().equals(dto.numero())).findFirst();
     if (tieneFigurita.isPresent()) {
       throw new ConflictException("La figurita ya se encuentra registrada como faltante");
     }
@@ -70,14 +70,14 @@ public class FiguritasService {
   public void registrarFiguritaRepetida(FiguritaRepetidaDto dto, Integer userId) {
     Usuario usuario = usuariosRepository.findById(userId)
         .orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
-    Figurita figurita = obtenerFigurita(dto.getNumero(), dto.getJugador(), dto.getDescripcion(), dto.getSeleccion(), dto.getEquipo(), dto.getCategoria());
+    Figurita figurita = obtenerFigurita(dto.numero(), dto.jugador(), dto.descripcion(), dto.seleccion(), dto.equipo(), dto.categoria());
 
-    Optional<FiguritaColeccion> tieneFigurita = usuario.getRepetidas().stream().filter(f -> f.getFigurita().getNumero().equals(dto.getNumero())).findFirst();
+    Optional<FiguritaColeccion> tieneFigurita = usuario.getRepetidas().stream().filter(f -> f.getFigurita().getNumero().equals(dto.numero())).findFirst();
     if (tieneFigurita.isPresent()) {
-      throw new ConflictException("La figurita " + dto.getNumero() + " ya esta registrada como repetida");
+      throw new ConflictException("La figurita " + dto.numero() + " ya esta registrada como repetida");
     } else {
       log.info("Registro figurita repetida");
-      FiguritaColeccion figuritaColeccion = new FiguritaColeccion(dto.getCantidad(), dto.getTipoParticipacion(), figurita);
+      FiguritaColeccion figuritaColeccion = new FiguritaColeccion(dto.cantidad(), dto.tipoParticipacion(), figurita);
       usuario.agregarRepetidas(figuritaColeccion);
       log.info("Almaceno figurita repetida en coleccion de usuario");
       usuariosRepository.save(usuario);

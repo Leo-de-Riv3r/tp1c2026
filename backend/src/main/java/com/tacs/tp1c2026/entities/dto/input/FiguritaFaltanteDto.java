@@ -1,14 +1,12 @@
 package com.tacs.tp1c2026.entities.dto.input;
 
 import com.tacs.tp1c2026.entities.enums.Categoria;
-import lombok.Data;
 
-@Data
-public class FiguritaFaltanteDto {
-  private Integer numero;
-  private String jugador;
-  private String seleccion;
-  private String equipo;
-  private String descripcion;
-  private Categoria categoria;
-}
+public record FiguritaFaltanteDto (
+   Integer numero,
+   String jugador,
+   String seleccion,
+   String equipo,
+   String descripcion,
+   Categoria categoria
+) {}

@@ -25,12 +25,13 @@ public class UsuariosController {
     @PostMapping("/create")
     public ResponseEntity<UsuarioDto> crearUsuario(@RequestBody UserDto dto) {
         // El usuario devuelto por el service YA DEBE tener el ID
-        Usuario usuarioPersistido = usuariosService.crearUsuario(dto.getNombre());
+        Usuario usuarioPersistido = usuariosService.crearUsuario(dto.nombre());
 
-        UsuarioDto response = new UsuarioDto();
-        response.setId(usuarioPersistido.getId());
-        response.setNombre(usuarioPersistido.getNombre());
-        response.setFechaAlta(usuarioPersistido.getFechaAlta());
+        UsuarioDto response = new UsuarioDto(
+            usuarioPersistido.getId(),
+            usuarioPersistido.getNombre(),
+            usuarioPersistido.getFechaAlta()
+        );
 
         return ResponseEntity.ok(response);
     }

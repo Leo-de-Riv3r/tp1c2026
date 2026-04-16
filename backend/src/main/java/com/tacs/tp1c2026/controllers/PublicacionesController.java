@@ -44,7 +44,7 @@ public class PublicacionesController {
    */
   @PostMapping("/intercambios/{publicacionId}/propuestas")
   public ResponseEntity<String> ofrecerPropuestaIntercambio(@PathVariable Integer publicacionId, @RequestParam Integer userId, @RequestBody PropuestaIntercambioDto dto){
-    publicacionesService.ofrecerPropuestaIntercambio(userId, publicacionId, dto.getNumfiguritas());
+    publicacionesService.ofrecerPropuestaIntercambio(userId, publicacionId, dto.numfiguritas());
     return ResponseEntity.ok().body("Propuesta de intercambio realizada");
   }
 
