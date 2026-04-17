@@ -6,12 +6,15 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content; // <-- ESTE ES EL CORRECTO
 
+import com.tacs.tp1c2026.entities.FiguritaColeccion;
+import com.tacs.tp1c2026.entities.PropuestaIntercambio;
 import com.tacs.tp1c2026.entities.Usuario;
 import com.tacs.tp1c2026.entities.dto.input.FiguritaFaltanteDto;
 import com.tacs.tp1c2026.entities.dto.input.FiguritaRepetidaDto;
 import com.tacs.tp1c2026.entities.dto.input.PropuestaIntercambioDto;
 import com.tacs.tp1c2026.entities.enums.Categoria;
 import com.tacs.tp1c2026.entities.enums.TipoParticipacion;
+import com.tacs.tp1c2026.repositories.PropuestasIntercambioRepository;
 import com.tacs.tp1c2026.repositories.PublicacionesIntercambioRepository;
 import com.tacs.tp1c2026.repositories.UsuariosRepository;
 import jakarta.transaction.Transactional;
@@ -41,6 +44,9 @@ public class Us1_3_5_10Tests {
   private PublicacionesIntercambioRepository publicacionesIntercambioRepository;
 
   @Autowired
+  private PropuestasIntercambioRepository propuestasIntercambioRepository;
+
+  @Autowired
   private ObjectMapper objectMapper;
 
   private Integer idUser1;
@@ -68,7 +74,7 @@ public class Us1_3_5_10Tests {
     dto.setSeleccion("Argentina");
     dto.setCategoria(Categoria.LEGENDARIO);
     dto.setDescripcion("El mejor jugador del mundo");
-    dto.setCantidad(2);
+    dto.setCantidad(1);
     dto.setTipoParticipacion(TipoParticipacion.INTERCAMBIO);
 
     // Ejecutar POST usando el ID del usuario que creamos en el setUp
@@ -109,6 +115,7 @@ public class Us1_3_5_10Tests {
   }
 
   @Test
+  @Transactional
   void ofrecerPropuestaIntercambioYAceptar() throws Exception {
     //setup all
     // Preparar el DTO
@@ -118,22 +125,19 @@ public class Us1_3_5_10Tests {
     dto.setSeleccion("Argentina");
     dto.setCategoria(Categoria.LEGENDARIO);
     dto.setDescripcion("El mejor jugador del mundo");
-    dto.setCantidad(2);
+    dto.setCantidad(1);
     dto.setTipoParticipacion(TipoParticipacion.INTERCAMBIO);
 
-    // Ejecutar POST usando el ID del usuario que creamos en el setUp
     mockMvc.perform(post("/api/figuritas/registrar-repetida")
         .param("userId", idUser1.toString())
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(dto)));
 
-    //publicar figurita para intercambio
     mockMvc.perform(post("/api/publicaciones/intercambios")
         .param("userId", idUser1.toString())
         .param("numFigurita", "10"))
         .andExpect(status().isOk());
 
-    //ofrecer propuesta
     mockMvc.perform(post("/api/figuritas/registrar-repetida")
         .param("userId", idUser2.toString())
         .contentType(MediaType.APPLICATION_JSON)
@@ -147,9 +151,22 @@ public class Us1_3_5_10Tests {
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(dtoPropuesta)))
         .andExpect(status().isOk());
+    //verificar figurita coleccion
+    Usuario user2 = usuariosRepository.findById(2)
+        .orElseThrow(() -> new RuntimeException("No se encontro el usuario"));
+    FiguritaColeccion figuUsuario = user2.getRepetidas().get(0);
+    assertEquals(1, figuUsuario.getCantidadOfertada());
+
 
     mockMvc.perform(put("/api/publicaciones/intercambios/1/propuestas/1/aceptar")
         .param("userId", idUser1.toString()))
         .andExpect(status().isOk());
+
+    //verificar que el usuario ya no tiene figurita
+    Usuario user2B = usuariosRepository.findById(idUser2)
+        .orElseThrow(() -> new RuntimeException("No se encontro el usuario"));
+    FiguritaColeccion figuOfrecidaUsuario = user2B.getRepetidas().get(0);
+    assertEquals(0, figuOfrecidaUsuario.getCantidad());
+    assertEquals(0, figuOfrecidaUsuario.getCantidadOfertada());
   }
 }

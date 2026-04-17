@@ -30,6 +30,12 @@ public class FiguritaColeccion {
   @Column
   private TipoParticipacion tipoParticipacion;
 
+  @Column
+  private Boolean publicada = false;
+
+  @Column
+  private Integer cantidadOfertada = 0;
+
   public FiguritaColeccion(Integer cantidad, TipoParticipacion tipoParticipacion, Figurita figurita) {
     this.cantidad = cantidad;
     this.tipoParticipacion = tipoParticipacion;
@@ -42,5 +48,17 @@ public class FiguritaColeccion {
 
   public void aumentarCantidad() {
     this.cantidad++;
+  }
+
+  public void setPublicada(boolean b) {
+    this.publicada = b;
+  }
+
+  public void aumentarCantidadOfertada() {
+    this.cantidadOfertada++;
+  }
+
+  public void reducirCantidadOfertada() {
+    this.cantidadOfertada--;
   }
 }

@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -54,6 +55,7 @@ public class PublicacionesService {
    * @throws UserNotFoundException si el usuario no existe
    * @throws NotFoundException     si la figurita no se encuentra entre las repetidas del usuario
    */
+  @Transactional
   public void publicarIntercambioFigurita(Integer userId, Integer numFigurita){
     Usuario usuario = usuariosRepository.findById(userId)
         .orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
@@ -61,6 +63,15 @@ public class PublicacionesService {
     Optional<FiguritaColeccion> figuritaOptional = usuario.getRepetidas().stream().filter(f -> f.getFigurita().getNumero().equals(numFigurita)).findFirst();
     FiguritaColeccion figurita = figuritaOptional.orElseThrow(() -> new NotFoundException("No se encontro la figurita repetida"));
 
+    if(figurita.getPublicada()) {
+      throw new ConflictException("La figurita ya se encuentra publicada");
+    }
+
+    if(figurita.getCantidad() == 0) {
+      throw new ConflictException("Ya no tienes la figurita repetida");
+    }
+
+    figurita.setPublicada(true);
     PublicacionIntercambio publicacion = new PublicacionIntercambio();
     publicacion.setFiguritaColeccion(figurita);
     publicacion.setPublicante(usuario);
@@ -82,6 +93,7 @@ public class PublicacionesService {
    * @throws ConflictException     si ya no hay cupos disponibles en la publicación
    * @throws BadInputException     si alguna de las figuritas no se encuentra o no está habilitada para intercambio
    */
+  @Transactional
   public PropuestaIntercambio ofrecerPropuestaIntercambio(Integer userId, Integer publicacionId, List<Integer> idFiguritas) {
     Usuario usuario = usuariosRepository.findById(userId)
         .orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
@@ -97,12 +109,22 @@ public class PublicacionesService {
     List<FiguritaColeccion> figuritas =
         usuario.getRepetidas().stream().filter(f -> idFiguritas.contains(f.getFigurita().getNumero())).toList();
     //filtrar figus que esten para intercambio
-    figuritas = figuritas.stream().filter(figuritacoleccion -> figuritacoleccion.getTipoParticipacion().equals(TipoParticipacion.INTERCAMBIO)).toList();
+    figuritas = figuritas.stream().filter(figuritacoleccion ->
+        figuritacoleccion.getTipoParticipacion().equals(TipoParticipacion.INTERCAMBIO) &&
+            !figuritacoleccion.getPublicada()  &&
+            figuritacoleccion.getCantidadOfertada() < figuritacoleccion.getCantidad()
+     ).toList();
 
     List<Figurita> figuritasOfrecidas = figuritas.stream().map(FiguritaColeccion::getFigurita).toList();
     if (figuritas.size() != idFiguritas.size()) {
-      throw new BadInputException("No se encontraron todas las figuritas repetidas");
+      throw new BadInputException("No se encontraron todas las figuritas repetidas u algunas no se pueden ofertar");
     }
+
+    //actualizar figuritas de usuario
+    figuritas.forEach(figurita ->
+        figurita.aumentarCantidadOfertada()
+    );
+
 
     PropuestaIntercambio propuesta = new PropuestaIntercambio();
 
@@ -149,6 +171,7 @@ public class PublicacionesService {
    * @throws UnauthorizedException   si el usuario no es el dueño de la publicación
    * @throws ConflictException       si la propuesta ya fue aceptada o rechazada previamente
    */
+  @Transactional
   public void rechazarPropuesta(Integer publicacionId, Integer propuestaId, Integer userId) {
     Usuario usuario = usuariosRepository.findById(userId)
         .orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
@@ -172,6 +195,9 @@ public class PublicacionesService {
     }
 
     propuesta.rechazar();
+    FiguritaColeccion figuritaColeccion = propuesta.getPublicacion().getFiguritaColeccion();
+    figuritaColeccion.reducirCantidadOfertada();
+
     propuestasIntercambioRepository.save(propuesta);
   }
 
@@ -191,6 +217,7 @@ public class PublicacionesService {
    * @throws UnauthorizedException   si el usuario no es el dueño de la publicación
    * @throws ConflictException       si la propuesta ya fue aceptada o rechazada previamente
    */
+  @Transactional
   public void aceptarPropuesta(Integer publicacionId, Integer propuestaId, Integer userId) {
     Usuario usuario = usuariosRepository.findById(userId)
         .orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
@@ -230,11 +257,25 @@ public class PublicacionesService {
       if (usuario.getFaltantes().contains(figu)) {
         usuario.getFaltantes().remove(figu);
       }
+
+      //eliminar figus de coleccion de usuario que oferto
+      propuesta.getUsuario().getRepetidas().forEach(
+          repetida -> {
+            if (repetida.getFigurita().getNumero().equals(figu.getNumero())) {
+              repetida.reducirCantidad();
+              repetida.reducirCantidadOfertada();
+            }
+          }
+      );
     });
+
 
     if (publicacion.getFiguritaColeccion().getCantidad() == 0){
       publicacion.setEstado(EstadoPublicacion.FINALIZADA);
     }
+
+
+
     propuestasIntercambioRepository.save(propuesta);
     publicacionesIntercambioRepository.save(publicacion);
     //rechazo las otras propuestas
