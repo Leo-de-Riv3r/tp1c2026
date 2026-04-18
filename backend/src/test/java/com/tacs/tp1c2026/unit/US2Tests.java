@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import com.tacs.tp1c2026.controllers.FiguritasController;
 import com.tacs.tp1c2026.entities.Usuario;
@@ -14,6 +15,7 @@ import com.tacs.tp1c2026.unit.mothers.DtoMother;
 
 import jakarta.transaction.Transactional;
 
+@SpringBootTest
 public class US2Tests {
 
     private final UsuariosRepository usuariosRepository;

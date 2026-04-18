@@ -7,6 +7,9 @@ import com.tacs.tp1c2026.exceptions.UserNotFoundException;
 import com.tacs.tp1c2026.properties.PerfilProperties;
 import com.tacs.tp1c2026.repositories.PerfilRepository;
 import com.tacs.tp1c2026.repositories.UsuariosRepository;
+
+import jakarta.annotation.PostConstruct;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -74,7 +77,7 @@ public class PerfilService {
      */
     @Transactional
     public List<Perfil> getPerfiles() {
-        return ensurePerfilesInitialized();
+        return this.perfilRepository.findAll();
     }
 
     /**
@@ -187,16 +190,17 @@ public class PerfilService {
     }
 
     /**
-    * Garantiza que exista la cantidad de perfiles configurada en {@link PerfilProperties#getCount()}.
+    * Garantiza que exista la cantidad de perfiles configurada en {@link PerfilProperties#getProfiles()}.
      * Si hay menos perfiles de los requeridos, crea e inicializa los faltantes.
      *
      * @return lista completa de perfiles tras asegurar la cantidad mínima
      */
     @Transactional
-    protected List<Perfil> ensurePerfilesInitialized() {
+    @PostConstruct
+    public List<Perfil> ensurePerfilesInitialized() {
         List<Perfil> perfils = perfilRepository.findAll();
 
-        int targetCount = Math.max(1, properties.getCount());
+        int targetCount = Math.max(1, properties.getProfiles());
         if (perfils.size() < targetCount) {
             List<Perfil> faltantes = new ArrayList<>();
             for (int i = perfils.size(); i < targetCount; i++) {

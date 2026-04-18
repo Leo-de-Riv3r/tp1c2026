@@ -78,7 +78,7 @@ public class Usuario {
   }
 
   @PostConstruct
-  private void initializeVectorProfile() {
+  public void initializeVectorProfile() {
     this.vectorProfile = new VectorProfile(this.repetidas, this.faltantes);
   }
 

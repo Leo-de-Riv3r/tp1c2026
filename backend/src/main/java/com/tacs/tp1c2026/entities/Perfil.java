@@ -32,7 +32,7 @@ public class Perfil {
 
     @Column(name = "vector_representativo")
     @Convert(converter = VectorProfileConverter.class)
-    private VectorProfile vectorRepresentativo = initializeVectorProfile();
+    private VectorProfile vectorRepresentativo = VectorProfile.empty();
 
     @ManyToMany
     @JoinTable(
@@ -57,9 +57,6 @@ public class Perfil {
      * @param usuario usuario a agregar como vecino
      */
     public void agregarVecino(Usuario usuario) {
-        if (this.vecinos.isEmpty() && this.vectorRepresentativo.isEmpty() && usuario.getVectorProfile() != null) {
-            this.vectorRepresentativo = usuario.getVectorProfile();
-        }
         this.vecinos.add(usuario);
     }
 
@@ -93,6 +90,10 @@ public class Perfil {
     }
 
     private VectorProfile initializeVectorProfile() {
+        if (properties == null) {
+            return VectorProfile.empty();
+        }
+
         int MAX_CARDS = properties.maxInitialCards();
         Map<Integer,Integer> initialValues = new HashMap<>();
 
