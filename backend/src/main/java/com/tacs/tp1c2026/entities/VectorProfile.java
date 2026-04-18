@@ -1,5 +1,7 @@
 package com.tacs.tp1c2026.entities;
 
+import com.tacs.tp1c2026.entities.Figurita;
+import com.tacs.tp1c2026.entities.FiguritaColeccion;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,6 +12,25 @@ public class VectorProfile {
 
     public VectorProfile(Map<Integer, Integer> values) {
         this.values = values == null ? new HashMap<>() : new HashMap<>(values);
+    }
+
+    public VectorProfile(List<FiguritaColeccion> repetidas, List<Figurita> faltantes) {
+        Map<Integer, Integer> values = new HashMap<>();
+        if (faltantes != null) {
+            for (Figurita figurita : faltantes) {
+                if (figurita != null && figurita.getId() != null) {
+                    values.put(figurita.getId(), 1);
+                }
+            }
+        }
+        if (repetidas != null) {
+            for (FiguritaColeccion figuritaColeccion : repetidas) {
+                if (figuritaColeccion != null && figuritaColeccion.getFigurita() != null && figuritaColeccion.getFigurita().getId() != null) {
+                    values.put(figuritaColeccion.getFigurita().getId(), -1);
+                }
+            }
+        }
+        this.values = values;
     }
 
     /**
@@ -87,39 +108,62 @@ public class VectorProfile {
         return new VectorProfile(result);
     }
 
-    public static class Builder {
-        private final Map<Integer, Integer> values = new HashMap<>();
+    public static VectorProfile merge(VectorProfile base, VectorProfile update) {
+        Map<Integer, Integer> merged = new HashMap<>();
 
-        public Builder set(Integer key, Integer value) {
-            if (key == null || value == null || value == 0) {
-                return this;
+        if (base != null) {
+            merged.putAll(base.values);
+        }
+
+        if (update != null) {
+            for (Map.Entry<Integer, Integer> entry : update.values.entrySet()) {
+                Integer key = entry.getKey();
+                Integer value = entry.getValue();
+                if (key != null && value != null && value != 0) {
+                    merged.put(key, value);
+                }
             }
-            values.put(key, value);
-            return this;
         }
 
-        public VectorProfile build() {
-            return new VectorProfile(values);
+        return new VectorProfile(merged);
+    }
+
+    public void addCard(Figurita figurita) {
+        if (figurita == null || figurita.getId() == null) {
+            return;
         }
+        values.put(figurita.getId(), 1);
+    }
+
+    public void addCard(FiguritaColeccion figuritaColeccion) {
+        if (figuritaColeccion == null || figuritaColeccion.getFigurita() == null || figuritaColeccion.getFigurita().getId() == null) {
+            return;
+        }
+        values.put(figuritaColeccion.getFigurita().getId(), -1);
     }
 
     /**
-     * Calcula el puntaje de complementariedad entre este perfil y {@code other}.
+     * Calcula el puntaje de complementariedad entre dos perfiles.
      * Por cada clave presente en ambos perfiles, suma 1 si los signos son opuestos
      * ({@code -1} vs {@code 1} o {@code 1} vs {@code -1}).
      *
-     * @param other perfil vectorial con el que se compara
+     * @param first  primer perfil vectorial
+     * @param second segundo perfil vectorial
      * @return puntaje de complementariedad (entero &ge; 0)
      */
-    public int complement(VectorProfile other) {
+    public static int complement(VectorProfile first, VectorProfile second) {
+        if (first == null || second == null) {
+            return 0;
+        }
+
         int score = 0;
-        for (Map.Entry<Integer, Integer> entry : values.entrySet()) {
+        for (Map.Entry<Integer, Integer> entry : first.values.entrySet()) {
             Integer currentValue = entry.getValue();
             if (currentValue == null || currentValue == 0) {
                 continue;
             }
 
-            Integer otherValue = other.values.get(entry.getKey());
+            Integer otherValue = second.values.get(entry.getKey());
             if (otherValue == null || otherValue == 0) {
                 continue;
             }
@@ -168,21 +212,26 @@ public class VectorProfile {
     }
 
     /**
-     * Calcula el puntaje de acuerdo entre este perfil y {@code other}.
-     * Por cada clave donde este perfil tiene valor {@code 1} y {@code other} también tiene {@code 1}, suma 1.
+     * Calcula el puntaje de acuerdo entre dos perfiles.
+     * Por cada clave donde el primer perfil tiene valor {@code 1} y el segundo también tiene {@code 1}, suma 1.
      *
-     * @param other perfil vectorial con el que se compara
+     * @param first  primer perfil vectorial
+     * @param second segundo perfil vectorial
      * @return puntaje de acuerdo (entero &ge; 0)
      */
-    public int agreement(VectorProfile other) {
+    public static int agreement(VectorProfile first, VectorProfile second) {
+        if (first == null || second == null) {
+            return 0;
+        }
+
         int score = 0;
-        for (Map.Entry<Integer, Integer> entry : values.entrySet()) {
+        for (Map.Entry<Integer, Integer> entry : first.values.entrySet()) {
             Integer currentValue = entry.getValue();
             if (currentValue == null || currentValue != 1) {
                 continue;
             }
 
-            Integer otherValue = other.values.get(entry.getKey());
+            Integer otherValue = second.values.get(entry.getKey());
             if (otherValue != null && otherValue == 1) {
                 score++;
             }

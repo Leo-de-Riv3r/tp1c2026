@@ -1,13 +1,14 @@
-package com.tacs.tp1c2026.entities.bucket;
+package com.tacs.tp1c2026.entities;
 
-import com.tacs.tp1c2026.entities.VectorProfile;
+import com.tacs.tp1c2026.properties.PerfilProperties;
 import com.tacs.tp1c2026.repositories.VectorProfileConverter;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
-import com.tacs.tp1c2026.entities.Usuario;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
@@ -18,11 +19,12 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 
 @Entity
-@Table(name = "buckets")
-public class Bucket {
+@Table(name = "perfiles")
+public class Perfil {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,34 +32,26 @@ public class Bucket {
 
     @Column(name = "vector_representativo")
     @Convert(converter = VectorProfileConverter.class)
-    private VectorProfile vectorRepresentativo = VectorProfile.empty();
+    private VectorProfile vectorRepresentativo = initializeVectorProfile();
 
     @ManyToMany
     @JoinTable(
-        name = "bucket_vecinos",
-        joinColumns = @JoinColumn(name = "bucket_id"),
+        name = "perfil_vecinos",
+        joinColumns = @JoinColumn(name = "perfil_id"),
         inverseJoinColumns = @JoinColumn(name = "usuario_id")
     )
     private Set<Usuario> vecinos = new HashSet<>();
 
-    /**
-     * Calcula la afinidad del bucket con un perfil vectorial de usuario
-     * usando la métrica de acuerdo sobre el vector representativo del bucket.
-     *
-     * @param vectorUsuario perfil vectorial del usuario
-     * @return puntaje de afinidad (mayor indica mayor similitud)
-     */
-    public int calcularAfinidad(VectorProfile vectorUsuario) {
-        return vectorRepresentativo.agreement(vectorUsuario);
-    }
+    @Transient
+    private PerfilProperties properties;
 
     public VectorProfile getVectorProfile() {
         return vectorRepresentativo;
     }
 
     /**
-     * Agrega un usuario como vecino del bucket.
-     * Si el bucket no tenía vecinos ni vector representativo, inicializa el vector
+    * Agrega un usuario como vecino del perfil.
+    * Si el perfil no tenía vecinos ni vector representativo, inicializa el vector
      * con el perfil del primer vecino agregado.
      *
      * @param usuario usuario a agregar como vecino
@@ -70,7 +64,7 @@ public class Bucket {
     }
 
     /**
-     * Elimina al usuario de la lista de vecinos del bucket.
+    * Elimina al usuario de la lista de vecinos del perfil.
      *
      * @param usuario usuario a remover
      */
@@ -83,7 +77,7 @@ public class Bucket {
     }
 
     /**
-     * Actualiza el vector representativo del bucket calculando el promedio con signo
+    * Actualiza el vector representativo del perfil calculando el promedio con signo
      * de los perfiles vectoriales recibidos.
      * Si la lista es nula o vacía, el vector se resetea a uno vacío.
      *
@@ -96,6 +90,19 @@ public class Bucket {
         }
 
         this.vectorRepresentativo = VectorProfile.averageSign(profiles);
+    }
+
+    private VectorProfile initializeVectorProfile() {
+        int MAX_CARDS = properties.maxInitialCards();
+        Map<Integer,Integer> initialValues = new HashMap<>();
+
+        for (int i = 0; i < MAX_CARDS; i++) {
+            int randValue = (int) Math.round(Math.random() * 2 - 1);
+            initialValues.put(i, randValue);
+        }
+
+        VectorProfile vectorProfile = new VectorProfile(initialValues);
+        return vectorProfile;
     }
 
 }

@@ -2,16 +2,16 @@ package com.tacs.tp1c2026.scheduled;
 
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import com.tacs.tp1c2026.services.BucketService;
+import com.tacs.tp1c2026.services.PerfilService;
 
 
 @Component
 public class GeneradorSugerencias {
 
-    private final BucketService bucketService;
+    private final PerfilService perfilService;
 
-    public GeneradorSugerencias(BucketService bucketService) {
-        this.bucketService = bucketService;
+    public GeneradorSugerencias(PerfilService perfilService) {
+        this.perfilService = perfilService;
     }
 
     /**
@@ -21,7 +21,7 @@ public class GeneradorSugerencias {
      */
     @Scheduled(cron = "${app.scheduled.example.cron:0 0 * * * *}")
     public void generarSugerencias() {
-        bucketService.generarSugerencias();
+        perfilService.generarSugerencias();
     }
 
 }
