@@ -28,14 +28,19 @@ public class Figurita {
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
   private Integer id;
+
   @Column
   private Integer numero;
+
   @Column
   private String jugador;
+
   @Column
   private String descripcion;
+
   @Column
   private String seleccion;
+
   @Column
   private String equipo;
 

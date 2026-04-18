@@ -1,6 +1,7 @@
 package com.tacs.tp1c2026.entities;
 
 import jakarta.persistence.CascadeType;
+import jakarta.annotation.PostConstruct;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -11,6 +12,7 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,39 +52,34 @@ public class Usuario {
   @JoinColumn(name = "usuario_id", referencedColumnName = "id")
   private List<Usuario> sugerenciasIntercambios = new ArrayList<>();
 
+  @Transient
+  private VectorProfile vectorProfile;
+
   public void agregarSugerencia(Usuario sugerencias) {
     this.sugerenciasIntercambios.add(sugerencias);
   }
 
-
   public void agregarRepetidas(FiguritaColeccion figuritaColeccion) {
     this.repetidas.add(figuritaColeccion);
+    this.vectorProfile.addCard(figuritaColeccion);
   }
 
   public void agregarFaltantes(Figurita figurita) {
     this.faltantes.add(figurita);
+    this.vectorProfile.addCard(figurita);
   }
 
   public void agregarAlerta(Alerta alerta) {
     this.alertas.add(alerta);
   }
 
-  public VectorProfile getVectorProfile() {
-    VectorProfile.Builder builder = new VectorProfile.Builder();
+  public VectorProfile getVectorProfile() {;
+    return this.vectorProfile;
+  }
 
-    if (this.faltantes != null) {
-      for (Figurita figurita : this.faltantes) {
-        builder.set(figurita.getId(), 1);
-      }
-    }
-
-    if (this.repetidas != null) {
-      for (FiguritaColeccion figuritaColeccion : this.repetidas) {
-        builder.set(figuritaColeccion.getFigurita().getId(), -1);
-      }
-    }
-
-    return builder.build();
+  @PostConstruct
+  private void initializeVectorProfile() {
+    this.vectorProfile = new VectorProfile(this.repetidas, this.faltantes);
   }
 
   public void removerSugerencias() {

@@ -4,14 +4,15 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 @Component
-@ConfigurationProperties(prefix = "app.bucket")
-public class BucketProperties {
+@ConfigurationProperties(prefix = "app.perfil")
+public class PerfilProperties {
 
     private int count = 10;
     private int perUser = 3;
-    private int suggestionNearestBuckets = 5;
+    private int suggestionNearestPerfiles = 5;
     private int suggestionTopNeighbors = 10;
     private int vectorNearestNeighbors = 10;
+    private int maxInitialCards = 6000;
 
     public int getCount() {
         return count;
@@ -29,12 +30,12 @@ public class BucketProperties {
         this.perUser = perUser;
     }
 
-    public int getSuggestionNearestBuckets() {
-        return suggestionNearestBuckets;
+    public int getSuggestionNearestPerfiles() {
+        return suggestionNearestPerfiles;
     }
 
-    public void setSuggestionNearestBuckets(int suggestionNearestBuckets) {
-        this.suggestionNearestBuckets = suggestionNearestBuckets;
+    public void setSuggestionNearestPerfiles(int suggestionNearestPerfiles) {
+        this.suggestionNearestPerfiles = suggestionNearestPerfiles;
     }
 
     public int getSuggestionTopNeighbors() {
@@ -52,4 +53,8 @@ public class BucketProperties {
     public void setVectorNearestNeighbors(int vectorNearestNeighbors) {
         this.vectorNearestNeighbors = vectorNearestNeighbors;
     }
+
+	public int maxInitialCards() {
+		return maxInitialCards;
+	}
 }
