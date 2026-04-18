@@ -1,11 +1,11 @@
-package com.tacs.tp1c2026.mockFactories;
+package com.tacs.tp1c2026.unit.mothers;
 
 import java.util.Random;
 
 import com.tacs.tp1c2026.entities.FiguritaColeccion;
 import com.tacs.tp1c2026.entities.Usuario;
 
-public class EntityFactory {
+public class EntityMother {
 
     public Usuario user() {
         Usuario usuario = new Usuario();
@@ -14,9 +14,8 @@ public class EntityFactory {
         return usuario;
     }
 
-    public FiguritaColeccion createMockFiguritaColeccion() {
-        FiguritaColeccion figurita = new FiguritaColeccion();
-        
+    public FiguritaColeccion figuritaColeccion() {
+        FiguritaColeccion figurita = new FiguritaColeccion();   
         return figurita;
     }
     

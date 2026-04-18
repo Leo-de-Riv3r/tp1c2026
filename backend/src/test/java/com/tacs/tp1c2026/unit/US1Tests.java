@@ -9,8 +9,8 @@ import com.tacs.tp1c2026.controllers.FiguritasController;
 import com.tacs.tp1c2026.entities.Usuario;
 import com.tacs.tp1c2026.entities.dto.input.FiguritaRepetidaDto;
 import com.tacs.tp1c2026.repositories.UsuariosRepository;
-import com.tacs.tp1c2026.unit.mockFactories.EntityFactory;
-import com.tacs.tp1c2026.unit.mockFactories.InputDtoFactory;
+import com.tacs.tp1c2026.unit.mothers.EntityMother;
+import com.tacs.tp1c2026.unit.mothers.DtoMother;
 
 import jakarta.transaction.Transactional;
 
@@ -19,16 +19,16 @@ import jakarta.transaction.Transactional;
 public class US1Tests {
 
 
-    private EntityFactory mockFactory;
+    private EntityMother mockFactory;
     private UsuariosRepository usuariosRepository;
 
     private Usuario mockUsuario1;
 
-    private InputDtoFactory inputDtoFactory;
+    private DtoMother inputDtoFactory;
     private FiguritasController figuritasController;
 
-    public US1Tests(FiguritasController figuritasController, EntityFactory entityFactory, 
-        InputDtoFactory inputDtoFactory,  UsuariosRepository usuariosRepository) {
+    public US1Tests(FiguritasController figuritasController, EntityMother entityFactory, 
+        DtoMother inputDtoFactory,  UsuariosRepository usuariosRepository) {
         this.mockFactory = entityFactory;
         this.inputDtoFactory = inputDtoFactory;
         this.usuariosRepository = usuariosRepository;

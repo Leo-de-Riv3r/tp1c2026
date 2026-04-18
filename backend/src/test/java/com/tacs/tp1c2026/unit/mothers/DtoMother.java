@@ -1,9 +1,9 @@
-package com.tacs.tp1c2026.unit.mockFactories;
+package com.tacs.tp1c2026.unit.mothers;
 
 import com.tacs.tp1c2026.entities.dto.input.FiguritaFaltanteDto;
 import com.tacs.tp1c2026.entities.dto.input.FiguritaRepetidaDto;
 
-public class InputDtoFactory {
+public class DtoMother {
 
     public FiguritaRepetidaDto createMockFiguritaRepetidaDto() {
         FiguritaRepetidaDto dto = new FiguritaRepetidaDto(
@@ -13,8 +13,10 @@ public class InputDtoFactory {
     }
 
     public FiguritaFaltanteDto createMockFiguritaFaltanteDto() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'createMockFiguritaFaltanteDto'");
+        FiguritaFaltanteDto dto = new FiguritaFaltanteDto(
+            
+        );
+        return dto;
     }
     
 }
