@@ -20,10 +20,12 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
+import lombok.Getter;
 
 
 @Entity
 @Table(name = "perfiles")
+@Getter
 public class Perfil {
 
     @Id

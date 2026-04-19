@@ -183,7 +183,7 @@ public class PerfilService {
      * @param cantidadPerfiles cantidad máxima de perfiles a retornar
      * @return sub-lista de los perfiles más cercanos
      */
-    private List<Perfil> obtenerPerfilesMasCercanos(List<Perfil> perfils, com.tacs.tp1c2026.entities.VectorProfile vectorUsuario, Integer cantidadPerfiles) {
+    private List<Perfil> obtenerPerfilesMasCercanos(List<Perfil> perfils, VectorProfile vectorUsuario, Integer cantidadPerfiles) {
         List<Perfil> sortedPerfils = new ArrayList<>(perfils);
         sortedPerfils.sort(Comparator.comparingInt((Perfil perfil) -> VectorProfile.agreement(perfil.getVectorProfile(), vectorUsuario)).reversed());
         return sortedPerfils.subList(0, Math.min(cantidadPerfiles, sortedPerfils.size()));

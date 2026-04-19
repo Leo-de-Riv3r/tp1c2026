@@ -20,19 +20,19 @@ import com.tacs.tp1c2026.properties.PerfilProperties;
 import com.tacs.tp1c2026.repositories.PerfilRepository;
 import com.tacs.tp1c2026.repositories.UsuariosRepository;
 import com.tacs.tp1c2026.services.PerfilService;
-import com.tacs.tp1c2026.unit.mothers.EntityMother;
+import com.tacs.tp1c2026.unit.mothers.FiguritaColeccionMother;
+import com.tacs.tp1c2026.unit.mothers.FiguritaMother;
+import com.tacs.tp1c2026.unit.mothers.UsuarioMother;
 
 @SpringBootTest
-public class US4Tests {
+public class PerfilServiceTests {
 
-    private final EntityMother entityMother;
     private final PerfilService perfilService;
     private final PerfilProperties perfilProperties;
     private final PerfilRepository perfilRepository;
     private final UsuariosRepository usuariosRepository;
-    
-    public US4Tests (EntityMother entityMother, PerfilRepository perfilRepository, UsuariosRepository usuariosRepository, PerfilProperties perfilProperties) {
-        this.entityMother = entityMother;
+
+    public PerfilServiceTests(PerfilRepository perfilRepository, UsuariosRepository usuariosRepository, PerfilProperties perfilProperties) {
         this.perfilRepository = perfilRepository;
         this.usuariosRepository = usuariosRepository;
         this.perfilProperties = perfilProperties;
@@ -47,19 +47,33 @@ public class US4Tests {
         perfilService.ensurePerfilesInitialized();
     }
 
+        @Test
+    public void testActualizarPerfilesUsuario() {
+
+        Usuario usuario = UsuarioMother.builder().build();
+        FiguritaColeccion figurita1 = FiguritaColeccionMother.builder().build();
+        Figurita figurita2 = FiguritaMother.builder().build();
+
+        usuario.agregarFaltantes(figurita2);
+        usuario.agregarRepetidas(figurita1);
+
+        assertTrue(perfilService.getPerfiles().stream()
+            .filter(perfil -> perfil.getVecinos().contains(usuario))
+            .count() > 0);
+    }
+
     @Test
     public void testPerfilesInicializados() {
         this.perfilProperties.setProfiles(10);
         this.perfilService.ensurePerfilesInitialized();
-        assertEquals(10,perfilService.getPerfiles().size());
+        assertEquals(10, perfilService.getPerfiles().size());
     }
 
     @Test
     @Transactional
-    public void testEnsurePerfilesInitialized() {
+    public void testGetPerfiles() {
         perfilRepository.deleteAll();
         perfilProperties.setProfiles(2);
-        perfilService.ensurePerfilesInitialized();
 
         Perfil perfil1 = new Perfil();
         Perfil perfil2 = new Perfil();
@@ -78,49 +92,55 @@ public class US4Tests {
     }
 
     @Test
-    public void testActualizarPerfilesUsuario() {
-    
-        Usuario usuario = entityMother.user();
-        FiguritaColeccion figurita1 = entityMother.figuritaColeccion();
-        Figurita figurita2 = entityMother.figurita();
-        
-        usuario.agregarFaltantes(figurita2);
-        usuario.agregarRepetidas(figurita1);
- 
-        assertTrue(perfilService.getPerfiles().stream()
-            .filter(perfil -> perfil.getVecinos().contains(usuario))
-            .count() > 0);
+    @Transactional
+    public void testGetPerfilesMasCercanos() {
+        perfilRepository.deleteAll();
+        perfilProperties.setProfiles(2);
 
+        Perfil perfil1 = new Perfil();
+        Perfil perfil2 = new Perfil();
+
+        VectorProfile vector1 = new VectorProfile(java.util.Map.of(1, -1, 2, 1));
+        VectorProfile vector2 = new VectorProfile(java.util.Map.of(1, 1, 2, -1));
+
+        perfil1.updateVector(java.util.List.of(vector1));
+        perfil2.updateVector(java.util.List.of(vector2));
+
+        perfilRepository.saveAll(java.util.List.of(perfil1, perfil2));
+
+        VectorProfile testProfile = new VectorProfile(java.util.Map.of(1, 1, 2, 0));
+
+        List<Perfil> perfiles = perfilService.obtenerPerfilesMasCercanos(testProfile, 1);
+
+        assertEquals(perfil1.getId(), perfiles.get(0).getId());
     }
 
     @Test
     public void testVectorProfilesComplementCards() {
 
-        Usuario usuario1 = entityMother.user();
-        Usuario usuario2 = entityMother.user();
+        Usuario usuario1 = UsuarioMother.builder().build();
+        Usuario usuario2 = UsuarioMother.builder().build();
 
-        Figurita figurita1 = entityMother.figurita();
-        FiguritaColeccion figurita2 = entityMother.figuritaColeccion();
+        Figurita figurita1 = FiguritaMother.builder().build();
+        FiguritaColeccion figurita2 = FiguritaColeccionMother.builder().build();
 
         usuario1.agregarFaltantes(figurita1);
         usuario1.agregarRepetidas(figurita2);
 
         usuario2.agregarFaltantes(figurita2.getFigurita());
-        usuario2.agregarRepetidas(new FiguritaColeccion(1,TipoParticipacion.INTERCAMBIO, figurita1));
+        usuario2.agregarRepetidas(new FiguritaColeccion(1, TipoParticipacion.INTERCAMBIO, figurita1));
 
         assertEquals(2, VectorProfile.complement(usuario1.getVectorProfile(), usuario2.getVectorProfile()));
-
-
     }
 
     @Test
     public void testVectorProfilesSimilaritySameMissingCard() {
 
-        Usuario usuario1 = entityMother.user();
-        Usuario usuario2 = entityMother.user();
+        Usuario usuario1 = UsuarioMother.builder().build();
+        Usuario usuario2 = UsuarioMother.builder().build();
 
-        Figurita figurita1 = entityMother.figurita();
-        FiguritaColeccion figurita2 = entityMother.figuritaColeccion();
+        Figurita figurita1 = FiguritaMother.builder().build();
+        FiguritaColeccion figurita2 = FiguritaColeccionMother.builder().build();
 
         usuario1.agregarFaltantes(figurita1);
         usuario1.agregarRepetidas(figurita2);
@@ -133,7 +153,7 @@ public class US4Tests {
 
     @Test
     @Transactional
-    public void testGenerarSugerenciasUsesComplementaryProfileNeighbors() {
+    public void testGenerarSugerencias() {
         perfilProperties.setSuggestionNearestPerfiles(2);
         perfilProperties.setSuggestionTopNeighbors(1);
 
@@ -162,13 +182,11 @@ public class US4Tests {
     @Test
     public void testPerfilUpdateVectorFromVecinosAverageSign() {
 
-        Usuario vecino1 = entityMother.user();
-        Usuario vecino2 = entityMother.user();
+        Usuario vecino1 = UsuarioMother.builder().build();
+        Usuario vecino2 = UsuarioMother.builder().build();
 
-        Figurita figurita1 = entityMother.figurita();
-        figurita1.setId(1);
-        Figurita figurita2 = entityMother.figurita();
-        figurita2.setId(2);
+        Figurita figurita1 = FiguritaMother.builder().withId(1).build();
+        Figurita figurita2 = FiguritaMother.builder().withId(2).build();
 
         vecino1.agregarFaltantes(figurita1);
         vecino1.agregarRepetidas(new FiguritaColeccion(1, TipoParticipacion.INTERCAMBIO, figurita2));
@@ -188,11 +206,11 @@ public class US4Tests {
     @Test
     public void testVectorProfilesSameCardsReturnsZero() {
 
-        Usuario usuario1 = entityMother.user();
-        Usuario usuario2 = entityMother.user();
+        Usuario usuario1 = UsuarioMother.builder().build();
+        Usuario usuario2 = UsuarioMother.builder().build();
 
-        Figurita figurita1 = entityMother.figurita();
-        FiguritaColeccion figurita2 = entityMother.figuritaColeccion();
+        Figurita figurita1 = FiguritaMother.builder().build();
+        FiguritaColeccion figurita2 = FiguritaColeccionMother.builder().build();
 
         usuario1.agregarFaltantes(figurita1);
         usuario1.agregarRepetidas(figurita2);
@@ -203,28 +221,17 @@ public class US4Tests {
         assertEquals(0, VectorProfile.complement(usuario1.getVectorProfile(), usuario2.getVectorProfile()));
     }
 
-    @Test
-    public void testActualizarPerfiles() {
-
-
-
-    }
+    // ── Helpers ───────────────────────────────────────────────────────────────
 
     private Usuario createComplementaryUser(int faltanteId, int repetidaId, String nombre) {
-        Usuario usuario = entityMother.user();
-        usuario.setId(null);
-        usuario.setNombre(nombre);
+        Figurita faltante = FiguritaMother.builder().withId(faltanteId).build();
+        Figurita repetidaFigurita = FiguritaMother.builder().withId(repetidaId).build();
 
-        Figurita faltante = entityMother.figurita();
-        faltante.setId(faltanteId);
-
-        Figurita repetidaFigurita = entityMother.figurita();
-        repetidaFigurita.setId(repetidaId);
-
-        usuario.agregarFaltantes(faltante);
-        usuario.agregarRepetidas(new FiguritaColeccion(1, TipoParticipacion.INTERCAMBIO, repetidaFigurita));
-
-        return usuario;
+        return UsuarioMother.builder()
+            .withNombre(nombre)
+            .withFigurita(faltante)
+            .withRepetidas(new FiguritaColeccion(1, TipoParticipacion.INTERCAMBIO, repetidaFigurita))
+            .build();
     }
 
     private Perfil createPerfilWithNeighbor(Usuario vecino) {

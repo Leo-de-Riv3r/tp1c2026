@@ -140,7 +140,7 @@ public class FiguritasService {
    * @return lista de {@link FiguritaDto} con las figuritas faltantes del usuario
    * @throws UserNotFoundException si el usuario no existe
    */
-  public List<FiguritaDto> obtenerFaltantes(Integer userId) {
+  public List<FiguritaDto> obtenerFiguritasFaltantes(Integer userId) {
     Usuario usuario = usuariosRepository.findById(userId)
         .orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
 
