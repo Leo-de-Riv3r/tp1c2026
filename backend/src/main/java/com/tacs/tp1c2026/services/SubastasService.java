@@ -20,6 +20,7 @@ import com.tacs.tp1c2026.repositories.OfertasSubastaRepository;
 import com.tacs.tp1c2026.repositories.SubastaRepository;
 import com.tacs.tp1c2026.repositories.UsuariosRepository;
 import java.time.LocalDateTime;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -67,7 +68,7 @@ public class SubastasService {
     List<FiguritaColeccion> repetidas = usuario.getRepetidas() == null ? Collections.emptyList() : usuario.getRepetidas();
 
     // busco la primer FIGU REPETIDA que el usuario quiere subastar
-    FiguritaColeccion figuritaPublicada = repetidas.stream().filter(f -> f.getFigurita() != null && f.getFigurita().getNumero().equals(sub.getNumFiguritaPublicada())).findFirst().orElseThrow(() -> new NotFoundException("No se encontro la figurita repetida para subastar"));
+    FiguritaColeccion figuritaPublicada = repetidas.stream().filter(f -> f.getFigurita() != null && f.getFigurita().getNumero().equals(sub.numFiguritaPublicada())).findFirst().orElseThrow(() -> new NotFoundException("No se encontro la figurita repetida para subastar"));
 
     if (!TipoParticipacion.SUBASTA.equals(figuritaPublicada.getTipoParticipacion())) {
       throw new ConflictException("La figurita no se puede subastar");
@@ -76,11 +77,31 @@ public class SubastasService {
     Subasta subasta = new Subasta();
     subasta.setUsuarioPublicante(usuario);
     subasta.setFiguritaPublicada(figuritaPublicada);
-    subasta.setCantidadMinFiguritas(sub.getCantidadMinFiguritas());
+    subasta.setCantidadMinFiguritas(sub.cantidadMinFiguritas());
     subasta.setFechaCreacion(LocalDateTime.now());
-    subasta.setFechaCierre(LocalDateTime.now().plusHours(sub.getDuracionSubastaHs()));
+    subasta.setFechaCierre(LocalDateTime.now().plusHours(sub.duracionSubastaHs()));
 
     return subastaRepository.save(subasta).getId();
+  }
+
+  /**
+   * Agrega al usuario como interesado en una subasta.
+   * Los usuarios interesados recibirán alertas cuando la subasta esté próxima a cerrar.
+   *
+   * @param subastaId identificador de la subasta
+   * @param userId    identificador del usuario que desea seguir la subasta
+   * @throws NotFoundException si el usuario o la subasta no existen
+   */
+  @Transactional
+  public void agregarUsuarioInteresado(Integer subastaId, Integer userId) {
+    Usuario usuario = usuariosRepository.findById(userId)
+        .orElseThrow(() -> new NotFoundException("Usuario no encontrado con id: " + userId));
+
+    Subasta subasta = subastaRepository.findById(subastaId)
+        .orElseThrow(() -> new NotFoundException("Subasta no encontrada con id: " + subastaId));
+
+    subasta.agregarInteresado(usuario);
+    subastaRepository.save(subasta);
   }
 
 
@@ -277,15 +298,15 @@ public class SubastasService {
    */
   private void validarCreacionSubasta(NuevaSubastaDto dto) {
 
-    if (dto.getNumFiguritaPublicada() == null) {
+    if (dto.numFiguritaPublicada() == null) {
       throw new BadInputException("Debe indicar la figurita a subastar");
     }
 
-    if (dto.getDuracionSubastaHs() == null || dto.getDuracionSubastaHs() <= 1) {
+    if (dto.duracionSubastaHs() == null || dto.duracionSubastaHs() <= 1) {
       throw new BadInputException("La duracion de la subasta debe ser mayor a 1 hora");
     }
 
-    if (dto.getCantidadMinFiguritas() == null || dto.getCantidadMinFiguritas() < 1) {
+    if (dto.cantidadMinFiguritas() == null || dto.cantidadMinFiguritas() < 1) {
       throw new BadInputException("La cantidad minima de figuritas debe ser mayor que 0");
     }
   }

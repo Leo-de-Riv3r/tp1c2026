@@ -2,9 +2,12 @@ package com.tacs.tp1c2026.unit.mothers;
 
 import java.util.Random;
 
+import org.springframework.stereotype.Component;
+
 import com.tacs.tp1c2026.entities.Figurita;
 import com.tacs.tp1c2026.entities.enums.Categoria;
 
+@Component
 public class FiguritaMother {
 
     private Integer id;

@@ -14,8 +14,8 @@ import com.tacs.tp1c2026.exceptions.ConflictException;
 import com.tacs.tp1c2026.exceptions.UserNotFoundException;
 import com.tacs.tp1c2026.repositories.UsuariosRepository;
 import com.tacs.tp1c2026.services.FiguritasService;
-import com.tacs.tp1c2026.unit.mothers.DtoMother;
 import com.tacs.tp1c2026.unit.mothers.UsuarioMother;
+import com.tacs.tp1c2026.unit.mothers.DtoMother;
 
 import jakarta.transaction.Transactional;
 
@@ -46,7 +46,7 @@ public class FiguritasServiceTests {
     @Test
     @Transactional
     public void testPublicarFigurita() {
-        FiguritaRepetidaDto dto = inputDtoFactory.createMockFiguritaRepetidaDto();
+        FiguritaRepetidaDto dto = inputDtoFactory.figuritaRepetida();
         figuritasService.registrarFiguritaRepetida(dto, mockUsuario.getId());
         Usuario usuarioActualizado = usuariosRepository.findById(mockUsuario.getId()).orElseThrow();
         assertEquals(1, usuarioActualizado.getRepetidas().size());
@@ -55,7 +55,7 @@ public class FiguritasServiceTests {
     @Test
     @Transactional
     public void testPublicarFiguritaDosVecesLanzaExcepcion() {
-        FiguritaRepetidaDto dto = inputDtoFactory.createMockFiguritaRepetidaDto();
+        FiguritaRepetidaDto dto = inputDtoFactory.figuritaRepetida();
         figuritasService.registrarFiguritaRepetida(dto, mockUsuario.getId());
         assertThrows(ConflictException.class, () -> figuritasService.registrarFiguritaRepetida(dto, mockUsuario.getId()));
     }
@@ -63,7 +63,7 @@ public class FiguritasServiceTests {
     @Test
     @Transactional
     public void testPublicarFiguritaConFiguritaRepetidaLanzaExcepcion() {
-        FiguritaRepetidaDto dto = inputDtoFactory.createMockFiguritaRepetidaDto();
+        FiguritaRepetidaDto dto = inputDtoFactory.figuritaRepetida();
         figuritasService.registrarFiguritaRepetida(dto, mockUsuario.getId());
         assertThrows(ConflictException.class, () -> figuritasService.registrarFiguritaRepetida(dto, mockUsuario.getId()));
     }
@@ -73,7 +73,7 @@ public class FiguritasServiceTests {
     @Test
     @Transactional
     public void testPublicarFiguritaFaltante() {
-        FiguritaFaltanteDto dto = inputDtoFactory.createMockFiguritaFaltanteDto();
+        FiguritaFaltanteDto dto = inputDtoFactory.figuritaFaltante();
         figuritasService.registrarFiguritaFaltante(dto, mockUsuario.getId());
         Usuario usuarioActualizado = usuariosRepository.findById(mockUsuario.getId()).orElseThrow();
         assertEquals(1, usuarioActualizado.getFaltantes().size());
@@ -82,7 +82,7 @@ public class FiguritasServiceTests {
     @Test
     @Transactional
     public void testPublicarFiguritaFaltanteDosVecesLanzaExcepcion() {
-        FiguritaFaltanteDto dto = inputDtoFactory.createMockFiguritaFaltanteDto();
+        FiguritaFaltanteDto dto = inputDtoFactory.figuritaFaltante();
         figuritasService.registrarFiguritaFaltante(dto, mockUsuario.getId());
         assertThrows(ConflictException.class, () -> figuritasService.registrarFiguritaFaltante(dto, mockUsuario.getId()));
     }
@@ -90,7 +90,7 @@ public class FiguritasServiceTests {
     @Test
     @Transactional
     public void testPublicarFiguritaFaltanteConFiguritaFaltanteLanzaExcepcion() {
-        FiguritaFaltanteDto dto = inputDtoFactory.createMockFiguritaFaltanteDto();
+        FiguritaFaltanteDto dto = inputDtoFactory.figuritaFaltante();
         figuritasService.registrarFiguritaFaltante(dto, mockUsuario.getId());
         assertThrows(ConflictException.class, () -> figuritasService.registrarFiguritaFaltante(dto, mockUsuario.getId()));
     }

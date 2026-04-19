@@ -1,7 +1,7 @@
 package com.tacs.tp1c2026.controllers;
 
 import com.tacs.tp1c2026.entities.dto.input.InteresadoDto;
-import com.tacs.tp1c2026.services.SubastaService;
+import com.tacs.tp1c2026.services.SubastasService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/subastas")
 public class SubastaController {
 
-  private final SubastaService subastaService;
+  private final SubastasService subastaService;
 
-  public SubastaController(SubastaService subastaService) {
+  public SubastaController(SubastasService subastaService) {
     this.subastaService = subastaService;
   }
 
