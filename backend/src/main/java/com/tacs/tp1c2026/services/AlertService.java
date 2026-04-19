@@ -13,6 +13,7 @@ import com.tacs.tp1c2026.entities.PropuestaIntercambio;
 import com.tacs.tp1c2026.entities.Subasta;
 import com.tacs.tp1c2026.entities.Usuario;
 import com.tacs.tp1c2026.exceptions.UserNotFoundException;
+import com.tacs.tp1c2026.properties.AlertProperties;
 import com.tacs.tp1c2026.repositories.SubastasRepository;
 import com.tacs.tp1c2026.repositories.UsuariosRepository;
 import org.springframework.stereotype.Service;
