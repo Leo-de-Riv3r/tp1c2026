@@ -3,6 +3,7 @@ package com.tacs.tp1c2026.entities;
 import com.tacs.tp1c2026.exceptions.BadInputException;
 import jakarta.annotation.PostConstruct;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.index.Indexed;
 import java.time.LocalDateTime;
@@ -46,13 +47,14 @@ public class Usuario {
   private List<FiguritaFaltante> missingCards = new ArrayList<>();
   @Builder.Default
   private List<String> suggestionsIds = new ArrayList<>();
-
+    @Transient
+    private VectorProfile vectorProfile;
   public void agregarSugerencia(Usuario sugerencias) {
-    this.sugerenciasIntercambios.add(sugerencias);
+    this.suggestionsIds.add(sugerencias.id);
   }
 
   public void agregarRepetidas(FiguritaColeccion figuritaColeccion) {
-    this.repetidas.add(figuritaColeccion);
+    this.collection.add(figuritaColeccion);
     this.vectorProfile.addCard(figuritaColeccion);
   }
 
@@ -61,21 +63,20 @@ public class Usuario {
     this.vectorProfile.addCard(figurita);
   }
 
-  public FiguritaColeccion getRepetidaByNumero(Integer numFiguritaPublicada) {
-    FiguritaColeccion figuritaColeccion =  this.repetidas.stream()
+  public FiguritaColeccion getRepetidaByNumero(Integer numFiguritaPublicada) throws FiguritaNoEncontradaException {
+    return this.repetidas.stream()
         .filter(repetida -> repetida.getFigurita().getNumero().equals(numFiguritaPublicada))
         .findFirst()
-        .orElse(null);
-    if (figuritaColeccion == null) {
-      throw new BadInputException("El usuario no posee la figurita " + numFiguritaPublicada);
-    }
-    return figuritaColeccion;
+        .orElseThrow(() -> new FiguritaNoEncontradaException("El usuario no posee la figurita " + numFiguritaPublicada));
   }
 
   public void agregarAlerta(Alerta alerta) {
     this.alertas.add(alerta);
   }
 
+  public void removerSugerencias() {
+    this.sugerenciasIntercambios.clear();
+  }
 
   @PostConstruct
   private void initializeVectorProfile() {
@@ -85,4 +86,5 @@ public class Usuario {
   public void removerSugerencias() {
     this.suggestionsIds.clear();
   }
+
 }

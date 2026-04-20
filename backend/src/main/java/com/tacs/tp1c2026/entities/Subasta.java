@@ -120,5 +120,8 @@ public class Subasta {
         .forEach(OfertaSubasta::rechazar);
   }
 
+  public void agregarInteresado(Usuario usuario) {
+    this.usuariosInteresados.add(usuario);
+  }
 }
 */

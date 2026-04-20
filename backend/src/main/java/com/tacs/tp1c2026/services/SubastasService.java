@@ -10,6 +10,7 @@ import com.tacs.tp1c2026.entities.dto.input.NuevaSubastaOfertaDto;
 import com.tacs.tp1c2026.entities.dto.output.SubastaDto;
 import com.tacs.tp1c2026.entities.enums.EstadoSubasta;
 import com.tacs.tp1c2026.exceptions.*;
+import com.tacs.tp1c2026.exceptions.FiguritaNoEncontradaException;
 import com.tacs.tp1c2026.exceptions.OfertaYaProcesadaException;
 import com.tacs.tp1c2026.exceptions.SubastaCerradaException;
 import com.tacs.tp1c2026.repositories.OfertasSubastaRepository;
@@ -19,6 +20,7 @@ import com.tacs.tp1c2026.repositories.UsuariosRepository;
 import java.util.*;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class SubastasService {
@@ -52,7 +54,13 @@ public class SubastasService {
     validate(sub);
 
     Usuario usuario = usuariosRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
-    FiguritaColeccion figuritaPublicada = usuario.getRepetidaByNumero(sub.getNumFiguritaPublicada());
+
+    FiguritaColeccion figuritaPublicada;
+    try {
+      figuritaPublicada = usuario.getRepetidaByNumero(sub.getNumFiguritaPublicada());
+    } catch (FiguritaNoEncontradaException e) {
+      throw new BadInputException(e.getMessage());
+    }
 
     Subasta subasta = null;
     try {
@@ -94,7 +102,12 @@ public class SubastasService {
     Map<FiguritaColeccion, Integer> repetidasPostor = new HashMap<>();
 
     nuevaOferta.getItemsOfertados().forEach(item -> {
-      FiguritaColeccion repetida = postor.getRepetidaByNumero(item.getFiguritaId());
+      FiguritaColeccion repetida;
+      try {
+        repetida = postor.getRepetidaByNumero(item.getFiguritaId());
+      } catch (FiguritaNoEncontradaException e) {
+        throw new BadInputException(e.getMessage());
+      }
       repetidasPostor.put(repetida, item.getCantidad());
     });
 
@@ -202,8 +215,7 @@ public class SubastasService {
   }
 
 
-  public List<SubastaDto> obtenerSubastasActivasGlobales() {
-    return subastaRepository.findByEstado(EstadoSubasta.ACTIVA)
+  public List<SubastaDto> obtenerSubastasActivasGlobales() {    return subastaRepository.findByEstado(EstadoSubasta.ACTIVA)
             .stream()
             .map(this::mapSubasta)
             .toList();
@@ -258,7 +270,25 @@ public class SubastasService {
             subasta.getEstado() != null ? subasta.getEstado().name() : null
     );
   }
-  
+
+  /**
+   * Agrega al usuario como interesado en una subasta.
+   * Los usuarios interesados recibirán alertas cuando la subasta esté próxima a cerrar.
+   *
+   * @param subastaId identificador de la subasta
+   * @param userId    identificador del usuario que desea seguir la subasta
+   * @throws NotFoundException si el usuario o la subasta no existen
+   */
+  @Transactional
+  public void agregarUsuarioInteresado(Integer subastaId, Integer userId) {
+    Usuario usuario = usuariosRepository.findById(userId)
+        .orElseThrow(() -> new NotFoundException("Usuario no encontrado con id: " + userId));
+
+    Subasta subasta = subastaRepository.findById(subastaId)
+        .orElseThrow(() -> new NotFoundException("Subasta no encontrada con id: " + subastaId));
+
+    subasta.agregarInteresado(usuario);
+    subastaRepository.save(subasta);
+  }
 
 }
-

@@ -50,25 +50,24 @@ public class FiguritaColeccion {
             cantidad
     );
     this.publicacionesIntercambio.add(publicacion);
-    this.cantidadLibre -= cantidad;
+    this.cantidadLibre -= 1;
     return publicacion;
   }
 
-  public Subasta subastar(Integer cantidad, Integer duracionSubasta) throws FiguritasInsuficientesException {
-    if (noTieneSuficientes(cantidad)) {
+  public Subasta subastar(Integer minimaCantidadAceptada, Integer duracionSubasta) throws FiguritasInsuficientesException {
+    if (noTieneSuficientes(1)) {
       throw new FiguritasInsuficientesException("No hay suficientes figuritas para crear la subasta");
     }
     Subasta nueva = new Subasta(
             this.usuario,
             this.figurita,
             duracionSubasta,
-            cantidad
+            minimaCantidadAceptada
     );
     this.subasta.add(nueva);
-    this.cantidadLibre -= cantidad;
+    this.cantidadLibre -= 1;
     return nueva;
   }
-
 
   public void reducirDisponible(Integer cantidad) throws FiguritasInsuficientesException {
     if (noTieneSuficientes(cantidad)) {
