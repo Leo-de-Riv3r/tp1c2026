@@ -1,6 +1,5 @@
 package com.tacs.tp1c2026.entities;
 
-import com.tacs.tp1c2026.exceptions.BadInputException;
 import jakarta.annotation.PostConstruct;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
@@ -68,6 +67,44 @@ public class Usuario {
         .filter(repetida -> repetida.getFigurita().getNumero().equals(numFiguritaPublicada))
         .findFirst()
         .orElseThrow(() -> new FiguritaNoEncontradaException("El usuario no posee la figurita " + numFiguritaPublicada));
+  }
+
+  /**
+   * Obtiene las figuritas repetidas indicadas por sus números y valida que estén disponibles para oferta.
+   *
+   * @param numerosFiguritas lista de números de figuritas a obtener
+   * @return lista de FiguritaColeccion encontradas y disponibles para oferta
+   * @throws FiguritaNoEncontradaException si alguna figurita no se encuentra
+   * @throws FiguritaNoDisponibleException si alguna figurita no está disponible para oferta
+   */
+  public List<FiguritaColeccion> obtenerFiguritasParaOferta(List<Integer> numerosFiguritas)
+      throws FiguritaNoEncontradaException, FiguritaNoDisponibleException {
+    List<FiguritaColeccion> figuritasEncontradas = new ArrayList<>();
+
+    for (Integer numFigurita : numerosFiguritas) {
+      FiguritaColeccion figurita = getRepetidaByNumero(numFigurita);
+      figurita.validarDisponibleParaOferta();
+      figuritasEncontradas.add(figurita);
+    }
+
+    return figuritasEncontradas;
+  }
+
+  /**
+   * Crea una publicación de intercambio para una figurita repetida.
+   *
+   * @param numFigurita número de la figurita a publicar
+   * @return la publicación creada
+   * @throws FiguritaNoEncontradaException si la figurita no se encuentra
+   * @throws com.tacs.tp1c2026.exceptions.FiguritaYaPublicadaException si ya está publicada
+   * @throws com.tacs.tp1c2026.exceptions.FiguritasInsuficientesException si no hay stock
+   */
+  public PublicacionIntercambio publicarFigurita(Integer numFigurita)
+      throws FiguritaNoEncontradaException,
+          FiguritaYaPublicadaException,
+          FiguritasInsuficientesException {
+    FiguritaColeccion figurita = getRepetidaByNumero(numFigurita);
+    return figurita.crearPublicacion(1);
   }
 
   public void agregarAlerta(Alerta alerta) {

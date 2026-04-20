@@ -19,6 +19,7 @@ import com.tacs.tp1c2026.repositories.UsuariosRepository;
 
 import java.util.*;
 
+import com.tacs.tp1c2026.services.mappers.SubastaMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,11 +29,13 @@ public class SubastasService {
   private final UsuariosRepository usuariosRepository;
   private final SubastaRepository subastaRepository;
   private final OfertasSubastaRepository ofertasSubastaRepository;
+  private final SubastaMapper subastaMapper;
 
-  public SubastasService( UsuariosRepository usuariosRepository,SubastaRepository subastaRepository, OfertasSubastaRepository ofertasSubastaRepository){
+  public SubastasService( UsuariosRepository usuariosRepository,SubastaRepository subastaRepository, OfertasSubastaRepository ofertasSubastaRepository, SubastaMapper mapper){
     this.usuariosRepository = usuariosRepository;
     this.subastaRepository = subastaRepository;
     this.ofertasSubastaRepository = ofertasSubastaRepository;
+    this.subastaMapper = mapper;
   }
 
 
@@ -217,7 +220,7 @@ public class SubastasService {
 
   public List<SubastaDto> obtenerSubastasActivasGlobales() {    return subastaRepository.findByEstado(EstadoSubasta.ACTIVA)
             .stream()
-            .map(this::mapSubasta)
+            .map(subastaMapper::mapSubasta)
             .toList();
   }
 
@@ -255,29 +258,17 @@ public class SubastasService {
     if (dto == null || dto.getItemsOfertados() == null || dto.getItemsOfertados().isEmpty()) {
       throw new BadInputException("Se necesita ofrecer como minimo 1 item");
     }
-  }
+   }
 
 
 
   private SubastaDto mapSubasta(Subasta subasta) {
-    return new SubastaDto(
-            subasta.getId(),
-            subasta.getUsuarioPublicante() != null ? subasta.getUsuarioPublicante().getId() : null,
-            subasta.getFigurita() != null ? subasta.getFigurita().getNumero() : null,
-            subasta.getCantidadMinFiguritas(),
-            subasta.getFechaCreacion(),
-            subasta.getFechaCierre(),
-            subasta.getEstado() != null ? subasta.getEstado().name() : null
-    );
+    return subastaMapper.mapSubasta(subasta);
   }
 
+
   /**
-   * Agrega al usuario como interesado en una subasta.
-   * Los usuarios interesados recibirán alertas cuando la subasta esté próxima a cerrar.
-   *
-   * @param subastaId identificador de la subasta
-   * @param userId    identificador del usuario que desea seguir la subasta
-   * @throws NotFoundException si el usuario o la subasta no existen
+   * ...existing code...
    */
   @Transactional
   public void agregarUsuarioInteresado(Integer subastaId, Integer userId) {
