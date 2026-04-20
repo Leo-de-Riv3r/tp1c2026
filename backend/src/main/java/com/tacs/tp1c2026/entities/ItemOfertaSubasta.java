@@ -33,6 +33,12 @@ public class ItemOfertaSubasta {
 
   @Column(nullable = false)
   private Integer cantidad;
+
+  public ItemOfertaSubasta(Figurita figurita, Integer cantidad){
+    this.figurita = figurita;
+    this.cantidad = cantidad;
+  }
+
 }
 
 */

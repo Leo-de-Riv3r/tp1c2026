@@ -1,7 +1,8 @@
 package com.tacs.tp1c2026.entities;
 
+import com.tacs.tp1c2026.exceptions.BadInputException;
+import jakarta.annotation.PostConstruct;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Transient;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.index.Indexed;
 import java.time.LocalDateTime;
@@ -46,45 +47,40 @@ public class Usuario {
   @Builder.Default
   private List<String> suggestionsIds = new ArrayList<>();
 
-  // @Transient // no se guarda en mongo
-  // private VectorProfile vectorProfile;
-
-  // desde el botón "agregar figurita" del perfil
-  public void agregarAColeccion(FiguritaColeccion figuritaNueva) {
-    collection.stream()
-      .filter(f -> f.getFiguritaId().equals(figuritaNueva.getFiguritaId()))
-      .findFirst()
-      .ifPresentOrElse(
-        f -> f.setQuantity(f.getQuantity() + figuritaNueva.getQuantity()),
-        () -> collection.add(figuritaNueva)  
-      );
+  public void agregarSugerencia(Usuario sugerencias) {
+    this.sugerenciasIntercambios.add(sugerencias);
   }
 
-  // Desde el botón "agregar faltantes" del perfil
-  public void agregarFaltante(FiguritaFaltante figuritaFaltante) {
-    boolean alreadyExists = this.missingCards.stream()
-        .anyMatch(f -> f.getFiguritaId().equals(figuritaFaltante.getFiguritaId()));
-    if (!alreadyExists) {
-      this.missingCards.add(figuritaFaltante);
-    }
+  public void agregarRepetidas(FiguritaColeccion figuritaColeccion) {
+    this.repetidas.add(figuritaColeccion);
+    this.vectorProfile.addCard(figuritaColeccion);
   }
 
-  // para saber cuantas figuritas puede realmente ofrecer
-  // sería total - comprometidas (ya ofrecidas o propuestas)
-  public int cantidadDisponible(String figuritaId) {
-    return collection.stream()
-      .filter(f -> f.getFiguritaId().equals(figuritaId))
-      .mapToInt(f -> f.getQuantity() - f.getCompromisedCount())
-      .findFirst()
-      .orElse(0); 
+  public void agregarFaltantes(Figurita figurita) {
+    this.faltantes.add(figurita);
+    this.vectorProfile.addCard(figurita);
+  }
+
+  public FiguritaColeccion getRepetidaByNumero(Integer numFiguritaPublicada) {
+    FiguritaColeccion figuritaColeccion =  this.repetidas.stream()
+        .filter(repetida -> repetida.getFigurita().getNumero().equals(numFiguritaPublicada))
+        .findFirst()
+        .orElse(null);
+    if (figuritaColeccion == null) {
+      throw new BadInputException("El usuario no posee la figurita " + numFiguritaPublicada);
     }
-  
-  // public VectorProfile getVectorProfile() {;
-  //   if (this.vectorProfile == null) {
-  //     this.vectorProfile = new VectorProfile(this.collection, this.missingCards);
-  //   }
-  //   return this.vectorProfile;
-  // }
+    return figuritaColeccion;
+  }
+
+  public void agregarAlerta(Alerta alerta) {
+    this.alertas.add(alerta);
+  }
+
+
+  @PostConstruct
+  private void initializeVectorProfile() {
+    this.vectorProfile = new VectorProfile(this.repetidas, this.faltantes);
+  }
 
   public void removerSugerencias() {
     this.suggestionsIds.clear();

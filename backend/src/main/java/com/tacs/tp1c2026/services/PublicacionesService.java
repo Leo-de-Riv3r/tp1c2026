@@ -1,80 +1,80 @@
-// package com.tacs.tp1c2026.services;
+package com.tacs.tp1c2026.services;
 
-// import com.tacs.tp1c2026.entities.Figurita;
-// import com.tacs.tp1c2026.entities.FiguritaColeccion;
-// import com.tacs.tp1c2026.entities.PropuestaIntercambio;
-// import com.tacs.tp1c2026.entities.PublicacionIntercambio;
-// import com.tacs.tp1c2026.entities.Usuario;
-// import com.tacs.tp1c2026.entities.dto.PropuestaMapper;
-// import com.tacs.tp1c2026.entities.dto.PublicacionMapper;
-// import com.tacs.tp1c2026.entities.dto.output.PaginacionDto;
-// import com.tacs.tp1c2026.entities.dto.output.PropuestaRecibidaDto;
-// import com.tacs.tp1c2026.entities.dto.output.PublicacionDto;
-// import com.tacs.tp1c2026.entities.enums.Categoria;
-// import com.tacs.tp1c2026.entities.enums.EstadoPropuesta;
-// import com.tacs.tp1c2026.entities.enums.EstadoPublicacion;
-// import com.tacs.tp1c2026.entities.enums.TipoParticipacion;
-// import com.tacs.tp1c2026.exceptions.BadInputException;
-// import com.tacs.tp1c2026.exceptions.ConflictException;
-// import com.tacs.tp1c2026.exceptions.NotFoundException;
-// import com.tacs.tp1c2026.exceptions.UnauthorizedException;
-// import com.tacs.tp1c2026.exceptions.UserNotFoundException;
-// import com.tacs.tp1c2026.repositories.PropuestasIntercambioRepository;
-// import com.tacs.tp1c2026.repositories.PublicacionesIntercambioRepository;
-// import com.tacs.tp1c2026.repositories.UsuariosRepository;
-// import java.util.ArrayList;
-// import java.util.List;
-// import java.util.Optional;
-// import lombok.extern.slf4j.Slf4j;
-// import org.springframework.stereotype.Service;
-// import org.springframework.transaction.annotation.Transactional;
+import com.tacs.tp1c2026.entities.Figurita;
+import com.tacs.tp1c2026.entities.FiguritaColeccion;
+import com.tacs.tp1c2026.entities.PropuestaIntercambio;
+import com.tacs.tp1c2026.entities.PublicacionIntercambio;
+import com.tacs.tp1c2026.entities.Usuario;
+import com.tacs.tp1c2026.entities.dto.PropuestaMapper;
+import com.tacs.tp1c2026.entities.dto.PublicacionMapper;
+import com.tacs.tp1c2026.entities.dto.output.PaginacionDto;
+import com.tacs.tp1c2026.entities.dto.output.PropuestaRecibidaDto;
+import com.tacs.tp1c2026.entities.dto.output.PublicacionDto;
+import com.tacs.tp1c2026.entities.enums.Categoria;
+import com.tacs.tp1c2026.entities.enums.EstadoPropuesta;
+import com.tacs.tp1c2026.entities.enums.EstadoPublicacion;
+import com.tacs.tp1c2026.entities.enums.TipoParticipacion;
+import com.tacs.tp1c2026.exceptions.BadInputException;
+import com.tacs.tp1c2026.exceptions.ConflictException;
+import com.tacs.tp1c2026.exceptions.NotFoundException;
+import com.tacs.tp1c2026.exceptions.UnauthorizedException;
+import com.tacs.tp1c2026.exceptions.UserNotFoundException;
+import com.tacs.tp1c2026.repositories.PropuestasIntercambioRepository;
+import com.tacs.tp1c2026.repositories.PublicacionesIntercambioRepository;
+import com.tacs.tp1c2026.repositories.UsuariosRepository;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-// @Slf4j
-// @Service
-// public class PublicacionesService {
-//   private final PublicacionMapper publicacionMapper;
-//   private final PropuestasIntercambioRepository propuestasIntercambioRepository;
-//   private final UsuariosRepository usuariosRepository;
-//   private final PublicacionesIntercambioRepository publicacionesIntercambioRepository;
-//   private final PropuestaMapper propuestaMapper;
+@Slf4j
+@Service
+public class PublicacionesService {
+  private final PublicacionMapper publicacionMapper;
+  private final PropuestasIntercambioRepository propuestasIntercambioRepository;
+  private final UsuariosRepository usuariosRepository;
+  private final PublicacionesIntercambioRepository publicacionesIntercambioRepository;
+  private final PropuestaMapper propuestaMapper;
 
-//   public PublicacionesService(PublicacionMapper publicacionMapper, PropuestasIntercambioRepository propuestasIntercambioRepository, UsuariosRepository usuariosRepository, PublicacionesIntercambioRepository publicacionesIntercambioRepository, PropuestaMapper propuestaMapper) {
-//     this.publicacionMapper = publicacionMapper;
-//     this.propuestasIntercambioRepository = propuestasIntercambioRepository;
-//     this.usuariosRepository = usuariosRepository;
-//     this.publicacionesIntercambioRepository = publicacionesIntercambioRepository;
-//     this.propuestaMapper = propuestaMapper;
-//   }
+  public PublicacionesService(PublicacionMapper publicacionMapper, PropuestasIntercambioRepository propuestasIntercambioRepository, UsuariosRepository usuariosRepository, PublicacionesIntercambioRepository publicacionesIntercambioRepository, PropuestaMapper propuestaMapper) {
+    this.publicacionMapper = publicacionMapper;
+    this.propuestasIntercambioRepository = propuestasIntercambioRepository;
+    this.usuariosRepository = usuariosRepository;
+    this.publicacionesIntercambioRepository = publicacionesIntercambioRepository;
+    this.propuestaMapper = propuestaMapper;
+  }
 
-//   /**
-//    * Crea una publicación de intercambio para una figurita repetida del usuario.
-//    * Verifica que el usuario exista y que la figurita indicada esté en su colección de repetidas.
-//    *
-//    * @param userId     identificador del usuario que realiza la publicación
-//    * @param numFigurita número de la figurita repetida a publicar
-//    * @throws UserNotFoundException si el usuario no existe
-//    * @throws NotFoundException     si la figurita no se encuentra entre las repetidas del usuario
-//    */
-//   @Transactional
-//   public void publicarIntercambioFigurita(Integer userId, Integer numFigurita){
-//     Usuario usuario = usuariosRepository.findById(userId)
-//         .orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
+  /**
+   * Crea una publicación de intercambio para una figurita repetida del usuario.
+   * Verifica que el usuario exista y que la figurita indicada esté en su colección de repetidas.
+   *
+   * @param userId     identificador del usuario que realiza la publicación
+   * @param numFigurita número de la figurita repetida a publicar
+   * @throws UserNotFoundException si el usuario no existe
+   * @throws NotFoundException     si la figurita no se encuentra entre las repetidas del usuario
+   */
+  @Transactional
+  public void publicarIntercambioFigurita(Integer userId, Integer numFigurita){
+    Usuario usuario = usuariosRepository.findById(userId)
+        .orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
 
-//     Optional<FiguritaColeccion> figuritaOptional = usuario.getRepetidas().stream().filter(f -> f.getFigurita().getNumero().equals(numFigurita)).findFirst();
-//     FiguritaColeccion figurita = figuritaOptional.orElseThrow(() -> new NotFoundException("No se encontro la figurita repetida"));
+    Optional<FiguritaColeccion> figuritaOptional = usuario.getRepetidas().stream().filter(f -> f.getFigurita().getNumero().equals(numFigurita)).findFirst();
+    FiguritaColeccion figurita = figuritaOptional.orElseThrow(() -> new NotFoundException("No se encontro la figurita repetida"));
 
-//     if(figurita.getPublicada()) {
-//       throw new ConflictException("La figurita ya se encuentra publicada");
-//     }
+    if(figurita.getPublicada()) {
+      throw new ConflictException("La figurita ya se encuentra publicada");
+    }
 
-//     if(figurita.getCantidad() == 0) {
-//       throw new ConflictException("Ya no tienes la figurita repetida");
-//     }
+    if(figurita.getCantidadLibre() == 0) {
+      throw new ConflictException("Ya no tienes la figurita repetida");
+    }
 
-//     figurita.setPublicada(true);
-//     PublicacionIntercambio publicacion = new PublicacionIntercambio();
-//     publicacion.setFiguritaColeccion(figurita);
-//     publicacion.setPublicante(usuario);
+    figurita.setPublicada(true);
+    PublicacionIntercambio publicacion = new PublicacionIntercambio();
+    publicacion.setFiguritaColeccion(figurita);
+    publicacion.setPublicante(usuario);
 
 //     publicacionesIntercambioRepository.save(publicacion);
 //   }
@@ -98,22 +98,22 @@
 //     Usuario usuario = usuariosRepository.findById(userId)
 //         .orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
 
-//     PublicacionIntercambio publicacion = publicacionesIntercambioRepository.findById(publicacionId)
-//         .orElseThrow(() -> new NotFoundException("No se encontro la publicacion con id " + publicacionId));
-//     //controlar que las ofertas no superen la cantidad disponibe
-//     List<PropuestaIntercambio> propuestasActuales = propuestasIntercambioRepository.findByPublicacionId(publicacionId);
-//     if (propuestasActuales.size() == publicacion.getFiguritaColeccion().getCantidad()) {
-//       throw new ConflictException("Ya no hay cupos para nuevas propuestas");
-//     }
+    PublicacionIntercambio publicacion = publicacionesIntercambioRepository.findById(publicacionId)
+        .orElseThrow(() -> new NotFoundException("No se encontro la publicacion con id " + publicacionId));
+    //controlar que las ofertas no superen la cantidad disponibe
+    List<PropuestaIntercambio> propuestasActuales = propuestasIntercambioRepository.findByPublicacionId(publicacionId);
+    if (propuestasActuales.size() == publicacion.getFiguritaColeccion().getCantidadLibre()) {
+      throw new ConflictException("Ya no hay cupos para nuevas propuestas");
+    }
 
-//     List<FiguritaColeccion> figuritas =
-//         usuario.getRepetidas().stream().filter(f -> idFiguritas.contains(f.getFigurita().getNumero())).toList();
-//     //filtrar figus que esten para intercambio
-//     figuritas = figuritas.stream().filter(figuritacoleccion ->
-//         figuritacoleccion.getTipoParticipacion().equals(TipoParticipacion.INTERCAMBIO) &&
-//             !figuritacoleccion.getPublicada()  &&
-//             figuritacoleccion.getCantidadOfertada() < figuritacoleccion.getCantidad()
-//      ).toList();
+    List<FiguritaColeccion> figuritas =
+        usuario.getRepetidas().stream().filter(f -> idFiguritas.contains(f.getFigurita().getNumero())).toList();
+    //filtrar figus que esten para intercambio
+    figuritas = figuritas.stream().filter(figuritacoleccion ->
+        figuritacoleccion.getTipoParticipacion().equals(TipoParticipacion.INTERCAMBIO) &&
+            !figuritacoleccion.getPublicada()  &&
+            figuritacoleccion.getCantidadOfertada() < figuritacoleccion.getCantidadLibre()
+     ).toList();
 
 //     List<Figurita> figuritasOfrecidas = figuritas.stream().map(FiguritaColeccion::getFigurita).toList();
 //     if (figuritas.size() != idFiguritas.size()) {
@@ -270,9 +270,9 @@
 //     });
 
 
-//     if (publicacion.getFiguritaColeccion().getCantidad() == 0){
-//       publicacion.setEstado(EstadoPublicacion.FINALIZADA);
-//     }
+    if (publicacion.getFiguritaColeccion().getCantidadLibre() == 0){
+      publicacion.setEstado(EstadoPublicacion.FINALIZADA);
+    }
 
 
 

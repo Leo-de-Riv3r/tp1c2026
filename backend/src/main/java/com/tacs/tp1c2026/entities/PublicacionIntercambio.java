@@ -28,19 +28,33 @@ public class PublicacionIntercambio {
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
   private Integer id;
+
   @ManyToOne
   @JoinColumn(name = "usuario_id", referencedColumnName = "id")
   private Usuario publicante;
+
   @ManyToOne
-  @JoinColumn(name = "figurita_id", referencedColumnName = "id")
+  @JoinColumn(name = "figurita_coleccion_id", referencedColumnName = "id")
   private FiguritaColeccion figuritaColeccion;
+
+  @Column
+  private Integer cantidad;
+
   @Column
   private LocalDateTime fechaCreacion = LocalDateTime.now();
+
   @OneToOne
   @JoinColumn(name = "propuesta_id", referencedColumnName = "id")
   private PropuestaIntercambio propuestaAceptada;
+
   @Enumerated(EnumType.STRING)
   @Column
   private EstadoPublicacion estado = EstadoPublicacion.ACTIVA;
+
+  public PublicacionIntercambio(FiguritaColeccion coleccion, Integer cantidad){
+      this.figuritaColeccion = coleccion;
+      this.cantidad = cantidad;
+  }
+
 }
 */

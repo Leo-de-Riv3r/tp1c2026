@@ -44,8 +44,10 @@ public class OfertaSubasta {
   @Column
   private EstadoOfertaSubasta estado = EstadoOfertaSubasta.PENDIENTE;
 
-  public OfertaSubasta(Usuario postor) {
+  public OfertaSubasta(Usuario postor, Subasta subasta, List<ItemOfertaSubasta> ofertas) {
     this.usuarioPostor = postor;
+    this.subasta = subasta;
+    this.itemsOfrecidos = ofertas;
   }
 
   public void agregarItem(ItemOfertaSubasta item) {
@@ -57,6 +59,10 @@ public class OfertaSubasta {
     return this.itemsOfrecidos.stream()
         .map(ItemOfertaSubasta::getCantidad)
         .reduce(0, Integer::sum);
+  }
+
+  public boolean estaPendiente() {
+    return EstadoOfertaSubasta.PENDIENTE.equals(this.estado);
   }
 
   public void aceptar() {

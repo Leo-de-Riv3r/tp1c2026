@@ -2,65 +2,84 @@
 package com.tacs.tp1c2026.entities;
 
 import com.tacs.tp1c2026.entities.enums.TipoParticipacion;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
+import java.util.ArrayList;
+import com.tacs.tp1c2026.exceptions.FiguritasInsuficientesException;
 
 @Getter
 @Entity
 @Table
 @NoArgsConstructor
 public class FiguritaColeccion {
+
   @Id @GeneratedValue(strategy = GenerationType.AUTO)
   private Integer id;
+
   @ManyToOne
   @JoinColumn(name = "figurita_id", referencedColumnName = "id")
   private Figurita figurita;
-  @Column
-  private Integer cantidad;
-  @Enumerated(EnumType.STRING)
-  @Column
-  private TipoParticipacion tipoParticipacion;
+
+  @ManyToOne
+  @JoinColumn(name = "usuario_id", referencedColumnName = "id")
+  private Usuario usuario;
 
   @Column
-  private Boolean publicada = false;
+  private Integer cantidadLibre;
 
-  @Column
-  private Integer cantidadOfertada = 0;
+  @OneToMany
+  private final List<PublicacionIntercambio> publicacionesIntercambio = new ArrayList<>();
+
+  @OneToMany
+  private final List<Subasta> subasta = new ArrayList<>();
 
   public FiguritaColeccion(Integer cantidad, TipoParticipacion tipoParticipacion, Figurita figurita) {
-    this.cantidad = cantidad;
-    this.tipoParticipacion = tipoParticipacion;
+    this.cantidadLibre = cantidad;
     this.figurita = figurita;
   }
 
-  public void reducirCantidad() {
-    this.cantidad--;
+  public PublicacionIntercambio crearPublicacion(Integer cantidad) throws FiguritasInsuficientesException {
+    if (noTieneSuficientes(cantidad)) {
+      throw new FiguritasInsuficientesException("No hay suficientes figuritas para crear la publicación");
+    }
+    PublicacionIntercambio publicacion = new PublicacionIntercambio(
+            this,
+            cantidad
+    );
+    this.publicacionesIntercambio.add(publicacion);
+    this.cantidadLibre -= cantidad;
+    return publicacion;
   }
 
-  public void aumentarCantidad() {
-    this.cantidad++;
+  public Subasta subastar(Integer cantidad, Integer duracionSubasta) throws FiguritasInsuficientesException {
+    if (noTieneSuficientes(cantidad)) {
+      throw new FiguritasInsuficientesException("No hay suficientes figuritas para crear la subasta");
+    }
+    Subasta nueva = new Subasta(
+            this.usuario,
+            this.figurita,
+            duracionSubasta,
+            cantidad
+    );
+    this.subasta.add(nueva);
+    this.cantidadLibre -= cantidad;
+    return nueva;
   }
 
-  public void setPublicada(boolean b) {
-    this.publicada = b;
+
+  public void reducirDisponible(Integer cantidad) throws FiguritasInsuficientesException {
+    if (noTieneSuficientes(cantidad)) {
+      throw new FiguritasInsuficientesException("No hay suficientes figuritas para reducir la cantidad disponible");
+    }
+    this.cantidadLibre -= cantidad;
   }
 
-  public void aumentarCantidadOfertada() {
-    this.cantidadOfertada++;
+  public boolean noTieneSuficientes(Integer cantidad) {
+    return cantidad <= this.cantidadLibre;
   }
 
-  public void reducirCantidadOfertada() {
-    this.cantidadOfertada--;
-  }
 }
 */
