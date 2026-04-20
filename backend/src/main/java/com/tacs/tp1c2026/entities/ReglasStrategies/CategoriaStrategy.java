@@ -1,3 +1,4 @@
+/*
 package com.tacs.tp1c2026.entities.ReglasStrategies;
 
 import com.tacs.tp1c2026.entities.OfertaSubasta;
@@ -26,13 +27,6 @@ public class CategoriaStrategy extends IReglaStrategy {
     this.categoriaRequerida = categoriaRequerida;
   }
 
-  /**
-   * Verifica que la oferta tenga más de {@code cantidadMinima} figuritas pertenecientes
-   * a la categoría requerida.
-   *
-   * @param ofertaSubasta oferta de subasta a evaluar
-   * @return {@code true} si la cantidad de figuritas de la categoría requerida supera el mínimo
-   */
   @Override
   public Boolean cumpleRegla(OfertaSubasta ofertaSubasta) {
     Integer cantidadCategoria = ofertaSubasta.getItemsOfrecidos().stream()
@@ -43,3 +37,4 @@ public class CategoriaStrategy extends IReglaStrategy {
     return cantidadCategoria > cantidadMinima;
   }
 }
+*/

@@ -1,4 +1,4 @@
-package com.tacs.tp1c2026.entities;
+/*package com.tacs.tp1c2026.entities;
 
 import com.tacs.tp1c2026.entities.dto.output.AlertaDto;
 import jakarta.persistence.DiscriminatorValue;
@@ -39,3 +39,4 @@ public class AlertaPorpuestaRecibida extends Alerta {
   }
 
 }
+*/

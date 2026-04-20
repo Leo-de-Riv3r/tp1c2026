@@ -1,4 +1,4 @@
-package com.tacs.tp1c2026.entities;
+/*package com.tacs.tp1c2026.entities;
 
 import com.tacs.tp1c2026.entities.enums.EstadoSubasta;
 import jakarta.persistence.Column;
@@ -73,3 +73,4 @@ public class Subasta {
     }
   }
 }
+*/

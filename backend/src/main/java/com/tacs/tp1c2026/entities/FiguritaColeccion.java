@@ -1,3 +1,4 @@
+/* Esta clase ya no se usaría porque se reemplaza por la que está en embedded, que es un subdocumento de usuario en mongo
 package com.tacs.tp1c2026.entities;
 
 import com.tacs.tp1c2026.entities.enums.TipoParticipacion;
@@ -62,3 +63,4 @@ public class FiguritaColeccion {
     this.cantidadOfertada--;
   }
 }
+*/

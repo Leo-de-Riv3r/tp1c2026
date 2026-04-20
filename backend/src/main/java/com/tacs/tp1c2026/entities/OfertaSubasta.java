@@ -1,4 +1,4 @@
-package com.tacs.tp1c2026.entities;
+/*package com.tacs.tp1c2026.entities;
 
 import com.tacs.tp1c2026.entities.enums.EstadoOfertaSubasta;
 import jakarta.persistence.CascadeType;
@@ -67,3 +67,4 @@ public class OfertaSubasta {
     this.estado = EstadoOfertaSubasta.RECHAZADA;
   }
 }
+*/
