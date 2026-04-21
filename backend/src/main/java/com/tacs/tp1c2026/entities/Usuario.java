@@ -30,6 +30,14 @@ public class Usuario {
   private Integer id;
   @Column
   private String nombre;
+
+  @Column(unique = true)
+  private String email;
+
+  @Column
+  private String passwordHash;
+
+
   @OneToMany(cascade = CascadeType.ALL)
   @JoinColumn(name = "figurita_coleccion_id", referencedColumnName = "id")
   private List<FiguritaColeccion> repetidas = new ArrayList<>();
