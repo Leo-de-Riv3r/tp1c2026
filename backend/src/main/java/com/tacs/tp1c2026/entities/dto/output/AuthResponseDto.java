@@ -4,10 +4,7 @@ import lombok.Data;
 
 @Data
 public class AuthResponseDto {
-  private Integer userId;
-  private String nombre;
-  private String email;
   private String token;
-  private String message;
+  private UserDto user;
 }
 

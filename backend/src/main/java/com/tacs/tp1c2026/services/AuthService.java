@@ -4,6 +4,7 @@ import com.tacs.tp1c2026.entities.Usuario;
 import com.tacs.tp1c2026.entities.dto.input.LoginDTO;
 import com.tacs.tp1c2026.entities.dto.input.RegisterDTO;
 import com.tacs.tp1c2026.entities.dto.output.AuthResponseDto;
+import com.tacs.tp1c2026.entities.dto.output.UserDto;
 import com.tacs.tp1c2026.exceptions.BadInputException;
 import com.tacs.tp1c2026.exceptions.ConflictException;
 import com.tacs.tp1c2026.exceptions.UnauthorizedException;
@@ -12,6 +13,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import java.time.LocalDateTime;
 import java.util.Date;
 import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,12 +46,14 @@ public class AuthService {
 	}
 
 	Usuario nuevoUsuario = new Usuario();
-	nuevoUsuario.setNombre(registerDTO.getNombre().trim());
+	nuevoUsuario.setName(registerDTO.getName().trim());
 	nuevoUsuario.setEmail(email);
+	nuevoUsuario.setAvatarId(registerDTO.getAvatarId().trim());
 	nuevoUsuario.setPasswordHash(passwordEncoder.encode(registerDTO.getPassword()));
+	nuevoUsuario.setCreationDate(LocalDateTime.now());
 
 	Usuario usuarioCreado = usuariosRepository.save(nuevoUsuario);
-	return buildResponse(usuarioCreado, "Usuario creado con exito");
+	return buildResponse(usuarioCreado);
   }
 
   public AuthResponseDto login(LoginDTO loginDTO) {
@@ -67,14 +71,17 @@ public class AuthService {
 	  throw new UnauthorizedException("Credenciales invalidas");
 	}
 
-	return buildResponse(usuario, "Login exitoso");
+	usuario.setLastLogin(LocalDateTime.now());
+	usuariosRepository.save(usuario);
+
+	return buildResponse(usuario);
   }
 
   private void validarRegistro(RegisterDTO registerDTO) {
 	if (registerDTO == null) {
 	  throw new BadInputException("Request de registro invalido");
 	}
-	if (isBlank(registerDTO.getNombre())) {
+	if (isBlank(registerDTO.getName())) {
 	  throw new BadInputException("El nombre es obligatorio");
 	}
 	if (isBlank(registerDTO.getEmail())) {
@@ -83,19 +90,31 @@ public class AuthService {
 	if (isBlank(registerDTO.getPassword())) {
 	  throw new BadInputException("La contraseña es obligatoria");
 	}
+	if (isBlank(registerDTO.getAvatarId())) {
+	  throw new BadInputException("El avatar es obligatorio");
+	}
 	if (registerDTO.getPassword().length() < 6) {
 	  throw new BadInputException("La contraseña debe tener al menos 6 caracteres");
 	}
   }
 
-  private AuthResponseDto buildResponse(Usuario usuario, String message) {
+  private AuthResponseDto buildResponse(Usuario usuario) {
 	AuthResponseDto response = new AuthResponseDto();
-	response.setUserId(usuario.getId());
-	response.setNombre(usuario.getNombre());
-	response.setEmail(usuario.getEmail());
 	response.setToken(generarJwtToken(usuario.getId(), usuario.getEmail()));
-	response.setMessage(message);
+	response.setUser(mapUser(usuario));
 	return response;
+  }
+
+  private UserDto mapUser(Usuario usuario) {
+	  UserDto user = new UserDto();
+	user.setId(usuario.getId());
+	user.setName(usuario.getName());
+	user.setEmail(usuario.getEmail());
+	user.setRating(usuario.getRating());
+	user.setExchangesAmount(usuario.getExchangesCount());
+	user.setAvatarId(usuario.getAvatarId());
+	user.setCreationDate(usuario.getCreationDate());
+	return user;
   }
 
   private boolean isBlank(String value) {
@@ -103,12 +122,12 @@ public class AuthService {
   }
 
 
-  private String generarJwtToken(Integer userId, String email) {
+  private String generarJwtToken(String userId, String email) {
 	Date now = new Date();
 	Date expiryDate = new Date(now.getTime() + jwtExpirationMs);
 
 	return Jwts.builder()
-		.subject(userId.toString())
+		.subject(userId)
 		.claim("email", email)
 		.issuedAt(now)
 		.expiration(expiryDate)
@@ -116,12 +135,15 @@ public class AuthService {
 		.compact();
   }
 
-  public Integer extraerUserIdDelToken(String token) {
+  public String extraerUserIdDelToken(String token) {
 	try {
 	  Claims claims = extraerClaims(token);
 	  String subject = claims.getSubject();
-	  return Integer.parseInt(subject);
-	} catch (NumberFormatException | JwtException e) {
+	  if (subject == null || subject.trim().isEmpty()) {
+		throw new UnauthorizedException("Token invalido");
+	  }
+	  return subject;
+	} catch (JwtException e) {
 	  throw new UnauthorizedException("Token invalido");
 	}
   }
