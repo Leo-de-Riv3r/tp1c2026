@@ -2,7 +2,8 @@ package com.tacs.tp1c2026.controllers;
 
 import com.tacs.tp1c2026.entities.dto.input.LoginDTO;
 import com.tacs.tp1c2026.entities.dto.input.RegisterDTO;
-import com.tacs.tp1c2026.entities.dto.output.AuthResponseDto;
+import com.tacs.tp1c2026.entities.dto.output.LoginResponseDto;
+import com.tacs.tp1c2026.entities.dto.output.UserDto;
 import com.tacs.tp1c2026.services.AuthService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,12 +23,23 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponseDto> login(@RequestBody LoginDTO loginDTO) {
+    public ResponseEntity<LoginResponseDto> login(@RequestBody LoginDTO loginDTO) {
         return ResponseEntity.ok(authService.login(loginDTO));
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponseDto> register(@RequestBody RegisterDTO registerDTO) {
+    public ResponseEntity<UserDto> register(@RequestBody RegisterDTO registerDTO) {
         return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(registerDTO));
+    }
+
+    @PostMapping("/admin/login")
+    public ResponseEntity<LoginResponseDto> adminLogin(@RequestBody LoginDTO loginDTO) {
+        return ResponseEntity.ok(authService.adminLogin(loginDTO));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout() {
+        // Logout stateless: el front elimina el token localmente.
+        return ResponseEntity.ok().build();
     }
 }

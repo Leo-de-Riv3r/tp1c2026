@@ -55,9 +55,11 @@ public class FiltroDeAutenticacionJWT extends OncePerRequestFilter {
 
             // 4. Token válido → extraer userId
             String userId = authService.extraerUserIdDelToken(token);
+            String role = authService.extraerRoleDelToken(token);
 
             // 5. Guardarlo en request
             request.setAttribute("userId", userId);
+            request.setAttribute("role", role);
 
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
