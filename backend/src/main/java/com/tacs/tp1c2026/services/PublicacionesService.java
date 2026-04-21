@@ -31,6 +31,9 @@ import com.tacs.tp1c2026.repositories.UsuariosRepository;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -241,49 +244,34 @@ public class PublicacionesService {
   public PaginacionDto<PublicacionDto> buscarPublicaciones(
       String seleccion, String nombreJugador, String equipo, Categoria categoria, Integer page, Integer per_page
   ) {
-    //primero obtener publicaciones activas
-    List<PublicacionIntercambio> publicaciones = publicacionesIntercambioRepository.findByEstado(EstadoPublicacion.ACTIVA);
+    int paginaSolicitada = (page == null || page < 1) ? 1 : page;
+    int tamanioPagina = (per_page == null || per_page < 1) ? 10 : per_page;
+    Pageable pageable = PageRequest.of(paginaSolicitada - 1, tamanioPagina);
 
-    //podria dejar el filtrado en otra seccion del codigo para no cargar mucho el service
+    Page<PublicacionIntercambio> publicaciones = publicacionesIntercambioRepository.buscarActivasConFiltros(
+        EstadoPublicacion.ACTIVA,
+        normalizeFilter(seleccion),
+        normalizeFilter(nombreJugador),
+        normalizeFilter(equipo),
+        categoria,
+        pageable
+    );
 
-    if(!publicaciones.isEmpty()) {
-      //luego reemplazar por filtros de mongodb
-
-      if(seleccion != null) {
-        publicaciones = publicaciones.stream().filter(publicacion ->
-        publicacion.getFiguritaColeccion().getFigurita().getSeleccion().contains(seleccion)
-        ).toList();
-      }
-
-      if(nombreJugador != null) {
-        publicaciones = publicaciones.stream().filter(publicacion ->
-            publicacion.getFiguritaColeccion().getFigurita().getJugador().contains(nombreJugador)
-        ).toList();
-      }
-
-      if(equipo != null) {
-        publicaciones = publicaciones.stream().filter(publicacion ->
-            publicacion.getFiguritaColeccion().getFigurita().getEquipo().contains(equipo)
-        ).toList();
-      }
-
-      if (categoria != null) {
-        publicaciones = publicaciones.stream().filter(publicacion ->
-            publicacion.getFiguritaColeccion().getFigurita().getCategoria().equals(categoria)
-        ).toList();
-      }
-      //verificar num paginas y armar resultado paginado
-      int totalPages = (int) Math.ceil((double) publicaciones.size() / per_page);
-      int startIndex = (page - 1) * per_page;
-      int endIndex = Math.min(startIndex + per_page, publicaciones.size());
-      List<PublicacionIntercambio> paginatedPublicaciones = publicaciones.subList(startIndex, endIndex);
-      //map publicaciones to dtos
-      List<PublicacionDto> mapeados = publicacionMapper.mapToDto(paginatedPublicaciones);
-
-      return new PaginacionDto<>(mapeados, page, totalPages);
-    } else {
+    if (publicaciones.getTotalElements() == 0) {
       return new PaginacionDto<>(null, 1, 1);
     }
+
+    List<PublicacionDto> mapeados = publicacionMapper.mapToDto(publicaciones.getContent());
+    int totalPages = Math.max(1, publicaciones.getTotalPages());
+    return new PaginacionDto<>(mapeados, paginaSolicitada, totalPages);
+
+  }
+
+  private String normalizeFilter(String filterValue) {
+    if (filterValue == null || filterValue.isBlank()) {
+      return null;
+    }
+    return filterValue.trim();
 
   }
 }
