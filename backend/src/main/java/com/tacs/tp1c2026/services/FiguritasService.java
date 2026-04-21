@@ -1,158 +1,51 @@
 package com.tacs.tp1c2026.services;
 
 import com.tacs.tp1c2026.entities.Figurita;
-import com.tacs.tp1c2026.entities.FiguritaColeccion;
-import com.tacs.tp1c2026.entities.Usuario;
-import com.tacs.tp1c2026.entities.dto.RepetidasMapper;
-import com.tacs.tp1c2026.entities.dto.input.FiguritaFaltanteDto;
-import com.tacs.tp1c2026.entities.dto.input.FiguritaRepetidaDto;
-import com.tacs.tp1c2026.entities.dto.output.FiguritaDto;
-import com.tacs.tp1c2026.entities.dto.output.RepetidaDto;
-import com.tacs.tp1c2026.entities.enums.Categoria;
-import com.tacs.tp1c2026.exceptions.BadInputException;
-import com.tacs.tp1c2026.exceptions.ConflictException;
-import com.tacs.tp1c2026.exceptions.UserNotFoundException;
+import com.tacs.tp1c2026.exceptions.NotFoundException;
 import com.tacs.tp1c2026.repositories.FiguritasRepository;
-import com.tacs.tp1c2026.repositories.UsuariosRepository;
-import java.util.List;
-import java.util.Optional;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import java.util.List;
 
-@Slf4j
 @Service
 public class FiguritasService {
-  private final FiguritasRepository figuritasRepository;
-  private final UsuariosRepository usuariosRepository;
-  private final RepetidasMapper repetidasMapper;
 
-  public FiguritasService(FiguritasRepository figuritasRepository, UsuariosRepository usuariosRepository, RepetidasMapper repetidasMapper) {
-    this.figuritasRepository = figuritasRepository;
-    this.usuariosRepository = usuariosRepository;
-    this.repetidasMapper = repetidasMapper;
-  }
+    private final FiguritasRepository figuritasRepository;
 
-  /**
-   * Registra una figurita como faltante en la colección del usuario.
-   * Si la figurita no existe en el catálogo se crea automáticamente.
-   * Lanza una excepción si la figurita ya estaba registrada como faltante.
-   *
-   * @param dto    datos de la figurita faltante
-   * @param userId identificador del usuario
-   * @throws UserNotFoundException si el usuario no existe
-   * @throws ConflictException     si la figurita ya se encuentra registrada como faltante
-   */
-  public void registrarFiguritaFaltante(FiguritaFaltanteDto dto, Integer userId) {
-    Figurita figurita = obtenerFigurita(dto.getNumero(), dto.getJugador(), dto.getDescripcion(), dto.getSeleccion(), dto.getEquipo(), dto.getCategoria());
-    Usuario usuario = usuariosRepository.findById(userId)
-        .orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
-
-    Optional<Figurita> tieneFigurita = usuario.getFaltantes().stream().filter(f -> f.getNumero().equals(dto.getNumero())).findFirst();
-    if (tieneFigurita.isPresent()) {
-      throw new ConflictException("La figurita ya se encuentra registrada como faltante");
+    public FiguritasService(FiguritasRepository figuritasRepository) {
+        this.figuritasRepository = figuritasRepository;
     }
 
-    usuario.agregarFaltantes(figurita);
-    usuariosRepository.save(usuario);
-
-  }
-
-  /**
-   * Registra una figurita como repetida en la colección del usuario.
-   * Si la figurita no existe en el catálogo se crea automáticamente.
-   * Lanza una excepción si la figurita ya estaba registrada como repetida.
-   *
-   * @param dto    datos de la figurita repetida, incluyendo cantidad y tipo de participación
-   * @param userId identificador del usuario
-   * @throws UserNotFoundException si el usuario no existe
-   * @throws ConflictException     si la figurita ya se encuentra registrada como repetida
-   */
-  public void registrarFiguritaRepetida(FiguritaRepetidaDto dto, Integer userId) {
-    Usuario usuario = usuariosRepository.findById(userId)
-        .orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
-    Figurita figurita = obtenerFigurita(dto.getNumero(), dto.getJugador(), dto.getDescripcion(), dto.getSeleccion(), dto.getEquipo(), dto.getCategoria());
-
-    Optional<FiguritaColeccion> tieneFigurita = usuario.getRepetidas().stream().filter(f -> f.getFigurita().getNumero().equals(dto.getNumero())).findFirst();
-    if (tieneFigurita.isPresent()) {
-      throw new ConflictException("La figurita " + dto.getNumero() + " ya esta registrada como repetida");
-    } else {
-      log.info("Registro figurita repetida");
-      FiguritaColeccion figuritaColeccion = new FiguritaColeccion(dto.getCantidad(), dto.getTipoParticipacion(), figurita);
-      usuario.agregarRepetidas(figuritaColeccion);
-      log.info("Almaceno figurita repetida en coleccion de usuario");
-      usuariosRepository.save(usuario);
-      log.info("Figurita repetida registrada");
+    public List<Figurita> getCatalog() {
+        return figuritasRepository.findAll();
     }
 
-  }
-
-  /**
-   * Obtiene la {@link Figurita} del repositorio por su número.
-   * Si no existe la crea con los datos proporcionados y la persiste.
-   *
-   * @param numero      número único de la figurita
-   * @param jugador     nombre del jugador
-   * @param descripcion descripción de la figurita
-   * @param seleccion   selección o país representado
-   * @param equipo      equipo de club del jugador
-   * @param categoria   categoría de la figurita
-   * @return la {@link Figurita} existente o recién creada
-   */
-  private Figurita obtenerFigurita(Integer numero, String jugador, String descripcion, String seleccion, String equipo, Categoria categoria) {
-    Optional<Figurita> figuritaOptional = figuritasRepository.findByNumero(numero);
-    Figurita figurita;
-    if (figuritaOptional.isPresent()) {
-      figurita = figuritaOptional.get();
-    } else {
-      figurita = new Figurita();
-      figurita.setNumero(numero);
-      figurita.setJugador(jugador);
-      figurita.setDescripcion(descripcion);
-      figurita.setSeleccion(seleccion);
-      figurita.setEquipo(equipo);
-      figurita.setCategoria(categoria);
-
-      figurita = figuritasRepository.save(figurita);
+    // Para obtener el detalle desde el FE o bien para llenar los combos de selección desde el perfil cuando
+    // el usuario quiera agregar faltantes o figuritas a su colección, etc
+    public Figurita getById(String id) {
+        return figuritasRepository
+            .findById(id)
+            .orElseThrow(() -> new NotFoundException("Figurita no encontrada: " + id));
     }
-    return figurita;
-  }
 
-  /**
-   * Retorna la lista de figuritas repetidas del usuario, mapeadas a DTOs.
-   *
-   * @param userId identificador del usuario
-   * @return lista de {@link RepetidaDto} con las figuritas repetidas del usuario
-   * @throws UserNotFoundException si el usuario no existe
-   */
-  public List<RepetidaDto> obtenerFiguritasRepetidas(Integer userId) {
-    Usuario usuario = usuariosRepository.findById(userId)
-        .orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
-
-    List<FiguritaColeccion> figuritas = usuario.getRepetidas();
-
-    return repetidasMapper.toDTOList(figuritas);
-  }
-
-  /**
-   * Retorna la lista de figuritas faltantes del usuario, mapeadas a DTOs.
-   *
-   * @param userId identificador del usuario
-   * @return lista de {@link FiguritaDto} con las figuritas faltantes del usuario
-   * @throws UserNotFoundException si el usuario no existe
-   */
-  public List<FiguritaDto> obtenerFaltantes(Integer userId) {
-    Usuario usuario = usuariosRepository.findById(userId)
-        .orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
-
-    List<Figurita> faltantes = usuario.getFaltantes();
-
-    return faltantes.stream().map(faltante -> new FiguritaDto(
-        faltante.getNumero(),
-        faltante.getDescripcion(),
-        faltante.getJugador(),
-        faltante.getSeleccion(),
-        faltante.getEquipo(),
-        faltante.getCategoria()
-    )).toList();
-  }
+    /*
+        Por ahora mockeado en el front, pero la idea es que busque si hay figuritas disponibles
+        según los filtros en publicaciones y subastas activas
+        Los resultados se agrupan por figuritaId, es decir devuelve una entrada por figurita
+        y dentro una lista de publicaciones y subastas activas que la tienen disponible
+        * Parámetros opcionales (todos combinables):
+        * @param number      número exacto de la figurita
+        * @param description texto parcial en la descripción (jugador, nombre especial, etc.)
+        * @param country     selección (ej: "Argentina")
+        * @param category    categoría (ej: "LEGENDARIO")
+        * @param type        tipo (ej: "JUGADOR")
+        TODO: implementar cuando PublicacionesService y SubastasService estén migrados a mongo
+        Consultar publicaciones activas + subastas activas, filtrar por los parámetros
+        usando los campos desnormalizados (number, description, country, category, type)
+        y agrupar por figuritaId antes de devolver.
+        hay que cambiar el tipo de return tmb por un modelito nuevo
+    */
+    public Void searchAvailable(Integer number, String description,
+                                           String country, String category, String type) {
+        throw new UnsupportedOperationException("searchAvailable: pendiente de implementación");
+    }
 }

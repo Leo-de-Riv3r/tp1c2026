@@ -1,4 +1,4 @@
-package com.tacs.tp1c2026.repositories;
+/*package com.tacs.tp1c2026.repositories;
 
 import com.tacs.tp1c2026.entities.OfertaSubasta;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,3 +11,4 @@ public interface OfertasSubastaRepository extends JpaRepository<OfertaSubasta, I
   List<OfertaSubasta> findByUsuarioPostorId(Integer userId);
   List<OfertaSubasta> findBySubastaUsuarioPublicanteId(Integer userId);
 }
+*/

@@ -1,4 +1,4 @@
-package com.tacs.tp1c2026.entities;
+/*package com.tacs.tp1c2026.entities;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -35,3 +35,4 @@ public class ItemOfertaSubasta {
   private Integer cantidad;
 }
 
+*/

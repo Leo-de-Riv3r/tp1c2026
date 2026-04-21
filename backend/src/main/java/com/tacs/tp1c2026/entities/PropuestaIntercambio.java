@@ -1,4 +1,4 @@
-package com.tacs.tp1c2026.entities;
+/*package com.tacs.tp1c2026.entities;
 
 import com.tacs.tp1c2026.entities.enums.EstadoPropuesta;
 import jakarta.persistence.Entity;
@@ -40,3 +40,4 @@ public class PropuestaIntercambio {
     this.estado = EstadoPropuesta.ACEPTADA;
   }
 }
+*/

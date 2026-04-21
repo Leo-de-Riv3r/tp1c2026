@@ -1,4 +1,4 @@
-package com.tacs.tp1c2026.repositories;
+/*package com.tacs.tp1c2026.repositories;
 
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
@@ -29,3 +29,4 @@ public class IntArrayConverter implements AttributeConverter<int[], String> {
                 .toArray();
     }
 }
+*/

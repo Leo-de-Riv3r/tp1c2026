@@ -1,4 +1,4 @@
-package com.tacs.tp1c2026.entities.dto.output;
+/*package com.tacs.tp1c2026.entities.dto.output;
 
 import java.util.List;
 import lombok.Setter;
@@ -9,3 +9,4 @@ public class PropuestaRecibidaDto {
   private List<FiguritaDto> figuritas;
   private UsuarioDto usuario;
 }
+*/

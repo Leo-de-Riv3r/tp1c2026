@@ -1,3 +1,4 @@
+/*
 package com.tacs.tp1c2026.entities;
 
 import jakarta.persistence.Column;
@@ -34,3 +35,4 @@ public class Feedback {
   @Column
   private LocalDateTime fecha = LocalDateTime.now();
 }
+*/

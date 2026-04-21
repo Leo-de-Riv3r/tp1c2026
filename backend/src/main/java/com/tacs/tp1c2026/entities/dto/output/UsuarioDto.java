@@ -1,4 +1,4 @@
-package com.tacs.tp1c2026.entities.dto.output;
+/*package com.tacs.tp1c2026.entities.dto.output;
 
 import com.tacs.tp1c2026.entities.Figurita;
 import com.tacs.tp1c2026.entities.FiguritaColeccion;
@@ -21,3 +21,4 @@ public class UsuarioDto {
   private String nombre;
   private LocalDateTime fechaAlta;
 }
+*/
