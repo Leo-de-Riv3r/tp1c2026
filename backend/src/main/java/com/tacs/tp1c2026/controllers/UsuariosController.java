@@ -1,138 +1,79 @@
 package com.tacs.tp1c2026.controllers;
 
-
 import com.tacs.tp1c2026.entities.Usuario;
-import com.tacs.tp1c2026.entities.dto.input.UserDto;
-import com.tacs.tp1c2026.entities.dto.output.*;
-
-import java.util.List;
+import com.tacs.tp1c2026.entities.embedded.FiguritaColeccion;
+import com.tacs.tp1c2026.entities.embedded.FiguritaFaltante;
+import com.tacs.tp1c2026.entities.dto.input.usuario.*;
 import com.tacs.tp1c2026.services.UsuariosService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
+import java.util.List;
 
 @RestController
-@RequestMapping("/api/usuarios")
+@RequestMapping("/users")
 public class UsuariosController {
-    
+
     private final UsuariosService usuariosService;
 
     public UsuariosController(UsuariosService usuariosService) {
         this.usuariosService = usuariosService;
     }
 
-
-    // DSP BORRAR
-    @PostMapping("/create")
-    public ResponseEntity<UsuarioDto> crearUsuario(@RequestBody UserDto dto) {
-        // El usuario devuelto por el service YA DEBE tener el ID
-        Usuario usuarioPersistido = usuariosService.crearUsuario(dto.getNombre());
-
-        UsuarioDto response = new UsuarioDto();
-        response.setId(usuarioPersistido.getId());
-        response.setNombre(usuarioPersistido.getNombre());
-        response.setFechaAlta(usuarioPersistido.getFechaAlta());
-
-        return ResponseEntity.ok(response);
-    }
-
-    // DSP BORRAR
+    // Todos los users - para la view del admin - ver si se usa o despues descartar
     @GetMapping
-    public ResponseEntity<List<UsuarioDto>> listarUsuarios() {
+    public ResponseEntity<List<Usuario>> getAll() {
         return ResponseEntity.ok(usuariosService.listarUsuarios());
     }
 
-    /**
-     * {@code GET /api/usuarios/{userId}/publicacionesIntercambio} &mdash; Retorna las publicaciones de intercambio creadas por el usuario.
-     * @param userId identificador del usuario
-     * @return 200 OK con la lista de publicaciones de intercambio del usuario
-     */
-    @GetMapping("/{userId}/publicacionesIntercambio")
-    public ResponseEntity<List<PublicacionIntercambioDto>> obtenerPublicacionesPropias(@PathVariable Integer userId) {
-        return ResponseEntity.ok(usuariosService.obtenerPublicacionesPropias(userId));
+    @GetMapping("/{id}")
+    public ResponseEntity<Usuario> getById(@PathVariable String id) {
+        return ResponseEntity.ok(usuariosService.obtenerUsuario(id));
     }
 
+    /* Métodos para operar sobre la colección del usuario */
 
-    // envio las propuestas de INTERCAMBIO de figus ENVIADAS por el usuario
-    /**
-     * {@code GET /api/usuarios/{userId}/propuestas/enviadas} &mdash; Retorna las propuestas de
-     * intercambio enviadas por el usuario.
-     *
-     * @param userId identificador del usuario
-     * @return 200 OK con la lista de propuestas enviadas
-     */
-    @GetMapping("/{userId}/propuestas/enviadas")
-    public ResponseEntity<List<PropuestaIntercambioDto>> obtenerPropuestasEnviadas(@PathVariable Integer userId) {
-        return ResponseEntity.ok(usuariosService.obtenerPropuestasEnviadas(userId));
+    @GetMapping("/{id}/collection")
+    public ResponseEntity<List<FiguritaColeccion>> getCollection(@PathVariable String id) {
+        return ResponseEntity.ok(usuariosService.obtenerColeccion(id));
     }
 
-
-    // envio las propuestas de INTERCAMBIO de figus RECIBIDAS por el usuario
-    /**
-     * {@code GET /api/usuarios/{userId}/propuestas/recibidas} &mdash; Retorna las propuestas de
-     * intercambio recibidas en las publicaciones del usuario.
-     *
-     * @param userId identificador del usuario
-     * @return 200 OK con la lista de propuestas recibidas
-     */
-    @GetMapping("/{userId}/propuestas/recibidas")
-    public ResponseEntity<List<PropuestaIntercambioDto>> obtenerPropuestasRecibidas(@PathVariable Integer userId) {
-        return ResponseEntity.ok(usuariosService.obtenerPropuestasRecibidas(userId));
+    // Agrega una figurita a la colección o incrementa la cantidad si ya existía
+    @PostMapping("/{id}/collection")
+    public ResponseEntity<FiguritaColeccion> addToCollection(
+            @PathVariable String id,
+            @Valid @RequestBody AddToCollectionRequest request) {
+        return ResponseEntity.ok(usuariosService.agregarAColeccion(id, request.figuritaId()));
     }
 
-
-//    // envios las SUBASTAS activas
-//    /**
-//     * {@code GET /api/usuarios/{userId}/subastas/activas} &mdash; Retorna las subastas activas
-//     * del usuario.
-//     *
-//     * @param userId identificador del usuario
-//     * @return 200 OK con la lista de subastas activas
-//     */
-//    @GetMapping("/{userId}/subastas/activas")
-//    public ResponseEntity<List<SubastaDto>> obtenerSubastasActivas(@PathVariable Integer userId) {
-//        return ResponseEntity.ok(usuariosService.obtenerSubastasActivas(userId));
-//    }
-
-
-    // envio todas las subastas que hice segun un estado, Si estado (ACTIVA,VENCIDA,ETC) no se envia, devuelve todas las subastas del usuario publicante
-    /**
-     * {@code GET /api/usuarios/{userId}/subastas} &mdash; Retorna las subastas del usuario
-     * filtradas por estado. Si no se envía el parámetro {@code estado}, devuelve todas.
-     *
-     * @param userId identificador del usuario
-     * @param estado estado de la subasta a filtrar (ACTIVA, VENCIDA, etc.); opcional
-     * @return 200 OK con la lista de subastas filtradas
-     */
-    @GetMapping("/{userId}/subastas")
-    public ResponseEntity<List<SubastaDto>> obtenerSubastasPorEstado(@PathVariable Integer userId, @RequestParam(required = false) String estado) {
-        return ResponseEntity.ok(usuariosService.obtenerSubastasPorEstado(userId, estado));
+    // Decrementa la cantidad de una figurita de la colección, si llega a cero la quita
+    @PatchMapping("/{id}/collection/{figuritaId}")
+    public ResponseEntity<Void> decrementFromCollection(
+            @PathVariable String id,
+            @PathVariable String figuritaId) {
+        usuariosService.decrementFromCollection(id, figuritaId);
+        return ResponseEntity.noContent().build();
     }
 
+    /* Métodos que operan sobre la lista de faltantes del usuario */
 
-    // envio las ofertas de subastas que realicé
-    /**
-     * {@code GET /api/usuarios/{userId}/subastas/ofertas-enviadas} &mdash; Retorna las ofertas de
-     * subasta enviadas por el usuario.
-     *
-     * @param userId identificador del usuario postor
-     * @return 200 OK con la lista de ofertas enviadas
-     */
-    @GetMapping("/{userId}/subastas/ofertas-enviadas")
-    public ResponseEntity<List<OfertaSubastaDto>> obtenerOfertasSubastaEnviadas(@PathVariable Integer userId) {
-        return ResponseEntity.ok(usuariosService.obtenerOfertasSubastaEnviadas(userId));
+    @GetMapping("/{id}/missing-cards")
+    public ResponseEntity<List<FiguritaFaltante>> getMissingCards(@PathVariable String id) {
+        return ResponseEntity.ok(usuariosService.obtenerFaltantes(id));
     }
 
-
-    // envio las ofertas de subastas que recibi
-    /**
-     * {@code GET /api/usuarios/{userId}/subastas/ofertas-recibidas} &mdash; Retorna las ofertas de
-     * subasta recibidas en las subastas del usuario.
-     *
-     * @param userId identificador del usuario publicante
-     * @return 200 OK con la lista de ofertas recibidas
-     */
-    @GetMapping("/{userId}/subastas/ofertas-recibidas")
-    public ResponseEntity<List<OfertaSubastaDto>> obtenerOfertasSubastaRecibidas(@PathVariable Integer userId) {
-        return ResponseEntity.ok(usuariosService.obtenerOfertasSubastaRecibidas(userId));
+    // Marca una figurita como faltante
+    @PostMapping("/{id}/missing-cards")
+    public ResponseEntity<FiguritaFaltante> addMissingCard(
+            @PathVariable String id,
+            @Valid @RequestBody AddMissingCardRequest request) {
+        return ResponseEntity.ok(usuariosService.agregarFaltante(id, request.figuritaId()));
     }
+
+    /* Métodos para las sugerencias - No sé qué más se hará sobre esto, asi que dejo este x ahora */
+
+    // @GetMapping("/{id}/suggestions")
+    // public ResponseEntity<List<Sugerencia>> getSuggestions(@PathVariable String id) {
+    //     return ResponseEntity.ok(usuariosService.obtenerSugerencias(id));
+    // }
 }

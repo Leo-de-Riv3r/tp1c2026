@@ -1,3 +1,4 @@
+/*
 package com.tacs.tp1c2026.entities;
 
 import com.tacs.tp1c2026.entities.dto.output.AlertaDto;
@@ -13,7 +14,7 @@ public class AlertaVisitor {
     return new AlertaFiguritaFaltanteDto(
         alerta.getId(),
         alerta.getUsuario().getId(),
-        alerta.getUsuario().getNombre(),
+        alerta.getUsuario().getName(),
         alerta.getFigurita().getId(),
         alerta.getFigurita().getNumero(),
         alerta.getFigurita().getJugador(),
@@ -27,7 +28,7 @@ public class AlertaVisitor {
     return new AlertaPorpuestaRecibidaDto(
         alerta.getId(),
         alerta.getUsuario().getId(),
-        alerta.getUsuario().getNombre(),
+        alerta.getUsuario().getName(),
         alerta.getPropuesta().getId(),
         alerta.getPropuesta().getPublicacion().getId(),
         alerta.getPropuesta().getFiguritas().stream().map(Figurita::getNumero).toList()
@@ -44,3 +45,4 @@ public class AlertaVisitor {
     );
   }
 }
+*/

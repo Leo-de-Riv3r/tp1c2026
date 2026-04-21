@@ -1,59 +1,30 @@
+/*
+    Representa al documento de la figurita de catálogo, que es la base de las que se muestran en todos los demás docs
+    El catálogo va a estar cargado en la base y va a ser inmutable    
+*/
+
 package com.tacs.tp1c2026.entities;
 
-
-
-import java.util.List;
-
-import com.tacs.tp1c2026.entities.enums.Categoria;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 @Getter
-@Entity
 @Setter
-@Table
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Document(collection = "figuritas")
 public class Figurita {
-  @Id
-  @GeneratedValue(strategy = GenerationType.AUTO)
-  private Integer id;
-
-  @Column
-  private Integer numero;
-
-  @Column
-  private String jugador;
-
-  @Column
-  private String descripcion;
-
-  @Column
-  private String seleccion;
-
-  @Column
-  private String equipo;
-
-  @Column
-  @ManyToMany(fetch = jakarta.persistence.FetchType.LAZY)
-  @JoinTable(
-      name = "figurita_usuarios_faltantes",
-      joinColumns = @jakarta.persistence.JoinColumn(name = "figurita_id"),
-      inverseJoinColumns = @jakarta.persistence.JoinColumn(name = "usuario_id")
-  )
-  private List<Usuario> usuariosFaltantes;
-
-  @Enumerated(EnumType.STRING)
-  @Column
-  private Categoria categoria;
+    @Id
+    private String id;
+    private Integer number;
+    private String description;
+    private String country;
+    private String team;
+    private String category;
 }

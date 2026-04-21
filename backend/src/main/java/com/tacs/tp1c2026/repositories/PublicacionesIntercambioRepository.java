@@ -1,4 +1,4 @@
-package com.tacs.tp1c2026.repositories;
+/*package com.tacs.tp1c2026.repositories;
 
 import com.tacs.tp1c2026.entities.PublicacionIntercambio;
 import com.tacs.tp1c2026.entities.enums.EstadoPublicacion;
@@ -10,3 +10,4 @@ public interface PublicacionesIntercambioRepository extends JpaRepository<Public
 
   List<PublicacionIntercambio> findByEstado(EstadoPublicacion estadoPublicacion);
 }
+*/

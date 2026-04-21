@@ -1,4 +1,4 @@
-package com.tacs.tp1c2026.entities;
+/*package com.tacs.tp1c2026.entities;
 
 import com.tacs.tp1c2026.entities.enums.EstadoPublicacion;
 import jakarta.persistence.Column;
@@ -43,3 +43,4 @@ public class PublicacionIntercambio {
   @Column
   private EstadoPublicacion estado = EstadoPublicacion.ACTIVA;
 }
+*/
