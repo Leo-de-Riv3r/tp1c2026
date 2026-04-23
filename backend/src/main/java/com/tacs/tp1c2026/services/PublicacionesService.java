@@ -115,8 +115,6 @@ public class PublicacionesService {
       throw new BadInputException(e.getMessage());
     }
 
-    // Actualizar cantidad ofertada
-    figuritasParaOfrecer.forEach(FiguritaColeccion::aumentarCantidadOfertada);
 
     List<Figurita> figuritasOfrecidas = figuritasParaOfrecer.stream()
         .map(FiguritaColeccion::getFigurita)

@@ -28,7 +28,7 @@ public class FiguritasController {
     }
 
     @GetMapping("/catalog/{id}")
-    public ResponseEntity<Figurita> getCatalogById(@PathVariable String id) {
+    public ResponseEntity<Figurita> getCatalogById(@PathVariable Integer id) {
         return ResponseEntity.ok(figuritasService.getById(id));
     }
 

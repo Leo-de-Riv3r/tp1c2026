@@ -1,46 +1,31 @@
 package com.tacs.tp1c2026.entities.dto.output;
 
-import com.tacs.tp1c2026.entities.enums.Categoria;
-
 public class AlertaFiguritaFaltanteDto extends AlertaDto {
 
-  private final Integer fromUserId;
-  private final String fromUserName;
   private final Integer figuritaId;
   private final Integer figuritaNumero;
-  private final String figuritaJugador;
-  private final String figuritaSeleccion;
+  private final String figuritaDescripcion;
+  private final String figuritaPais;
   private final String figuritaEquipo;
-  private final Categoria figuritaCategoria;
+  private final String figuritaCategoria;
 
   public AlertaFiguritaFaltanteDto(
       Integer id,
-      Integer fromUserId,
-      String fromUserName,
       Integer figuritaId,
       Integer figuritaNumero,
-      String figuritaJugador,
-      String figuritaSeleccion,
+      String figuritaDescripcion,
+      String figuritaPais,
       String figuritaEquipo,
-      Categoria figuritaCategoria) {
+      String figuritaCategoria) {
     super(id, "FIGURITA_FALTANTE");
-    this.fromUserId = fromUserId;
-    this.fromUserName = fromUserName;
     this.figuritaId = figuritaId;
     this.figuritaNumero = figuritaNumero;
-    this.figuritaJugador = figuritaJugador;
-    this.figuritaSeleccion = figuritaSeleccion;
+    this.figuritaDescripcion = figuritaDescripcion;
+    this.figuritaPais = figuritaPais;
     this.figuritaEquipo = figuritaEquipo;
     this.figuritaCategoria = figuritaCategoria;
   }
 
-  public Integer getFromUserId() {
-    return fromUserId;
-  }
-
-  public String getFromUserName() {
-    return fromUserName;
-  }
 
   public Integer getFiguritaId() {
     return figuritaId;
@@ -50,19 +35,19 @@ public class AlertaFiguritaFaltanteDto extends AlertaDto {
     return figuritaNumero;
   }
 
-  public String getFiguritaJugador() {
-    return figuritaJugador;
+  public String getFiguritaDescripcion() {
+    return figuritaDescripcion;
   }
 
-  public String getFiguritaSeleccion() {
-    return figuritaSeleccion;
+  public String getFiguritaPais() {
+    return figuritaPais;
   }
 
   public String getFiguritaEquipo() {
     return figuritaEquipo;
   }
 
-  public Categoria getFiguritaCategoria() {
+  public String getFiguritaCategoria() {
     return figuritaCategoria;
   }
 }

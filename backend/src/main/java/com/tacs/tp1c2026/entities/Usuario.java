@@ -1,8 +1,11 @@
 package com.tacs.tp1c2026.entities;
 
+import com.tacs.tp1c2026.exceptions.FiguritaNoDisponibleException;
+import com.tacs.tp1c2026.exceptions.FiguritaNoEncontradaException;
+import com.tacs.tp1c2026.exceptions.FiguritaYaPublicadaException;
+import com.tacs.tp1c2026.exceptions.FiguritasInsuficientesException;
 import jakarta.annotation.PostConstruct;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Transient;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.index.Indexed;
 import java.time.LocalDateTime;
@@ -14,8 +17,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import com.tacs.tp1c2026.entities.embedded.FiguritaColeccion;
-import com.tacs.tp1c2026.entities.embedded.FiguritaFaltante;
 
 @Getter
 @Setter
@@ -23,15 +24,15 @@ import com.tacs.tp1c2026.entities.embedded.FiguritaFaltante;
 @AllArgsConstructor
 @Builder
 @TypeAlias("usuario")
-@Document(collection = "usuarios") // nombre de la collection en mongo
+@Document(collection = "usuarios")
 public class Usuario {
   @Id
-  private String id;
+  private Integer id;
   private String name;
   @Indexed(unique = true)
   private String email;
   private String passwordHash;
-  private String avatarId; // vamos a hacer 5 svgs fijos para el front nada mas
+  private Integer avatarId;
   @Builder.Default
   private Double rating = null;
   @Builder.Default
@@ -39,32 +40,34 @@ public class Usuario {
   private LocalDateTime lastLogin;
   @Builder.Default
   private LocalDateTime creationDate = LocalDateTime.now();
-  // Figuritas de la colección del usuario, cambio la lista de repetidas por esta porque serían las de esta colección con cantidad > 1
   @Builder.Default
   private List<FiguritaColeccion> collection = new ArrayList<>();
   @Builder.Default
   private List<FiguritaFaltante> missingCards = new ArrayList<>();
   @Builder.Default
-  private List<String> suggestionsIds = new ArrayList<>();
-    @Transient
-    private VectorProfile vectorProfile;
+  private List<Integer> suggestionsIds = new ArrayList<>();
+  @Builder.Default
+  private List<Alerta> alertas = new ArrayList<>();
+
+  @Builder.Default
+  private Perfil perfil = new Perfil();
   public void agregarSugerencia(Usuario sugerencias) {
     this.suggestionsIds.add(sugerencias.id);
   }
 
   public void agregarRepetidas(FiguritaColeccion figuritaColeccion) {
     this.collection.add(figuritaColeccion);
-    this.vectorProfile.addCard(figuritaColeccion);
+    this.perfil.addCard(figuritaColeccion);
   }
 
   public void agregarFaltantes(Figurita figurita) {
-    this.faltantes.add(figurita);
-    this.vectorProfile.addCard(figurita);
+    this.missingCards.add(new FiguritaFaltante(figurita));
+    this.perfil.addCard(figurita);
   }
 
   public FiguritaColeccion getRepetidaByNumero(Integer numFiguritaPublicada) throws FiguritaNoEncontradaException {
-    return this.repetidas.stream()
-        .filter(repetida -> repetida.getFigurita().getNumero().equals(numFiguritaPublicada))
+    return this.collection.stream()
+        .filter(repetida -> repetida.getFigurita().getNumber().equals(numFiguritaPublicada))
         .findFirst()
         .orElseThrow(() -> new FiguritaNoEncontradaException("El usuario no posee la figurita " + numFiguritaPublicada));
   }
@@ -83,7 +86,7 @@ public class Usuario {
 
     for (Integer numFigurita : numerosFiguritas) {
       FiguritaColeccion figurita = getRepetidaByNumero(numFigurita);
-      figurita.validarDisponibleParaOferta();
+      figurita.aumentarCantidadOfertada();
       figuritasEncontradas.add(figurita);
     }
 
@@ -104,20 +107,16 @@ public class Usuario {
           FiguritaYaPublicadaException,
           FiguritasInsuficientesException {
     FiguritaColeccion figurita = getRepetidaByNumero(numFigurita);
-    return figurita.crearPublicacion(1);
+    return figurita.crearPublicacion(this,numFigurita);
   }
 
   public void agregarAlerta(Alerta alerta) {
     this.alertas.add(alerta);
   }
 
-  public void removerSugerencias() {
-    this.sugerenciasIntercambios.clear();
-  }
-
   @PostConstruct
   private void initializeVectorProfile() {
-    this.vectorProfile = new VectorProfile(this.repetidas, this.faltantes);
+    this.perfil = new Perfil(this.collection,this.missingCards);
   }
 
   public void removerSugerencias() {

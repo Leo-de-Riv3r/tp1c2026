@@ -1,44 +1,36 @@
-/*package com.tacs.tp1c2026.entities;
+package com.tacs.tp1c2026.entities;
 
 import com.tacs.tp1c2026.entities.enums.EstadoPropuesta;
 import com.tacs.tp1c2026.exceptions.PropuestaYaProcesadaException;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.annotation.TypeAlias;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
-@Entity
-@Table
+@Document(collection = "propuestas_intercambio")
+@TypeAlias("propuestaIntercambio")
 @Getter
+@Setter
 @NoArgsConstructor
 public class PropuestaIntercambio {
-  @Id @GeneratedValue(strategy = GenerationType.AUTO)
+  @Id
   private Integer id;
 
-  @ManyToOne
-  @JoinColumn(name = "publicacion_id", referencedColumnName = "id")
   private PublicacionIntercambio publicacion;
 
-  @OneToMany
-  @JoinColumn(name = "figurita_id", referencedColumnName = "id")
   private List<Figurita> figuritas = new ArrayList<>();
 
-  @ManyToOne
-  @JoinColumn(name = "usuario_id", referencedColumnName = "id")
+  @DocumentReference
   private Usuario usuario;
 
-  @Enumerated(EnumType.STRING)
   private EstadoPropuesta estado = EstadoPropuesta.PENDIENTE;
 
   public PropuestaIntercambio(PublicacionIntercambio publicacion, List<Figurita> figuritas, Usuario usuario) {
@@ -90,23 +82,19 @@ public class PropuestaIntercambio {
    */
   public void transferirFiguritasA(Usuario usuarioDestino) {
     this.figuritas.forEach(figu -> {
-      // Aumentar cantidad en repetidas del destino si ya la tiene
-      Optional<FiguritaColeccion> figuritaDestinoOpt = usuarioDestino.getRepetidas().stream()
-          .filter(f -> f.getFigurita().getNumero().equals(figu.getNumero()))
+      Optional<FiguritaColeccion> figuritaDestinoOpt = usuarioDestino.getCollection().stream()
+          .filter(f -> f.getFigurita() != null)
+          .filter(f -> Objects.equals(f.getFigurita().getNumber(), figu.getNumber()))
           .findFirst();
 
-      if (figuritaDestinoOpt.isPresent()) {
-        figuritaDestinoOpt.get().aumentarCantidad();
-      }
+        figuritaDestinoOpt.ifPresent(FiguritaColeccion::aumentarCantidad);
 
-      // Remover de faltantes del destino si corresponde
-      if (usuarioDestino.getFaltantes().contains(figu)) {
-        usuarioDestino.getFaltantes().remove(figu);
-      }
+      usuarioDestino.getMissingCards().removeIf(faltante ->
+          faltante.getFigurita() != null && Objects.equals(faltante.getFigurita().getId(), figu.getId()));
 
-      // Reducir cantidad del usuario que ofertó
-      this.usuario.getRepetidas().forEach(repetida -> {
-        if (repetida.getFigurita().getNumero().equals(figu.getNumero())) {
+
+      this.usuario.getCollection().forEach(repetida -> {
+        if (repetida.getFigurita() != null && Objects.equals(repetida.getFigurita().getNumber(), figu.getNumber())) {
           repetida.reducirCantidad();
           repetida.reducirCantidadOfertada();
         }
@@ -114,4 +102,3 @@ public class PropuestaIntercambio {
     });
   }
 }
-*/

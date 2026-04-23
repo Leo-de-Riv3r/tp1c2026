@@ -1,80 +1,68 @@
-/*package com.tacs.tp1c2026.entities;
+package com.tacs.tp1c2026.entities;
 
 import com.tacs.tp1c2026.entities.enums.EstadoSubasta;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import com.tacs.tp1c2026.exceptions.OfertaYaProcesadaException;
+import com.tacs.tp1c2026.exceptions.SubastaCerradaException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import com.tacs.tp1c2026.exceptions.OfertaYaProcesadaException;
-import com.tacs.tp1c2026.exceptions.SubastaCerradaException;
 import java.util.Objects;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.annotation.TypeAlias;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-@Entity
-@Table
+@Document(collection = "subastas")
+@TypeAlias("subasta")
 @Getter
 @Setter
 @NoArgsConstructor
 public class Subasta {
   @Id
-  @GeneratedValue(strategy = GenerationType.AUTO)
   private Integer id;
 
-  @ManyToOne
-  @JoinColumn(name = "figurita_coleccion_id", referencedColumnName = "id")
   private Figurita figurita;
 
-  @ManyToOne
-  @JoinColumn(name = "usuario_id", referencedColumnName = "id")
+  private Integer usuarioPublicanteId;
+
+  @Transient
   private Usuario usuarioPublicante;
 
-  @Column
   private LocalDateTime fechaCreacion;
 
-  @Column
   private LocalDateTime fechaCierre;
 
-  @Column
   private Integer cantidadMinFiguritas;
 
-  @Enumerated(EnumType.STRING)
-  @Column
   private EstadoSubasta estado = EstadoSubasta.ACTIVA;
 
-  @ManyToOne
-  @JoinColumn(name = "mejor_oferta_id", referencedColumnName = "id")
+  private Integer mejorOfertaId;
+
+  @Transient
   private OfertaSubasta mejorOferta;
 
-  @OneToMany(mappedBy = "subasta")
   private List<OfertaSubasta> ofertas;
 
-  @ManyToMany
-  @JoinTable(
-      name = "subasta_usuario_interesado",
-      joinColumns = @JoinColumn(name = "subasta_id", referencedColumnName = "id"),
-      inverseJoinColumns = @JoinColumn(name = "usuario_id", referencedColumnName = "id")
-  )
   private List<Usuario> usuariosInteresados = new ArrayList<>();
 
   public Subasta(Usuario usuario, Figurita coleccion, Integer duracionSubasta, Integer cantidadMinFiguritas){
-    this.usuarioPublicante = usuario;
+    this.setUsuarioPublicante(usuario);
     this.figurita = coleccion;
     this.fechaCierre = this.fechaCreacion.plusHours(duracionSubasta);
     this.cantidadMinFiguritas = cantidadMinFiguritas;
+  }
+
+  public void setUsuarioPublicante(Usuario usuarioPublicante) {
+    this.usuarioPublicante = usuarioPublicante;
+    this.usuarioPublicanteId = usuarioPublicante != null ? usuarioPublicante.getId() : null;
+  }
+
+  public void setMejorOferta(OfertaSubasta mejorOferta) {
+    this.mejorOferta = mejorOferta;
+    this.mejorOfertaId = mejorOferta != null ? mejorOferta.getId() : null;
   }
 
   public void agregarOferta(OfertaSubasta ofertaSubasta){
@@ -108,7 +96,7 @@ public class Subasta {
 
     oferta.aceptar();
     this.estado = EstadoSubasta.ADJUDICADA;
-    this.mejorOferta = oferta;
+    this.setMejorOferta(oferta);
 
     if (this.ofertas == null) {
       return;
@@ -124,4 +112,3 @@ public class Subasta {
     this.usuariosInteresados.add(usuario);
   }
 }
-*/

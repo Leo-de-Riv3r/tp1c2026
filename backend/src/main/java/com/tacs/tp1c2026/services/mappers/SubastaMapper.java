@@ -25,7 +25,7 @@ public class SubastaMapper {
     return new SubastaDto(
             subasta.getId(),
             subasta.getUsuarioPublicante() != null ? subasta.getUsuarioPublicante().getId() : null,
-            subasta.getFigurita() != null ? subasta.getFigurita().getNumero() : null,
+            subasta.getFigurita() != null ? subasta.getFigurita().getNumber() : null,
             subasta.getCantidadMinFiguritas(),
             subasta.getFechaCreacion(),
             subasta.getFechaCierre(),
@@ -60,15 +60,15 @@ public class SubastaMapper {
         .filter(i -> i.getFigurita() != null)
         .map(i -> new OfertaSubastaDto.ItemOfertaDetalleDto(
             i.getFigurita().getId(),
-            i.getFigurita().getNumero(),
+            i.getFigurita().getNumber(),
             i.getCantidad()
         ))
         .toList();
 
     return new OfertaSubastaDto(
         ofertaSubasta.getId(),
-        ofertaSubasta.getSubasta() != null ? ofertaSubasta.getSubasta().getId() : null,
-        ofertaSubasta.getUsuarioPostor() != null ? ofertaSubasta.getUsuarioPostor().getId() : null,
+        ofertaSubasta.getSubasta() != null ? ofertaSubasta.getSubasta().getId() : ofertaSubasta.getSubastaId(),
+        ofertaSubasta.getUsuarioPostor() != null ? ofertaSubasta.getUsuarioPostor().getId() : ofertaSubasta.getUsuarioPostorId(),
         cantidadTotal,
         idsFiguritas,
         itemsDetalle,

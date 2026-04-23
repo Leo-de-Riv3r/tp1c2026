@@ -23,8 +23,8 @@ public class IntercambioMapper {
    */
   public PublicacionIntercambioDto mapPublicacion(PublicacionIntercambio publicacion) {
     Integer numFigurita = null;
-    if (publicacion.getFiguritaColeccion() != null && publicacion.getFiguritaColeccion().getFigurita() != null) {
-      numFigurita = publicacion.getFiguritaColeccion().getFigurita().getNumero();
+    if (publicacion.getFiguritaColeccion() != null) {
+      numFigurita = publicacion.getFiguritaColeccion().getNumber();
     }
     return new PublicacionIntercambioDto(
         publicacion.getId(),
@@ -46,8 +46,8 @@ public class IntercambioMapper {
     Integer numFiguritaPublicada = null;
     if (propuesta.getPublicacion() != null) {
       publicacionId = propuesta.getPublicacion().getId();
-      if (propuesta.getPublicacion().getFiguritaColeccion() != null && propuesta.getPublicacion().getFiguritaColeccion().getFigurita() != null) {
-        numFiguritaPublicada = propuesta.getPublicacion().getFiguritaColeccion().getFigurita().getNumero();
+      if (propuesta.getPublicacion().getFiguritaColeccion() != null) {
+        numFiguritaPublicada = propuesta.getPublicacion().getFiguritaColeccion().getNumber();
       }
     }
 
@@ -58,10 +58,10 @@ public class IntercambioMapper {
         figuritasOfrecidas.size(),
         figuritasOfrecidas.stream()
             .filter(Objects::nonNull)
-            .map(Figurita::getNumero)
+            .map(Figurita::getNumber)
             .filter(Objects::nonNull)
             .toList(),
-        propuesta.getUsuario() != null ? propuesta.getUsuario().getId() : null,
+        propuesta.getUsuarioId(),
         propuesta.getEstado().name()
     );
   }

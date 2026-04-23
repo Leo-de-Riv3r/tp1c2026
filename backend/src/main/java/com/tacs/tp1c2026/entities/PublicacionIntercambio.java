@@ -1,70 +1,63 @@
-/*package com.tacs.tp1c2026.entities;
+package com.tacs.tp1c2026.entities;
 
 import com.tacs.tp1c2026.entities.enums.EstadoPublicacion;
 import com.tacs.tp1c2026.exceptions.CuposAgotadosException;
 import com.tacs.tp1c2026.exceptions.PropuestaNoCorrespondeException;
 import com.tacs.tp1c2026.exceptions.PropuestaYaProcesadaException;
 import com.tacs.tp1c2026.exceptions.UsuarioNoAutorizadoException;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.TypeAlias;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
 @NoArgsConstructor
-@Entity
-@Table
+@Document(collection = "publicaciones_intercambio")
+@TypeAlias("publicacionIntercambio")
+@AllArgsConstructor
 @Setter
 @Getter
 public class PublicacionIntercambio {
   @Id
-  @GeneratedValue(strategy = GenerationType.AUTO)
   private Integer id;
 
-  @ManyToOne
-  @JoinColumn(name = "usuario_id", referencedColumnName = "id")
+  @DocumentReference
   private Usuario publicante;
 
-  @ManyToOne
-  @JoinColumn(name = "figurita_coleccion_id", referencedColumnName = "id")
-  private FiguritaColeccion figuritaColeccion;
+  @DocumentReference
+  private FiguritaColeccion coleccion;
 
-  @Column
   private Integer cantidad;
 
-  @Column
   private LocalDateTime fechaCreacion = LocalDateTime.now();
 
-  @OneToOne
-  @JoinColumn(name = "propuesta_id", referencedColumnName = "id")
+  @DocumentReference
   private PropuestaIntercambio propuestaAceptada;
 
-  @Enumerated(EnumType.STRING)
-  @Column
   private EstadoPublicacion estado = EstadoPublicacion.ACTIVA;
 
-  @OneToMany(mappedBy = "publicacion")
   private List<PropuestaIntercambio> propuestas = new ArrayList<>();
 
-  public PublicacionIntercambio(FiguritaColeccion coleccion, Integer cantidad){
-      this.figuritaColeccion = coleccion;
-      this.publicante = coleccion.getUsuario();
-      this.cantidad = cantidad;
+  private Feedback feedback;
+
+  public PublicacionIntercambio(
+          Usuario usuario,
+          FiguritaColeccion coleccion,
+          Integer cantidad
+  ) {
+    this.publicante = usuario;
+    this.coleccion = coleccion;
+    this.cantidad = cantidad;
   }
+
 
   /**
    * Verifica si hay cupos disponibles para nuevas propuestas.
@@ -75,7 +68,7 @@ public class PublicacionIntercambio {
     long propuestasPendientes = this.propuestas.stream()
         .filter(p -> p.getEstado() == com.tacs.tp1c2026.entities.enums.EstadoPropuesta.PENDIENTE)
         .count();
-    return propuestasPendientes < this.figuritaColeccion.getCantidadLibre();
+    return propuestasPendientes < this.coleccion.getCantidadLibre();
   }
 
   /**
@@ -96,7 +89,9 @@ public class PublicacionIntercambio {
    * @throws UsuarioNoAutorizadoException si el usuario no es el dueño
    */
   public void validarDueno(Usuario usuario) throws UsuarioNoAutorizadoException {
-    if (!this.publicante.equals(usuario)) {
+    Integer usuarioId = usuario.getId();
+    Integer duenoId = this.publicante.getId();
+    if (!Objects.equals(duenoId, usuarioId)) {
       throw new UsuarioNoAutorizadoException("El usuario no es el dueño de la publicacion");
     }
   }
@@ -130,7 +125,7 @@ public class PublicacionIntercambio {
     propuesta.validarPendiente();
 
     propuesta.rechazar();
-    this.figuritaColeccion.reducirCantidadOfertada();
+    this.coleccion.reducirCantidadOfertada();
   }
 
   /**
@@ -151,13 +146,13 @@ public class PublicacionIntercambio {
 
     propuesta.aceptar();
     this.propuestaAceptada = propuesta;
-    this.figuritaColeccion.reducirCantidad();
+    this.coleccion.reducirCantidad();
 
     // Transferir figuritas al publicante
     propuesta.transferirFiguritasA(this.publicante);
 
     // Cerrar publicación si no hay más stock
-    if (this.figuritaColeccion.getCantidadLibre() == 0) {
+    if (this.coleccion.getCantidadLibre() == 0) {
       this.estado = EstadoPublicacion.FINALIZADA;
     }
 
@@ -177,5 +172,8 @@ public class PublicacionIntercambio {
     this.propuestas.add(propuesta);
   }
 
+  public void agregarFeedback(Feedback feedback){
+    this.feedback = feedback;
+  }
+
 }
-*/

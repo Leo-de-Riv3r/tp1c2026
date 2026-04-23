@@ -21,7 +21,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "figuritas")
 public class Figurita {
     @Id
-    private String id;
+    private Integer id;
     private Integer number;
     private String description;
     private String country;

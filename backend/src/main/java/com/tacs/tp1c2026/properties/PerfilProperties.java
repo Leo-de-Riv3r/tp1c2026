@@ -1,9 +1,13 @@
 package com.tacs.tp1c2026.properties;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 @Component
+@Getter
+@Setter
 @ConfigurationProperties(prefix = "app.perfil")
 public class PerfilProperties {
 
@@ -14,47 +18,4 @@ public class PerfilProperties {
     private int vectorNearestNeighbors = 10;
     private int maxInitialCards = 6000;
 
-    public int getCount() {
-        return count;
-    }
-
-    public void setCount(int count) {
-        this.count = count;
-    }
-
-    public int getPerUser() {
-        return perUser;
-    }
-
-    public void setPerUser(int perUser) {
-        this.perUser = perUser;
-    }
-
-    public int getSuggestionNearestPerfiles() {
-        return suggestionNearestPerfiles;
-    }
-
-    public void setSuggestionNearestPerfiles(int suggestionNearestPerfiles) {
-        this.suggestionNearestPerfiles = suggestionNearestPerfiles;
-    }
-
-    public int getSuggestionTopNeighbors() {
-        return suggestionTopNeighbors;
-    }
-
-    public void setSuggestionTopNeighbors(int suggestionTopNeighbors) {
-        this.suggestionTopNeighbors = suggestionTopNeighbors;
-    }
-
-    public int getVectorNearestNeighbors() {
-        return vectorNearestNeighbors;
-    }
-
-    public void setVectorNearestNeighbors(int vectorNearestNeighbors) {
-        this.vectorNearestNeighbors = vectorNearestNeighbors;
-    }
-
-	public int maxInitialCards() {
-		return maxInitialCards;
-	}
 }

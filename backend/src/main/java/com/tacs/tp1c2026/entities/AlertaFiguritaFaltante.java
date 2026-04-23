@@ -1,41 +1,29 @@
-/*package com.tacs.tp1c2026.entities;
+package com.tacs.tp1c2026.entities;
 
 import com.tacs.tp1c2026.entities.dto.output.AlertaDto;
-import jakarta.persistence.DiscriminatorValue;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.springframework.data.annotation.TypeAlias;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
-@Entity
-@DiscriminatorValue("FIGURITA_FALTANTE")
+@Getter
+@Setter
+@NoArgsConstructor
+@Document(collection = "alertas")
+@TypeAlias("alertaFiguritaFaltante")
 public class AlertaFiguritaFaltante extends Alerta {
 
-    @ManyToOne
-    @JoinColumn(name = "usuario_id", referencedColumnName = "id")
-    private Usuario usuario;
-
-    @ManyToOne
-    @JoinColumn(name = "figurita_id", referencedColumnName = "id")
+    @DocumentReference
     private Figurita figurita;
 
-    protected AlertaFiguritaFaltante() {}
-
-    public AlertaFiguritaFaltante(Usuario usuario, Figurita figurita) {
-        this.usuario = usuario;
+    public AlertaFiguritaFaltante(Figurita figurita) {
         this.figurita = figurita;
-    }
-
-    public Usuario getUsuario() {
-        return usuario;
-    }
-
-    public Figurita getFigurita() {
-        return figurita;
     }
 
     @Override
     public AlertaDto visit(AlertaVisitor visitor) {
         return visitor.visit(this);
     }
-
-}*/
+}

@@ -1,42 +1,35 @@
-/*package com.tacs.tp1c2026.entities;
+package com.tacs.tp1c2026.entities;
 
 import com.tacs.tp1c2026.entities.dto.output.AlertaDto;
-import jakarta.persistence.DiscriminatorValue;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import java.time.LocalDateTime;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.springframework.data.annotation.TypeAlias;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-@Entity
-@DiscriminatorValue("SUBASTA_PROXIMA")
+@Getter
+@Setter
+@NoArgsConstructor
+@Document(collection = "alertas")
+@TypeAlias("alertaSubastaProxima")
 public class AlertaSubastaProxima extends Alerta {
 
-  @ManyToOne
-  @JoinColumn(name = "usuario_id", referencedColumnName = "id")
-  private Usuario usuario;
+  private Integer subastaId;
+  private Figurita figurita;
+  private LocalDateTime fechaCierre;
 
-  @ManyToOne
-  @JoinColumn(name = "subasta_id", referencedColumnName = "id")
-  private Subasta subasta;
-
-  protected AlertaSubastaProxima() {}
-
-  public AlertaSubastaProxima(Usuario usuario, Subasta subasta) {
-    this.usuario = usuario;
-    this.subasta = subasta;
-  }
-
-  public Usuario getUsuario() {
-    return usuario;
-  }
-
-  public Subasta getSubasta() {
-    return subasta;
+  public AlertaSubastaProxima(
+      Integer subastaId,
+      Figurita figurita,
+      LocalDateTime fechaCierre) {
+    this.subastaId = subastaId;
+    this.figurita = figurita;
+    this.fechaCierre = fechaCierre;
   }
 
   @Override
   public AlertaDto visit(AlertaVisitor visitor) {
     return visitor.visit(this);
   }
-
 }
-*/
