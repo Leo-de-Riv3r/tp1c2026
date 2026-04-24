@@ -1,108 +1,163 @@
-// package com.tacs.tp1c2026.entities;
+ package com.tacs.tp1c2026.entities;
 
-// import com.tacs.tp1c2026.properties.PerfilProperties;
-// import com.tacs.tp1c2026.repositories.VectorProfileConverter;
+ import java.util.LinkedHashMap;
+ import java.util.List;
+ import java.util.Map;
 
-// import java.util.HashMap;
-// import java.util.HashSet;
-// import java.util.List;
-// import java.util.Map;
-// import java.util.Set;
+ public class Perfil {
 
-// import jakarta.persistence.Column;
-// import jakarta.persistence.Convert;
-// import jakarta.persistence.Entity;
-// import jakarta.persistence.GeneratedValue;
-// import jakarta.persistence.GenerationType;
-// import jakarta.persistence.Id;
-// import jakarta.persistence.JoinColumn;
-// import jakarta.persistence.JoinTable;
-// import jakarta.persistence.ManyToMany;
-// import jakarta.persistence.Table;
-// import jakarta.persistence.Transient;
+     private final Map<Integer, Integer> values;
+
+     public Perfil(){
+         this.values = new LinkedHashMap<>();
+     }
+     
+     public Perfil(Map<Integer, Integer> values) {
+         this.values = values == null ? new LinkedHashMap<>() : new LinkedHashMap<>(values);
+     }
+
+     public Perfil(List<FiguritaColeccion> repetidas, List<FiguritaFaltante> faltantes) {
+         Map<Integer, Integer> values = new LinkedHashMap<>();
+         if (faltantes != null) {
+             for (FiguritaFaltante figurita : faltantes) {
+                 if (figurita != null && figurita.getFigurita().getId() != null) {
+                     values.put(figurita.getFigurita().getId(), 1);
+                 }
+             }
+         }
+         if (repetidas != null) {
+             for (FiguritaColeccion figuritaColeccion : repetidas) {
+                 if (figuritaColeccion != null && figuritaColeccion.getFigurita() != null && figuritaColeccion.getFigurita().getId() != null) {
+                     values.put(figuritaColeccion.getFigurita().getId(), -1);
+                 }
+             }
+         }
+         this.values = values;
+     }
+
+     /**
+      * Crea un {@code VectorProfile} vacío sin ninguna entrada.
+      *
+      * @return perfil vectorial vacío
+      */
+     public static Perfil empty() {
+         return new Perfil(new LinkedHashMap<>());
+     }
+
+     public boolean isEmpty() {
+         return values.isEmpty();
+     }
+
+     public void addCard(Figurita figurita) {
+         if (figurita == null || figurita.getId() == null) {
+             return;
+         }
+         values.put(figurita.getId(), 1);
+     }
+
+     public void addCard(FiguritaColeccion figuritaColeccion) {
+         if (figuritaColeccion == null || figuritaColeccion.getFigurita() == null || figuritaColeccion.getFigurita().getId() == null) {
+             return;
+         }
+         values.put(figuritaColeccion.getFigurita().getId(), -1);
+     }
+
+     /**
+      * Calcula el puntaje de complementariedad entre dos perfiles.
+      * Por cada clave presente en ambos perfiles, suma 1 si los signos son opuestos
+      * ({@code -1} vs {@code 1} o {@code 1} vs {@code -1}).
+      *
+      * @param first  primer perfil vectorial
+      * @param second segundo perfil vectorial
+      * @return puntaje de complementariedad (entero &ge; 0)
+      */
+     public static int complement(Perfil first, Perfil second) {
+         if (first == null || second == null) {
+             return 0;
+         }
+
+         int score = 0;
+          for (Map.Entry<Integer, Integer> entry : first.values.entrySet()) {
+             Integer currentValue = entry.getValue();
+             if (currentValue == null || currentValue == 0) {
+                 continue;
+             }
+
+             Integer otherValue = second.values.get(entry.getKey());
+             if (otherValue == null || otherValue == 0) {
+                 continue;
+             }
+
+             if ((currentValue == -1 && otherValue == 1) || (currentValue == 1 && otherValue == -1)) {
+                 score++;
+             }
+         }
+         return score;
+     }
+
+     /**
+      * Calcula el puntaje de acuerdo entre dos perfiles.
+      * Por cada clave donde el primer perfil tiene valor {@code 1} y el segundo también tiene {@code 1}, suma 1.
+      *
+      * @param first  primer perfil vectorial
+      * @param second segundo perfil vectorial
+      * @return puntaje de acuerdo (entero &ge; 0)
+      */
+     public static int agreement(Perfil first, Perfil second) {
+         if (first == null || second == null) {
+             return 0;
+         }
+         int score = 0;
+         for (Map.Entry<Integer, Integer> entry : first.values.entrySet()) {
+             Integer currentValue = entry.getValue();
+             if (currentValue == null || currentValue != 1) {
+                 continue;
+             }
+             Integer otherValue = second.values.get(entry.getKey());
+             if (otherValue != null && otherValue == 1) {
+                 score++;
+             }
+         }
+         return score;
+     }
+
+     /**
+      * Calcula el promedio con signo de una lista de perfiles vectoriales.
+      * Para cada clave presente en algún perfil, promedia los valores y redondea al entero más cercano.
+      *
+      * @param profiles lista de perfiles a promediar; si es nula o vacía retorna un perfil vacío
+      * @return perfil vectorial resultante del promedio
+      */
+     public static Perfil averageSign(List<Perfil> profiles) {
+         if (profiles == null || profiles.isEmpty()) {
+             return Perfil.empty();
+         }
+
+         int profileCount = profiles.size();
+          Map<Integer, Integer> sumMap = new LinkedHashMap<>();
+
+         for (Perfil profile : profiles) {
+             if (profile == null) {
+                 continue;
+             }
+              for (Map.Entry<Integer, Integer> entry : profile.values.entrySet()) {
+                 Integer value = entry.getValue();
+                 if (value != null) {
+                     sumMap.merge(entry.getKey(), value, Integer::sum);
+                 }
+             }
+         }
+
+          Map<Integer, Integer> averageSignMap = new LinkedHashMap<>();
+          for (Map.Entry<Integer, Integer> entry : sumMap.entrySet()) {
+             long value = Math.round(entry.getValue() / (double) profileCount);
+             averageSignMap.put(entry.getKey(), (int) value);
+         }
+
+         return new Perfil(averageSignMap);
+     }
 
 
-// @Entity
-// @Table(name = "perfiles")
-// public class Perfil {
 
-//     @Id
-//     @GeneratedValue(strategy = GenerationType.IDENTITY)
-//     private Integer id;
 
-//     @Column(name = "vector_representativo")
-//     @Convert(converter = VectorProfileConverter.class)
-//     private VectorProfile vectorRepresentativo = initializeVectorProfile();
-
-//     @ManyToMany
-//     @JoinTable(
-//         name = "perfil_vecinos",
-//         joinColumns = @JoinColumn(name = "perfil_id"),
-//         inverseJoinColumns = @JoinColumn(name = "usuario_id")
-//     )
-//     private Set<Usuario> vecinos = new HashSet<>();
-
-//     @Transient
-//     private PerfilProperties properties;
-
-//     public VectorProfile getVectorProfile() {
-//         return vectorRepresentativo;
-//     }
-
-//     /**
-//     * Agrega un usuario como vecino del perfil.
-//     * Si el perfil no tenía vecinos ni vector representativo, inicializa el vector
-//      * con el perfil del primer vecino agregado.
-//      *
-//      * @param usuario usuario a agregar como vecino
-//      */
-//     public void agregarVecino(Usuario usuario) {
-//         if (this.vecinos.isEmpty() && this.vectorRepresentativo.isEmpty() && usuario.getVectorProfile() != null) {
-//             this.vectorRepresentativo = usuario.getVectorProfile();
-//         }
-//         this.vecinos.add(usuario);
-//     }
-
-//     /**
-//     * Elimina al usuario de la lista de vecinos del perfil.
-//      *
-//      * @param usuario usuario a remover
-//      */
-//     public void removerVecino(Usuario usuario) {
-//         this.vecinos.remove(usuario);
-//     }
-
-//     public Set<Usuario> getVecinos() {
-//         return vecinos;
-//     }
-
-//     /**
-//     * Actualiza el vector representativo del perfil calculando el promedio con signo
-//      * de los perfiles vectoriales recibidos.
-//      * Si la lista es nula o vacía, el vector se resetea a uno vacío.
-//      *
-//      * @param profiles lista de perfiles vectoriales a promediar
-//      */
-//     public void updateVector(List<VectorProfile> profiles) {
-//         if (profiles == null || profiles.isEmpty()) {
-//             this.vectorRepresentativo = VectorProfile.empty();
-//             return;
-//         }
-
-//         this.vectorRepresentativo = VectorProfile.averageSign(profiles);
-//     }
-
-//     private VectorProfile initializeVectorProfile() {
-//         int MAX_CARDS = properties.maxInitialCards();
-//         Map<Integer,Integer> initialValues = new HashMap<>();
-
-//         for (int i = 0; i < MAX_CARDS; i++) {
-//             int randValue = (int) Math.round(Math.random() * 2 - 1);
-//             initialValues.put(i, randValue);
-//         }
-
-//         VectorProfile vectorProfile = new VectorProfile(initialValues);
-//         return vectorProfile;
-//     }
-
-// }
+ }

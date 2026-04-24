@@ -1,7 +1,11 @@
 package com.tacs.tp1c2026.entities;
 
+import com.tacs.tp1c2026.exceptions.FiguritaNoDisponibleException;
+import com.tacs.tp1c2026.exceptions.FiguritaNoEncontradaException;
+import com.tacs.tp1c2026.exceptions.FiguritaYaPublicadaException;
+import com.tacs.tp1c2026.exceptions.FiguritasInsuficientesException;
+import jakarta.annotation.PostConstruct;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Transient;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.index.Indexed;
 import java.time.LocalDateTime;
@@ -13,8 +17,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import com.tacs.tp1c2026.entities.embedded.FiguritaColeccion;
-import com.tacs.tp1c2026.entities.embedded.FiguritaFaltante;
 
 @Getter
 @Setter
@@ -22,15 +24,15 @@ import com.tacs.tp1c2026.entities.embedded.FiguritaFaltante;
 @AllArgsConstructor
 @Builder
 @TypeAlias("usuario")
-@Document(collection = "usuarios") // nombre de la collection en mongo
+@Document(collection = "usuarios")
 public class Usuario {
   @Id
-  private String id;
+  private Integer id;
   private String name;
   @Indexed(unique = true)
   private String email;
   private String passwordHash;
-  private String avatarId; // vamos a hacer 5 svgs fijos para el front nada mas
+  private Integer avatarId;
   @Builder.Default
   private Double rating = null;
   @Builder.Default
@@ -38,55 +40,87 @@ public class Usuario {
   private LocalDateTime lastLogin;
   @Builder.Default
   private LocalDateTime creationDate = LocalDateTime.now();
-  // Figuritas de la colección del usuario, cambio la lista de repetidas por esta porque serían las de esta colección con cantidad > 1
   @Builder.Default
   private List<FiguritaColeccion> collection = new ArrayList<>();
   @Builder.Default
   private List<FiguritaFaltante> missingCards = new ArrayList<>();
   @Builder.Default
-  private List<String> suggestionsIds = new ArrayList<>();
+  private List<Integer> suggestionsIds = new ArrayList<>();
+  @Builder.Default
+  private List<Alerta> alertas = new ArrayList<>();
 
-  // @Transient // no se guarda en mongo
-  // private VectorProfile vectorProfile;
-
-  // desde el botón "agregar figurita" del perfil
-  public void agregarAColeccion(FiguritaColeccion figuritaNueva) {
-    collection.stream()
-      .filter(f -> f.getFiguritaId().equals(figuritaNueva.getFiguritaId()))
-      .findFirst()
-      .ifPresentOrElse(
-        f -> f.setQuantity(f.getQuantity() + figuritaNueva.getQuantity()),
-        () -> collection.add(figuritaNueva)  
-      );
+  @Builder.Default
+  private Perfil perfil = new Perfil();
+  public void agregarSugerencia(Usuario sugerencias) {
+    this.suggestionsIds.add(sugerencias.id);
   }
 
-  // Desde el botón "agregar faltantes" del perfil
-  public void agregarFaltante(FiguritaFaltante figuritaFaltante) {
-    boolean alreadyExists = this.missingCards.stream()
-        .anyMatch(f -> f.getFiguritaId().equals(figuritaFaltante.getFiguritaId()));
-    if (!alreadyExists) {
-      this.missingCards.add(figuritaFaltante);
-    }
+  public void agregarRepetidas(FiguritaColeccion figuritaColeccion) {
+    this.collection.add(figuritaColeccion);
+    this.perfil.addCard(figuritaColeccion);
   }
 
-  // para saber cuantas figuritas puede realmente ofrecer
-  // sería total - comprometidas (ya ofrecidas o propuestas)
-  public int cantidadDisponible(String figuritaId) {
-    return collection.stream()
-      .filter(f -> f.getFiguritaId().equals(figuritaId))
-      .mapToInt(f -> f.getQuantity() - f.getCompromisedCount())
-      .findFirst()
-      .orElse(0); 
+  public void agregarFaltantes(Figurita figurita) {
+    this.missingCards.add(new FiguritaFaltante(figurita));
+    this.perfil.addCard(figurita);
+  }
+
+  public FiguritaColeccion getRepetidaByNumero(Integer numFiguritaPublicada) throws FiguritaNoEncontradaException {
+    return this.collection.stream()
+        .filter(repetida -> repetida.getFigurita().getNumber().equals(numFiguritaPublicada))
+        .findFirst()
+        .orElseThrow(() -> new FiguritaNoEncontradaException("El usuario no posee la figurita " + numFiguritaPublicada));
+  }
+
+  /**
+   * Obtiene las figuritas repetidas indicadas por sus números y valida que estén disponibles para oferta.
+   *
+   * @param numerosFiguritas lista de números de figuritas a obtener
+   * @return lista de FiguritaColeccion encontradas y disponibles para oferta
+   * @throws FiguritaNoEncontradaException si alguna figurita no se encuentra
+   * @throws FiguritaNoDisponibleException si alguna figurita no está disponible para oferta
+   */
+  public List<FiguritaColeccion> obtenerFiguritasParaOferta(List<Integer> numerosFiguritas)
+      throws FiguritaNoEncontradaException, FiguritaNoDisponibleException {
+    List<FiguritaColeccion> figuritasEncontradas = new ArrayList<>();
+
+    for (Integer numFigurita : numerosFiguritas) {
+      FiguritaColeccion figurita = getRepetidaByNumero(numFigurita);
+      figurita.aumentarCantidadOfertada();
+      figuritasEncontradas.add(figurita);
     }
-  
-  // public VectorProfile getVectorProfile() {;
-  //   if (this.vectorProfile == null) {
-  //     this.vectorProfile = new VectorProfile(this.collection, this.missingCards);
-  //   }
-  //   return this.vectorProfile;
-  // }
+
+    return figuritasEncontradas;
+  }
+
+  /**
+   * Crea una publicación de intercambio para una figurita repetida.
+   *
+   * @param numFigurita número de la figurita a publicar
+   * @return la publicación creada
+   * @throws FiguritaNoEncontradaException si la figurita no se encuentra
+   * @throws com.tacs.tp1c2026.exceptions.FiguritaYaPublicadaException si ya está publicada
+   * @throws com.tacs.tp1c2026.exceptions.FiguritasInsuficientesException si no hay stock
+   */
+  public PublicacionIntercambio publicarFigurita(Integer numFigurita)
+      throws FiguritaNoEncontradaException,
+          FiguritaYaPublicadaException,
+          FiguritasInsuficientesException {
+    FiguritaColeccion figurita = getRepetidaByNumero(numFigurita);
+    return figurita.crearPublicacion(this,numFigurita);
+  }
+
+  public void agregarAlerta(Alerta alerta) {
+    this.alertas.add(alerta);
+  }
+
+  @PostConstruct
+  private void initializeVectorProfile() {
+    this.perfil = new Perfil(this.collection,this.missingCards);
+  }
 
   public void removerSugerencias() {
     this.suggestionsIds.clear();
   }
+
 }

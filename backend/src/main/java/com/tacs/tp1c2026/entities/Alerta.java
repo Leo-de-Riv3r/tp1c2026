@@ -1,29 +1,27 @@
-/*package com.tacs.tp1c2026.entities;
+package com.tacs.tp1c2026.entities;
 
 import com.tacs.tp1c2026.entities.dto.output.AlertaDto;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Inheritance;
-import jakarta.persistence.InheritanceType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.TypeAlias;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-@Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+import java.time.LocalDateTime;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@Document(collection = "alertas")
+@TypeAlias("alerta")
 public abstract class Alerta {
 
-    @Id @GeneratedValue
+    @Id
     private Integer id;
 
-    @ManyToOne
-    @JoinColumn(name = "usuario_id", referencedColumnName = "id")
-    private Usuario usuario;
-    public Integer getId() {
-        return id;
-    }
+    private LocalDateTime fechaCreacion = LocalDateTime.now();
 
     public abstract AlertaDto visit(AlertaVisitor visitor);
 
 }
-*/

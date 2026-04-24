@@ -7,7 +7,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content; // <-- ESTE ES EL CORRECTO
 
 import com.tacs.tp1c2026.entities.FiguritaColeccion;
-import com.tacs.tp1c2026.entities.PropuestaIntercambio;
 import com.tacs.tp1c2026.entities.Usuario;
 import com.tacs.tp1c2026.entities.dto.input.FiguritaFaltanteDto;
 import com.tacs.tp1c2026.entities.dto.input.FiguritaRepetidaDto;
@@ -19,7 +18,7 @@ import com.tacs.tp1c2026.repositories.PublicacionesIntercambioRepository;
 import com.tacs.tp1c2026.repositories.UsuariosRepository;
 import jakarta.transaction.Transactional;
 import java.util.List;
-import javax.print.attribute.standard.Media;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,8 +26,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultMatcher;
-import org.springframework.web.bind.annotation.PutMapping;
 import tools.jackson.databind.ObjectMapper;
 
 @SpringBootTest
@@ -166,7 +163,7 @@ public class Us1_3_5_10Tests {
     Usuario user2B = usuariosRepository.findById(idUser2)
         .orElseThrow(() -> new RuntimeException("No se encontro el usuario"));
     FiguritaColeccion figuOfrecidaUsuario = user2B.getRepetidas().get(0);
-    assertEquals(0, figuOfrecidaUsuario.getCantidad());
+    assertEquals(0, figuOfrecidaUsuario.getCantidadLibre());
     assertEquals(0, figuOfrecidaUsuario.getCantidadOfertada());
   }
 }
