@@ -1,9 +1,9 @@
 package com.tacs.tp1c2026.repositories;
 
-import com.tacs.tp1c2026.entities.Figurita;
+import com.tacs.tp1c2026.entities.Sticker;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
-public interface FiguritasRepository extends MongoRepository<Figurita, Integer> {
+public interface FiguritasRepository extends MongoRepository<Sticker, Integer> {
     /*
     Cuando se implemente searchAvailable en FiguritasService, agregar acá los métodos necesarios.
     la query se genera automáticamente a partir del nombre del método, siguiendo el patrón:

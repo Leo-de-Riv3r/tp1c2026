@@ -1,6 +1,7 @@
 package com.tacs.tp1c2026.entities.dto;
 
-import com.tacs.tp1c2026.entities.FiguritaColeccion;
+import com.tacs.tp1c2026.entities.Sticker;
+import com.tacs.tp1c2026.entities.StickerCollection;
 import com.tacs.tp1c2026.entities.dto.output.FiguritaDto;
 import com.tacs.tp1c2026.entities.dto.output.RepetidaDto;
 import java.util.List;
@@ -10,24 +11,25 @@ import org.springframework.stereotype.Component;
 public class RepetidasMapper {
 
     /**
-     * Convierte una lista de {@link FiguritaColeccion} a una lista de {@link RepetidaDto},
-     * incluyendo la cantidad y los datos descriptivos de cada figurita.
+     * Converts a list of {@link StickerCollection} to a list of {@link RepetidaDto},
+     * including the available amount and descriptive data of each sticker.
      *
-     * @param repetidas lista de entidades de figurita en colección
-     * @return lista de DTOs correspondientes
+     * @param repeatedStickers list of collection sticker entities
+     * @return list of corresponding DTOs
      */
-    public List<RepetidaDto> toDTOList(List<FiguritaColeccion> repetidas) {
-        return repetidas.stream()
-            .map(figuritaColeccion -> {
-                FiguritaDto figuritaDto = new FiguritaDto(
-                    figuritaColeccion.getFigurita().getNumero(),
-                    figuritaColeccion.getFigurita().getDescripcion(),
-                    figuritaColeccion.getFigurita().getJugador(),
-                    figuritaColeccion.getFigurita().getSeleccion(),
-                    figuritaColeccion.getFigurita().getEquipo(),
-                    figuritaColeccion.getFigurita().getCategoria()
+    public List<RepetidaDto> toDTOList(List<StickerCollection> repeatedStickers) {
+        return repeatedStickers.stream()
+            .map(collectionSticker -> {
+                Sticker sticker = collectionSticker.getSticker();
+                FiguritaDto stickerDto = new FiguritaDto(
+                    sticker.getNumber(),
+                    sticker.getDescription(),
+                    sticker.getDescription(),
+                    sticker.getCountry(),
+                    sticker.getTeam(),
+                    null
                 );
-                return new RepetidaDto(figuritaColeccion.getCantidadLibre(), figuritaDto);
+                return new RepetidaDto(collectionSticker.getAvailableAmount(), stickerDto);
             }).toList();
     }
 }

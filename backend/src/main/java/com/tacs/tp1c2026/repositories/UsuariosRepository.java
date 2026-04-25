@@ -1,7 +1,7 @@
 package com.tacs.tp1c2026.repositories;
 
-import com.tacs.tp1c2026.entities.Usuario;
-import com.tacs.tp1c2026.entities.FiguritaColeccion;
+import com.tacs.tp1c2026.entities.User;
+import com.tacs.tp1c2026.entities.StickerCollection;
 import com.tacs.tp1c2026.entities.FiguritaFaltante;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
@@ -9,11 +9,11 @@ import org.springframework.data.mongodb.repository.Update;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-public interface UsuariosRepository extends MongoRepository<Usuario, Integer> {
+public interface UsuariosRepository extends MongoRepository<User, Integer> {
 
-    Optional<Usuario> findByEmail(String email);
+    Optional<User> findByEmail(String email);
     boolean existsByEmail(String email);
-    Stream<Usuario> findAllBy();
+    Stream<User> findAllBy();
 
     /* Commands sobre la colección del usuario */
 
@@ -25,7 +25,7 @@ public interface UsuariosRepository extends MongoRepository<Usuario, Integer> {
     /* Agrega un nuevo sucdoc */
     @Query("{ '_id': ?0 }") // WHERE id = userId
     @Update("{ '$push': { 'collection': ?1 } }") // insert en la collection del user la figurita fc
-    void pushToCollection(Integer userId, FiguritaColeccion fc);
+    void pushToCollection(Integer userId, StickerCollection fc);
 
     /* decrementa la cant de una figurita solo si ya tenia mas de un item, sino retorna cero asi el service elimina el subdoc de la coleccion */
     @Query("{ '_id': ?0, 'collection.figurita.id': ?1, 'collection.quantity': { '$gt': 1 } }") // where id = userId y collection tiene a figuritaid y la figurita tiene quantity > 1

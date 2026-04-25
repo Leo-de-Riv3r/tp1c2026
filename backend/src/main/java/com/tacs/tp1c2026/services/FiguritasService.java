@@ -1,6 +1,6 @@
 package com.tacs.tp1c2026.services;
 
-import com.tacs.tp1c2026.entities.Figurita;
+import com.tacs.tp1c2026.entities.Sticker;
 import com.tacs.tp1c2026.exceptions.NotFoundException;
 import com.tacs.tp1c2026.repositories.FiguritasRepository;
 import org.springframework.stereotype.Service;
@@ -15,13 +15,13 @@ public class FiguritasService {
         this.figuritasRepository = figuritasRepository;
     }
 
-    public List<Figurita> getCatalog() {
+    public List<Sticker> getCatalog() {
         return figuritasRepository.findAll();
     }
 
     // Para obtener el detalle desde el FE o bien para llenar los combos de selección desde el perfil cuando
     // el usuario quiera agregar faltantes o figuritas a su colección, etc
-    public Figurita getById(Integer id) {
+    public Sticker getById(Integer id) {
         return figuritasRepository
             .findById(id)
             .orElseThrow(() -> new NotFoundException("Figurita no encontrada: " + id));

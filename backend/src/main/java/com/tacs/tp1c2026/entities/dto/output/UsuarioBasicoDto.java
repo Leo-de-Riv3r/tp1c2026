@@ -1,11 +1,6 @@
 package com.tacs.tp1c2026.entities.dto.output;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-
-@Data
-@AllArgsConstructor
-public class UsuarioBasicoDto {
-  private Integer id;
-  private String nombre;
-}
+public record UsuarioBasicoDto(
+    Integer id,
+    String name
+) {}

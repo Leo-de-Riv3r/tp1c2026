@@ -1,21 +1,20 @@
-
 package com.tacs.tp1c2026.entities;
-
-import java.time.LocalDateTime;
-
 
 import lombok.Getter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
-@Getter
-public class Feedback {
-  @Id
-  private String id;
-  @DocumentReference
-  private User reviewer;
-  private Integer score;
-  private String comment;
-  private LocalDateTime createdAt;
-}
 
+@Getter
+public class AuctionItem {
+
+  @Id
+  private Integer id;
+
+  @DocumentReference
+  private Sticker sticker;
+
+  private Integer amount;
+
+
+}

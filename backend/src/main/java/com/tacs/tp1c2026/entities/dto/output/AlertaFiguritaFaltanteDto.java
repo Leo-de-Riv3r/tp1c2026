@@ -2,52 +2,51 @@ package com.tacs.tp1c2026.entities.dto.output;
 
 public class AlertaFiguritaFaltanteDto extends AlertaDto {
 
-  private final Integer figuritaId;
-  private final Integer figuritaNumero;
-  private final String figuritaDescripcion;
-  private final String figuritaPais;
-  private final String figuritaEquipo;
-  private final String figuritaCategoria;
+  private final Integer stickerId;
+  private final Integer stickerNumber;
+  private final String stickerDescription;
+  private final String stickerCountry;
+  private final String stickerTeam;
+  private final String stickerCategory;
 
   public AlertaFiguritaFaltanteDto(
       Integer id,
-      Integer figuritaId,
-      Integer figuritaNumero,
-      String figuritaDescripcion,
-      String figuritaPais,
-      String figuritaEquipo,
-      String figuritaCategoria) {
+      Integer stickerId,
+      Integer stickerNumber,
+      String stickerDescription,
+      String stickerCountry,
+      String stickerTeam,
+      String stickerCategory) {
     super(id, "FIGURITA_FALTANTE");
-    this.figuritaId = figuritaId;
-    this.figuritaNumero = figuritaNumero;
-    this.figuritaDescripcion = figuritaDescripcion;
-    this.figuritaPais = figuritaPais;
-    this.figuritaEquipo = figuritaEquipo;
-    this.figuritaCategoria = figuritaCategoria;
+    this.stickerId = stickerId;
+    this.stickerNumber = stickerNumber;
+    this.stickerDescription = stickerDescription;
+    this.stickerCountry = stickerCountry;
+    this.stickerTeam = stickerTeam;
+    this.stickerCategory = stickerCategory;
   }
 
-
-  public Integer getFiguritaId() {
-    return figuritaId;
+  public Integer getStickerId() {
+    return stickerId;
   }
 
-  public Integer getFiguritaNumero() {
-    return figuritaNumero;
+  public Integer getStickerNumber() {
+    return stickerNumber;
   }
 
-  public String getFiguritaDescripcion() {
-    return figuritaDescripcion;
+  public String getStickerDescription() {
+    return stickerDescription;
   }
 
-  public String getFiguritaPais() {
-    return figuritaPais;
+  public String getStickerCountry() {
+    return stickerCountry;
   }
 
-  public String getFiguritaEquipo() {
-    return figuritaEquipo;
+  public String getStickerTeam() {
+    return stickerTeam;
   }
 
-  public String getFiguritaCategoria() {
-    return figuritaCategoria;
+  public String getStickerCategory() {
+    return stickerCategory;
   }
 }

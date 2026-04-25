@@ -1,17 +1,13 @@
 package com.tacs.tp1c2026.services;
 
-import com.tacs.tp1c2026.entities.Figurita;
-import com.tacs.tp1c2026.entities.FiguritaColeccion;
-import com.tacs.tp1c2026.entities.PropuestaIntercambio;
-import com.tacs.tp1c2026.entities.PublicacionIntercambio;
-import com.tacs.tp1c2026.entities.Usuario;
+import com.tacs.tp1c2026.entities.*;
 import com.tacs.tp1c2026.entities.dto.PropuestaMapper;
 import com.tacs.tp1c2026.entities.dto.PublicacionMapper;
 import com.tacs.tp1c2026.entities.dto.output.PaginacionDto;
 import com.tacs.tp1c2026.entities.dto.output.PropuestaRecibidaDto;
 import com.tacs.tp1c2026.entities.dto.output.PublicacionDto;
-import com.tacs.tp1c2026.entities.enums.Categoria;
-import com.tacs.tp1c2026.entities.enums.EstadoPublicacion;
+import com.tacs.tp1c2026.entities.enums.Category;
+import com.tacs.tp1c2026.entities.enums.PublicationStatus;
 import com.tacs.tp1c2026.exceptions.BadInputException;
 import com.tacs.tp1c2026.exceptions.ConflictException;
 import com.tacs.tp1c2026.exceptions.CuposAgotadosException;
@@ -65,11 +61,11 @@ public class PublicacionesService {
    */
   @Transactional
   public void publicarIntercambioFigurita(Integer userId, Integer numFigurita) {
-    Usuario usuario = usuariosRepository.findById(userId)
+    User user = usuariosRepository.findById(userId)
         .orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
 
     try {
-      PublicacionIntercambio publicacion = usuario.publicarFigurita(numFigurita);
+      TradePublication publicacion = user.publishSticker(numFigurita);
       publicacionesIntercambioRepository.save(publicacion);
     } catch (FiguritaNoEncontradaException e) {
       throw new NotFoundException(e.getMessage());
@@ -86,43 +82,43 @@ public class PublicacionesService {
    * @param userId        identificador del usuario que realiza la propuesta
    * @param publicacionId identificador de la publicación sobre la que se propone el intercambio
    * @param idFiguritas   lista de números de figurita que se ofrecen como contraprestación
-   * @return la {@link PropuestaIntercambio} persistida
+   * @return la {@link TradeProposal} persistida
    * @throws UserNotFoundException si el usuario no existe
    * @throws NotFoundException     si la publicación no existe
    * @throws ConflictException     si ya no hay cupos disponibles en la publicación
    * @throws BadInputException     si alguna de las figuritas no se encuentra o no está habilitada para intercambio
    */
   @Transactional
-  public PropuestaIntercambio ofrecerPropuestaIntercambio(Integer userId, Integer publicacionId, List<Integer> idFiguritas) {
-    Usuario usuario = usuariosRepository.findById(userId)
+  public TradeProposal ofrecerPropuestaIntercambio(Integer userId, Integer publicacionId, List<Integer> idFiguritas) {
+    User user = usuariosRepository.findById(userId)
         .orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
 
-    PublicacionIntercambio publicacion = publicacionesIntercambioRepository.findById(publicacionId)
+    TradePublication publicacion = publicacionesIntercambioRepository.findById(publicacionId)
         .orElseThrow(() -> new NotFoundException("No se encontro la publicacion con id " + publicacionId));
 
     // Validar cupos disponibles
     try {
-      publicacion.validarCuposDisponibles();
+      publicacion.validateAvailableSlots();
     } catch (CuposAgotadosException e) {
       throw new ConflictException(e.getMessage());
     }
 
     // Obtener y validar figuritas para oferta
-    List<FiguritaColeccion> figuritasParaOfrecer;
+    List<StickerCollection> figuritasParaOfrecer;
     try {
-      figuritasParaOfrecer = usuario.obtenerFiguritasParaOferta(idFiguritas);
+      figuritasParaOfrecer = user.getStickersForOffer(idFiguritas);
     } catch (FiguritaNoEncontradaException | FiguritaNoDisponibleException e) {
       throw new BadInputException(e.getMessage());
     }
 
 
-    List<Figurita> figuritasOfrecidas = figuritasParaOfrecer.stream()
-        .map(FiguritaColeccion::getFigurita)
+    List<Sticker> figuritasOfrecidas = figuritasParaOfrecer.stream()
+        .map(StickerCollection::getFigurita)
         .toList();
 
-    PropuestaIntercambio propuesta = new PropuestaIntercambio(publicacion, figuritasOfrecidas, usuario);
+    TradeProposal propuesta = new TradeProposal(publicacion, figuritasOfrecidas, user);
 
-    publicacion.agregarPropuesta(propuesta);
+    publicacion.addProposal(propuesta);
     propuestasIntercambioRepository.save(propuesta);
     return propuesta;
   }
@@ -135,14 +131,14 @@ public class PublicacionesService {
    * @throws UserNotFoundException si el usuario no existe
    */
   public List<PropuestaRecibidaDto> obtenerPropuestasRecibidas(Integer userId) {
-    Usuario usuario = usuariosRepository.findById(userId)
+    User user = usuariosRepository.findById(userId)
         .orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
 
-    List<PropuestaIntercambio> propuestasRecibidas = new ArrayList<>();
-    List<PublicacionIntercambio> publicaciones = publicacionesIntercambioRepository.findByPublicanteId(userId);
+    List<TradeProposal> propuestasRecibidas = new ArrayList<>();
+    List<TradePublication> publicaciones = publicacionesIntercambioRepository.findByPublicanteId(userId);
 
     publicaciones.forEach(publicacion -> {
-      List<PropuestaIntercambio> propuestas = propuestasIntercambioRepository.findByPublicacionId(publicacion.getId());
+      List<TradeProposal> propuestas = propuestasIntercambioRepository.findByPublicacionId(publicacion.getId());
       propuestasRecibidas.addAll(propuestas);
     });
 
@@ -165,17 +161,17 @@ public class PublicacionesService {
    */
   @Transactional
   public void rechazarPropuesta(Integer publicacionId, Integer propuestaId, Integer userId) {
-    Usuario usuario = usuariosRepository.findById(userId)
+    User user = usuariosRepository.findById(userId)
         .orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
 
-    PropuestaIntercambio propuesta = propuestasIntercambioRepository.findById(propuestaId)
+    TradeProposal propuesta = propuestasIntercambioRepository.findById(propuestaId)
         .orElseThrow(() -> new NotFoundException("No se encontro la propuesta"));
 
-    PublicacionIntercambio publicacion = publicacionesIntercambioRepository.findById(publicacionId)
+    TradePublication publicacion = publicacionesIntercambioRepository.findById(publicacionId)
         .orElseThrow(() -> new NotFoundException("No se encontro la publicacion"));
 
     try {
-      publicacion.rechazarPropuesta(propuesta, usuario);
+      publicacion.rejectProposal(propuesta, user);
     } catch (PropuestaNoCorrespondeException e) {
       throw new BadInputException(e.getMessage());
     } catch (UsuarioNoAutorizadoException e) {
@@ -205,17 +201,17 @@ public class PublicacionesService {
    */
   @Transactional
   public void aceptarPropuesta(Integer publicacionId, Integer propuestaId, Integer userId) {
-    Usuario usuario = usuariosRepository.findById(userId)
+    User user = usuariosRepository.findById(userId)
         .orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
 
-    PropuestaIntercambio propuesta = propuestasIntercambioRepository.findById(propuestaId)
+    TradeProposal propuesta = propuestasIntercambioRepository.findById(propuestaId)
         .orElseThrow(() -> new NotFoundException("No se encontro la propuesta"));
 
-    PublicacionIntercambio publicacion = publicacionesIntercambioRepository.findById(publicacionId)
+    TradePublication publicacion = publicacionesIntercambioRepository.findById(publicacionId)
         .orElseThrow(() -> new NotFoundException("No se encontro la publicacion"));
 
     try {
-      publicacion.aceptarPropuesta(propuesta, usuario);
+      publicacion.acceptProposal(propuesta, user);
     } catch (PropuestaNoCorrespondeException e) {
       throw new BadInputException(e.getMessage());
     } catch (UsuarioNoAutorizadoException e) {
@@ -234,24 +230,24 @@ public class PublicacionesService {
    * @param seleccion     filtra por nombre de selección (subcadena, puede ser {@code null})
    * @param nombreJugador filtra por nombre de jugador (subcadena, puede ser {@code null})
    * @param equipo        filtra por nombre de equipo (subcadena, puede ser {@code null})
-   * @param categoria     filtra por categoría de la figurita (puede ser {@code null})
+   * @param category     filtra por categoría de la figurita (puede ser {@code null})
    * @param page          número de página solicitada (1-based)
    * @param per_page      cantidad de resultados por página
    * @return {@link PaginacionDto} con la lista de {@link PublicacionDto} correspondiente a la página solicitada
    */
   public PaginacionDto<PublicacionDto> buscarPublicaciones(
-      String seleccion, String nombreJugador, String equipo, Categoria categoria, Integer page, Integer per_page
+          String seleccion, String nombreJugador, String equipo, Category category, Integer page, Integer per_page
   ) {
     int paginaSolicitada = (page == null || page < 1) ? 1 : page;
     int tamanioPagina = (per_page == null || per_page < 1) ? 10 : per_page;
     Pageable pageable = PageRequest.of(paginaSolicitada - 1, tamanioPagina);
 
-    Page<PublicacionIntercambio> publicaciones = publicacionesIntercambioRepository.buscarActivasConFiltros(
-        EstadoPublicacion.ACTIVA,
+    Page<TradePublication> publicaciones = publicacionesIntercambioRepository.buscarActivasConFiltros(
+        PublicationStatus.ACTIVE,
         normalizeFilter(seleccion),
         normalizeFilter(nombreJugador),
         normalizeFilter(equipo),
-        categoria,
+            category,
         pageable
     );
 

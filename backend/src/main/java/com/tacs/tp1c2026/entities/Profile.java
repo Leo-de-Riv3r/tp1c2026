@@ -4,31 +4,31 @@
  import java.util.List;
  import java.util.Map;
 
- public class Perfil {
+ public class Profile {
 
      private final Map<Integer, Integer> values;
 
-     public Perfil(){
+     public Profile(){
          this.values = new LinkedHashMap<>();
      }
      
-     public Perfil(Map<Integer, Integer> values) {
+     public Profile(Map<Integer, Integer> values) {
          this.values = values == null ? new LinkedHashMap<>() : new LinkedHashMap<>(values);
      }
 
-     public Perfil(List<FiguritaColeccion> repetidas, List<FiguritaFaltante> faltantes) {
+     public Profile(List<StickerCollection> repeatedStickers, List<Sticker> missingStickers) {
          Map<Integer, Integer> values = new LinkedHashMap<>();
-         if (faltantes != null) {
-             for (FiguritaFaltante figurita : faltantes) {
-                 if (figurita != null && figurita.getFigurita().getId() != null) {
-                     values.put(figurita.getFigurita().getId(), 1);
+          if (missingStickers != null) {
+              for (Sticker sticker : missingStickers) {
+                  if (sticker != null && sticker.getId() != null) {
+                      values.put(sticker.getId(), 1);
                  }
              }
          }
-         if (repetidas != null) {
-             for (FiguritaColeccion figuritaColeccion : repetidas) {
-                 if (figuritaColeccion != null && figuritaColeccion.getFigurita() != null && figuritaColeccion.getFigurita().getId() != null) {
-                     values.put(figuritaColeccion.getFigurita().getId(), -1);
+          if (repeatedStickers != null) {
+              for (StickerCollection collectionSticker : repeatedStickers) {
+                  if (collectionSticker != null && collectionSticker.getSticker() != null && collectionSticker.getSticker().getId() != null) {
+                      values.put(collectionSticker.getSticker().getId(), -1);
                  }
              }
          }
@@ -40,26 +40,26 @@
       *
       * @return perfil vectorial vacío
       */
-     public static Perfil empty() {
-         return new Perfil(new LinkedHashMap<>());
+     public static Profile empty() {
+         return new Profile(new LinkedHashMap<>());
      }
 
      public boolean isEmpty() {
          return values.isEmpty();
      }
 
-     public void addCard(Figurita figurita) {
-         if (figurita == null || figurita.getId() == null) {
+     public void addSticker(Sticker sticker) {
+          if (sticker == null || sticker.getId() == null) {
              return;
          }
-         values.put(figurita.getId(), 1);
+          values.put(sticker.getId(), 1);
      }
 
-     public void addCard(FiguritaColeccion figuritaColeccion) {
-         if (figuritaColeccion == null || figuritaColeccion.getFigurita() == null || figuritaColeccion.getFigurita().getId() == null) {
+     public void addSticker(StickerCollection collectionSticker) {
+          if (collectionSticker == null || collectionSticker.getSticker() == null || collectionSticker.getSticker().getId() == null) {
              return;
          }
-         values.put(figuritaColeccion.getFigurita().getId(), -1);
+          values.put(collectionSticker.getSticker().getId(), -1);
      }
 
      /**
@@ -71,7 +71,7 @@
       * @param second segundo perfil vectorial
       * @return puntaje de complementariedad (entero &ge; 0)
       */
-     public static int complement(Perfil first, Perfil second) {
+     public static int complement(Profile first, Profile second) {
          if (first == null || second == null) {
              return 0;
          }
@@ -103,7 +103,7 @@
       * @param second segundo perfil vectorial
       * @return puntaje de acuerdo (entero &ge; 0)
       */
-     public static int agreement(Perfil first, Perfil second) {
+     public static int agreement(Profile first, Profile second) {
          if (first == null || second == null) {
              return 0;
          }
@@ -128,15 +128,15 @@
       * @param profiles lista de perfiles a promediar; si es nula o vacía retorna un perfil vacío
       * @return perfil vectorial resultante del promedio
       */
-     public static Perfil averageSign(List<Perfil> profiles) {
+     public static Profile averageSign(List<Profile> profiles) {
          if (profiles == null || profiles.isEmpty()) {
-             return Perfil.empty();
+             return Profile.empty();
          }
 
          int profileCount = profiles.size();
           Map<Integer, Integer> sumMap = new LinkedHashMap<>();
 
-         for (Perfil profile : profiles) {
+         for (Profile profile : profiles) {
              if (profile == null) {
                  continue;
              }
@@ -154,7 +154,7 @@
              averageSignMap.put(entry.getKey(), (int) value);
          }
 
-         return new Perfil(averageSignMap);
+         return new Profile(averageSignMap);
      }
 
 

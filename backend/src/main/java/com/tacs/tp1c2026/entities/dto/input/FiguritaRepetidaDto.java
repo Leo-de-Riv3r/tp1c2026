@@ -1,17 +1,15 @@
 package com.tacs.tp1c2026.entities.dto.input;
 
-import com.tacs.tp1c2026.entities.enums.Categoria;
-import com.tacs.tp1c2026.entities.enums.TipoParticipacion;
-import lombok.Data;
+import com.tacs.tp1c2026.entities.enums.Category;
+import com.tacs.tp1c2026.entities.enums.ParticipationType;
 
-@Data
-public class FiguritaRepetidaDto {
-  private Integer numero;
-  private String jugador;
-  private String seleccion;
-  private String equipo;
-  private String descripcion;
-  private Categoria categoria;
-  private Integer cantidad;
-  private TipoParticipacion tipoParticipacion;
-}
+public record FiguritaRepetidaDto(
+    Integer number,
+    String player,
+    String country,
+    String team,
+    String description,
+    Category category,
+    Integer amount,
+    ParticipationType participationType
+) {}

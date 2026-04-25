@@ -27,7 +27,7 @@ EquipoStrategy --|> IReglastrategy
 
 class Figurita{
   - Integer numero
-  - Categoria categoria
+  - Categoria category
   - String nombre
   - String seleccion
   - String equipo
@@ -36,30 +36,30 @@ class Figurita{
 
 class FiguritaColeccion {
   - Integer cantidad
-  - Figurita figurita
+  - Figurita sticker
 }
 
 class OfertaSubasta {
-  - Usuario usuario
+  - Usuario user
   - List<Figurita> figuritas
 }
 
 class PropuestaIntercambio {
   - PublicacionIntercambio publicacion
-  - Usuario usuario
+  - Usuario user
   - List<Figurita> figuritas
   - EstadoPropuesta estado
 }
 
 class PublicacionIntercambio {
-  - Usuario usuario
-  - FiguritaColeccion figurita
+  - Usuario user
+  - FiguritaColeccion sticker
   - EstadoPublicacion estado
 }
 
 class Subasta {
-  - Figurita figurita
-  - Usuario usuario
+  - Figurita sticker
+  - Usuario user
   - LocalDateTime fechaCreacion
   - LocalDateTime fechaCierre
   - List<IReglastrategy> condicionesMinimas

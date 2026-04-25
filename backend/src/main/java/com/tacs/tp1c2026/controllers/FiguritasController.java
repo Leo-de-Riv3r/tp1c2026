@@ -1,6 +1,6 @@
 package com.tacs.tp1c2026.controllers;
 
-import com.tacs.tp1c2026.entities.Figurita;
+import com.tacs.tp1c2026.entities.Sticker;
 import com.tacs.tp1c2026.services.FiguritasService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,12 +23,12 @@ public class FiguritasController {
     }
 
     @GetMapping("/catalog")
-    public ResponseEntity<List<Figurita>> getCatalog() {
+    public ResponseEntity<List<Sticker>> getCatalog() {
         return ResponseEntity.ok(figuritasService.getCatalog());
     }
 
     @GetMapping("/catalog/{id}")
-    public ResponseEntity<Figurita> getCatalogById(@PathVariable Integer id) {
+    public ResponseEntity<Sticker> getCatalogById(@PathVariable Integer id) {
         return ResponseEntity.ok(figuritasService.getById(id));
     }
 

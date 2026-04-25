@@ -1,40 +1,27 @@
 package com.tacs.tp1c2026.entities.dto.output;
 
+import com.tacs.tp1c2026.entities.Auction;
 import java.time.LocalDateTime;
 
 public class AlertaSubastaProximaDto extends AlertaDto {
 
-  private final Integer subastaId;
-  private final Integer figuritaId;
-  private final Integer figuritaNumero;
-  private final LocalDateTime fechaCierre;
+  private final Auction auction;
+  private final Integer stickerId;
+  private final Integer stickerNumber;
+  private final LocalDateTime closeDate;
 
   public AlertaSubastaProximaDto(
       Integer id,
-      Integer subastaId,
-      Integer figuritaId,
-      Integer figuritaNumero,
-      LocalDateTime fechaCierre) {
+      Auction auction,
+      Integer stickerId,
+      Integer stickerNumber,
+      LocalDateTime closeDate) {
     super(id, "SUBASTA_PROXIMA");
-    this.subastaId = subastaId;
-    this.figuritaId = figuritaId;
-    this.figuritaNumero = figuritaNumero;
-    this.fechaCierre = fechaCierre;
+    this.auction = auction;
+    this.stickerId = stickerId;
+    this.stickerNumber = stickerNumber;
+    this.closeDate = closeDate;
   }
 
-  public Integer getSubastaId() {
-    return subastaId;
-  }
 
-  public Integer getFiguritaId() {
-    return figuritaId;
-  }
-
-  public Integer getFiguritaNumero() {
-    return figuritaNumero;
-  }
-
-  public LocalDateTime getFechaCierre() {
-    return fechaCierre;
-  }
 }

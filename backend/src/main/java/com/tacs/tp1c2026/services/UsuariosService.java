@@ -2,7 +2,7 @@ package com.tacs.tp1c2026.services;
 
 import com.tacs.tp1c2026.entities.*;
 import com.tacs.tp1c2026.entities.dto.output.*;
-import com.tacs.tp1c2026.entities.enums.EstadoSubasta;
+import com.tacs.tp1c2026.entities.enums.AuctionStatus;
 import com.tacs.tp1c2026.exceptions.BadInputException;
 import com.tacs.tp1c2026.exceptions.UserNotFoundException;
 import com.tacs.tp1c2026.repositories.OfertasSubastaRepository;
@@ -13,7 +13,7 @@ import com.tacs.tp1c2026.repositories.UsuariosRepository;
 import com.tacs.tp1c2026.services.mappers.SubastaMapper;
 import com.tacs.tp1c2026.services.mappers.IntercambioMapper;
 import java.util.List;
-import java.util.Objects;
+
 import org.springframework.stereotype.Service;
 
 @Service
@@ -44,11 +44,11 @@ public class UsuariosService {
 		  this.intercambioMapper = intercambioMapper;
 	  }
 
-	public Usuario crearUsuario(String nombre) {
-		Usuario usuario = new Usuario();
-		usuario.setNombre(nombre);
-		usuario.setFechaAlta(java.time.LocalDateTime.now());
-		return usuariosRepository.save(usuario);
+	public User crearUsuario(String nombre) {
+		User user = new User();
+		user.setNombre(nombre);
+		user.setFechaAlta(java.time.LocalDateTime.now());
+		return usuariosRepository.save(user);
 	}
 
 	public List<UsuarioDto> listarUsuarios() {
@@ -121,7 +121,7 @@ public class UsuariosService {
    * Si el parámetro {@code estado} es nulo o vacío, devuelve todas las subastas del usuario.
    *
    * @param userId identificador del usuario
-   * @param estado nombre del estado ({@link EstadoSubasta}) a filtrar; {@code null} o vacío devuelve todas
+   * @param estado nombre del estado ({@link AuctionStatus}) a filtrar; {@code null} o vacío devuelve todas
    * @return lista de {@link SubastaDto} correspondientes al criterio de búsqueda
    * @throws UserNotFoundException si el usuario no existe
    * @throws BadInputException     si el valor de {@code estado} no es válido
@@ -134,8 +134,8 @@ public class UsuariosService {
 		  }
 
 		  try {
-		    EstadoSubasta estadoSubasta = EstadoSubasta.valueOf(estado.trim().toUpperCase());
-		    return subastaRepository.findByUsuarioPublicanteIdAndEstado(userId, estadoSubasta).stream().map(subastaMapper::mapSubasta).toList();
+		    AuctionStatus auctionStatus = AuctionStatus.valueOf(estado.trim().toUpperCase());
+		    return subastaRepository.findByUsuarioPublicanteIdAndEstado(userId, auctionStatus).stream().map(subastaMapper::mapSubasta).toList();
 		  } catch (IllegalArgumentException e) {
 		    throw new BadInputException("Estado de subasta invalido");
 		  }

@@ -5,23 +5,16 @@
 
 package com.tacs.tp1c2026.entities;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-@Document(collection = "figuritas")
-public class Figurita {
+
+@Document(collection = "stickers")
+public class Sticker {
     @Id
     private Integer id;
+    @Getter
     private Integer number;
     private String description;
     private String country;

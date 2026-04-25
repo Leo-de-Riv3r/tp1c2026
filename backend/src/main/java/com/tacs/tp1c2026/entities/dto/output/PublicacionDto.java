@@ -1,16 +1,14 @@
 package com.tacs.tp1c2026.entities.dto.output;
 
-import com.tacs.tp1c2026.entities.enums.Categoria;
-import lombok.AllArgsConstructor;
+import com.tacs.tp1c2026.entities.enums.Category;
 
-@AllArgsConstructor
-public class PublicacionDto {
-  private Integer id;
-  private Integer numero;
-  private String descripcion;
-  private String jugador;
-  private String seleccion;
-  private String equipo;
-  private Categoria categoria;
-  private Integer cantidad;
-}
+public record PublicacionDto(
+    Integer id,
+    Integer stickerNumber,
+    String description,
+    String player,
+    String country,
+    String team,
+    Category category,
+    Integer availableAmount
+) {}
