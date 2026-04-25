@@ -22,7 +22,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @NoArgsConstructor
 public class Subasta {
   @Id
-  private Integer id;
+  private String id;
 
   private Figurita figurita;
 

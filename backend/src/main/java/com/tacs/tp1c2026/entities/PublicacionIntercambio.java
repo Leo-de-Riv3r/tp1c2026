@@ -1,5 +1,6 @@
 package com.tacs.tp1c2026.entities;
 
+import com.tacs.tp1c2026.entities.enums.EstadoPropuesta;
 import com.tacs.tp1c2026.entities.enums.EstadoPublicacion;
 import com.tacs.tp1c2026.exceptions.CuposAgotadosException;
 import com.tacs.tp1c2026.exceptions.PropuestaNoCorrespondeException;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Objects;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -23,38 +25,40 @@ import org.springframework.data.mongodb.core.mapping.DocumentReference;
 @Document(collection = "publicaciones_intercambio")
 @TypeAlias("publicacionIntercambio")
 @AllArgsConstructor
+@Builder
 @Setter
 @Getter
 public class PublicacionIntercambio {
   @Id
-  private Integer id;
+  private String id;
 
   @DocumentReference
   private Usuario publicante;
 
   @DocumentReference
-  private FiguritaColeccion coleccion;
+  private Figurita figurita;
 
   private Integer cantidad;
 
   private LocalDateTime fechaCreacion = LocalDateTime.now();
 
   @DocumentReference
-  private PropuestaIntercambio propuestaAceptada;
+  private List<PropuestaIntercambio> propuestasAceptada;
 
   private EstadoPublicacion estado = EstadoPublicacion.ACTIVA;
 
+  @DocumentReference
   private List<PropuestaIntercambio> propuestas = new ArrayList<>();
 
-  private Feedback feedback;
+  private List<Feedback> feedbacks = new ArrayList<>();
 
   public PublicacionIntercambio(
           Usuario usuario,
-          FiguritaColeccion coleccion,
+          Figurita figurita,
           Integer cantidad
   ) {
     this.publicante = usuario;
-    this.coleccion = coleccion;
+    this.figurita = figurita;
     this.cantidad = cantidad;
   }
 
@@ -66,9 +70,9 @@ public class PublicacionIntercambio {
    */
   public boolean tieneCuposDisponibles() {
     long propuestasPendientes = this.propuestas.stream()
-        .filter(p -> p.getEstado() == com.tacs.tp1c2026.entities.enums.EstadoPropuesta.PENDIENTE)
+        .filter(p -> p.getEstado() == EstadoPropuesta.PENDIENTE)
         .count();
-    return propuestasPendientes < this.coleccion.getCantidadLibre();
+    return propuestasPendientes < this.cantidad;
   }
 
   /**
@@ -88,9 +92,9 @@ public class PublicacionIntercambio {
    * @param usuario usuario a validar
    * @throws UsuarioNoAutorizadoException si el usuario no es el dueño
    */
-  public void validarDueno(Usuario usuario) throws UsuarioNoAutorizadoException {
-    Integer usuarioId = usuario.getId();
-    Integer duenoId = this.publicante.getId();
+  public void validateOwner(Usuario usuario) throws UsuarioNoAutorizadoException {
+    String usuarioId = usuario.getId();
+    String duenoId = this.publicante.getId();
     if (!Objects.equals(duenoId, usuarioId)) {
       throw new UsuarioNoAutorizadoException("El usuario no es el dueño de la publicacion");
     }
@@ -121,11 +125,10 @@ public class PublicacionIntercambio {
   public void rechazarPropuesta(PropuestaIntercambio propuesta, Usuario usuarioSolicitante)
       throws PropuestaNoCorrespondeException, UsuarioNoAutorizadoException, PropuestaYaProcesadaException {
     validarPropuestaCorresponde(propuesta);
-    validarDueno(usuarioSolicitante);
+    validateOwner(usuarioSolicitante);
     propuesta.validarPendiente();
 
     propuesta.rechazar();
-    this.coleccion.reducirCantidadOfertada();
   }
 
   /**
@@ -141,26 +144,16 @@ public class PublicacionIntercambio {
   public void aceptarPropuesta(PropuestaIntercambio propuesta, Usuario usuarioSolicitante)
       throws PropuestaNoCorrespondeException, UsuarioNoAutorizadoException, PropuestaYaProcesadaException {
     validarPropuestaCorresponde(propuesta);
-    validarDueno(usuarioSolicitante);
+    validateOwner(usuarioSolicitante);
     propuesta.validarPendiente();
 
-    propuesta.aceptar();
-    this.propuestaAceptada = propuesta;
-    this.coleccion.reducirCantidad();
-
-    // Transferir figuritas al publicante
-    propuesta.transferirFiguritasA(this.publicante);
+    this.propuestasAceptada.add(propuesta);
+    this.cantidad--;
 
     // Cerrar publicación si no hay más stock
-    if (this.coleccion.getCantidadLibre() == 0) {
+    if (this.cantidad == 0) {
       this.estado = EstadoPublicacion.FINALIZADA;
     }
-
-    // Rechazar las demás propuestas pendientes
-    this.propuestas.stream()
-        .filter(p -> !Objects.equals(p.getId(), propuesta.getId()))
-        .filter(PropuestaIntercambio::estaPendiente)
-        .forEach(PropuestaIntercambio::rechazar);
   }
 
   /**
@@ -173,7 +166,7 @@ public class PublicacionIntercambio {
   }
 
   public void agregarFeedback(Feedback feedback){
-    this.feedback = feedback;
+    this.feedbacks.add(feedback);
   }
 
 }

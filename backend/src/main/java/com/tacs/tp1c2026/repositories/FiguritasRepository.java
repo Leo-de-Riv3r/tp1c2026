@@ -3,7 +3,7 @@ package com.tacs.tp1c2026.repositories;
 import com.tacs.tp1c2026.entities.Figurita;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
-public interface FiguritasRepository extends MongoRepository<Figurita, Integer> {
+public interface FiguritasRepository extends MongoRepository<Figurita, String> {
     /*
     Cuando se implemente searchAvailable en FiguritasService, agregar acá los métodos necesarios.
     la query se genera automáticamente a partir del nombre del método, siguiendo el patrón:
@@ -15,4 +15,5 @@ public interface FiguritasRepository extends MongoRepository<Figurita, Integer> 
         List<Figurita> findByCountryIgnoreCaseAndCategoryIgnoreCase(String country, String category);
         List<Figurita> findByCountryIgnoreCaseAndCategoryIgnoreCaseAndTypeIgnoreCase(String country, String category, String type);
     */
+
 }

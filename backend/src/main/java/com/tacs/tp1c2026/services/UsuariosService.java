@@ -177,9 +177,20 @@ public class UsuariosService {
    * @param userId identificador del usuario a validar
    * @throws UserNotFoundException si el usuario no existe
    */
-	  private void validarUsuarioExiste(Integer userId) {
+	  public void validarUsuarioExiste(String userId) {
 		  usuariosRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
 	  }
 
+    public Usuario obtenerUsuario(String userId){
+      return usuariosRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
+    }
+
+  /**
+   *
+   * @param usuario servira tanto para guardar uno nuevo como para actualizar
+   */
+  public void saveUser(Usuario usuario) {
+      usuariosRepository.save(usuario);
+    }
 }
 

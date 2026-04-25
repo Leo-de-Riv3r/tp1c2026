@@ -1,5 +1,6 @@
 package com.tacs.tp1c2026.services;
 
+import com.tacs.tp1c2026.entities.Feedback;
 import com.tacs.tp1c2026.entities.Figurita;
 import com.tacs.tp1c2026.entities.FiguritaColeccion;
 import com.tacs.tp1c2026.entities.PropuestaIntercambio;
@@ -7,30 +8,32 @@ import com.tacs.tp1c2026.entities.PublicacionIntercambio;
 import com.tacs.tp1c2026.entities.Usuario;
 import com.tacs.tp1c2026.entities.dto.PropuestaMapper;
 import com.tacs.tp1c2026.entities.dto.PublicacionMapper;
+import com.tacs.tp1c2026.entities.dto.input.NewFeedbackDto;
+import com.tacs.tp1c2026.entities.dto.input.PropuestaIntercambioDto;
+import com.tacs.tp1c2026.entities.dto.input.PublicacionIntercambioDto;
+import com.tacs.tp1c2026.entities.dto.input.ReviewProposalDto;
 import com.tacs.tp1c2026.entities.dto.output.PaginacionDto;
 import com.tacs.tp1c2026.entities.dto.output.PropuestaRecibidaDto;
 import com.tacs.tp1c2026.entities.dto.output.PublicacionDto;
 import com.tacs.tp1c2026.entities.enums.Categoria;
+import com.tacs.tp1c2026.entities.enums.EstadoPropuesta;
 import com.tacs.tp1c2026.entities.enums.EstadoPublicacion;
+import com.tacs.tp1c2026.entities.enums.ReviewAction;
+import com.tacs.tp1c2026.entities.enums.TipoParticipacion;
 import com.tacs.tp1c2026.exceptions.BadInputException;
 import com.tacs.tp1c2026.exceptions.ConflictException;
-import com.tacs.tp1c2026.exceptions.CuposAgotadosException;
-import com.tacs.tp1c2026.exceptions.FiguritaNoDisponibleException;
 import com.tacs.tp1c2026.exceptions.FiguritaNoEncontradaException;
-import com.tacs.tp1c2026.exceptions.FiguritaYaPublicadaException;
-import com.tacs.tp1c2026.exceptions.FiguritasInsuficientesException;
 import com.tacs.tp1c2026.exceptions.NotFoundException;
-import com.tacs.tp1c2026.exceptions.PropuestaNoCorrespondeException;
-import com.tacs.tp1c2026.exceptions.PropuestaYaProcesadaException;
 import com.tacs.tp1c2026.exceptions.UnauthorizedException;
 import com.tacs.tp1c2026.exceptions.UserNotFoundException;
-import com.tacs.tp1c2026.exceptions.UsuarioNoAutorizadoException;
 import com.tacs.tp1c2026.repositories.PropuestasIntercambioRepository;
 import com.tacs.tp1c2026.repositories.PublicacionesIntercambioRepository;
 import com.tacs.tp1c2026.repositories.UsuariosRepository;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -43,9 +46,13 @@ public class PublicacionesService {
   private final PublicacionMapper publicacionMapper;
   private final PropuestasIntercambioRepository propuestasIntercambioRepository;
   private final UsuariosRepository usuariosRepository;
-  private final PublicacionesIntercambioRepository publicacionesIntercambioRepository;
+  @Autowired
+  private PublicacionesIntercambioRepository publicacionesIntercambioRepository;
   private final PropuestaMapper propuestaMapper;
-
+  @Autowired
+  private UsuariosService usuariosService;
+  @Autowired
+  private PublicacionesService publicacionesService;
   public PublicacionesService(PublicacionMapper publicacionMapper, PropuestasIntercambioRepository propuestasIntercambioRepository, UsuariosRepository usuariosRepository, PublicacionesIntercambioRepository publicacionesIntercambioRepository, PropuestaMapper propuestaMapper) {
     this.publicacionMapper = publicacionMapper;
     this.propuestasIntercambioRepository = propuestasIntercambioRepository;
@@ -64,18 +71,28 @@ public class PublicacionesService {
    * @throws NotFoundException     si la figurita no se encuentra entre las repetidas del usuario
    */
   @Transactional
-  public void publicarIntercambioFigurita(Integer userId, Integer numFigurita) {
-    Usuario usuario = usuariosRepository.findById(userId)
-        .orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
-
-    try {
-      PublicacionIntercambio publicacion = usuario.publicarFigurita(numFigurita);
-      publicacionesIntercambioRepository.save(publicacion);
-    } catch (FiguritaNoEncontradaException e) {
-      throw new NotFoundException(e.getMessage());
-    } catch (FiguritaYaPublicadaException | FiguritasInsuficientesException e) {
-      throw new ConflictException(e.getMessage());
+  public void publicarIntercambioFigurita(PublicacionIntercambioDto dto, String userId) {
+    Usuario usuario = usuariosService.obtenerUsuario(userId);
+    //verificar que el usuario tiene la figurita en su coleccion
+    Optional<FiguritaColeccion> itemUsuario = usuario.getCollection().stream().filter(
+        f -> f.getFigurita().getId().equals(dto.getFiguritaId())).findFirst();
+    if (itemUsuario.isEmpty()) {
+      throw new ConflictException("No tiene la figurita en su coleccion");
     }
+
+    FiguritaColeccion item = itemUsuario.get();
+    if (!item.canPublishExchange(dto.getQuantity())) {
+      throw new ConflictException("No tiene suficientes figuritas para publicar");
+    }
+
+    PublicacionIntercambio publicacion = PublicacionIntercambio.builder()
+        .publicante(usuario)
+        .figurita(item.getFigurita())
+        .cantidad(dto.getQuantity())
+        .build();
+    publicacionesIntercambioRepository.save(publicacion);
+    item.addCompromisedQuantity(dto.getQuantity(), TipoParticipacion.INTERCAMBIO);
+    usuariosService.saveUser(usuario);
   }
 
   /**
@@ -83,9 +100,6 @@ public class PublicacionesService {
    * Valida que haya cupos disponibles, que las figuritas ofrecidas pertenezcan al proponente
    * y que estén habilitadas para participar en intercambios.
    *
-   * @param userId        identificador del usuario que realiza la propuesta
-   * @param publicacionId identificador de la publicación sobre la que se propone el intercambio
-   * @param idFiguritas   lista de números de figurita que se ofrecen como contraprestación
    * @return la {@link PropuestaIntercambio} persistida
    * @throws UserNotFoundException si el usuario no existe
    * @throws NotFoundException     si la publicación no existe
@@ -93,37 +107,26 @@ public class PublicacionesService {
    * @throws BadInputException     si alguna de las figuritas no se encuentra o no está habilitada para intercambio
    */
   @Transactional
-  public PropuestaIntercambio ofrecerPropuestaIntercambio(Integer userId, Integer publicacionId, List<Integer> idFiguritas) {
-    Usuario usuario = usuariosRepository.findById(userId)
-        .orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
+  public PropuestaIntercambio ofrecerPropuestaIntercambio(String userId, PropuestaIntercambioDto dto) {
+    Usuario usuario = usuariosService.obtenerUsuario(userId);
 
-    PublicacionIntercambio publicacion = publicacionesIntercambioRepository.findById(publicacionId)
-        .orElseThrow(() -> new NotFoundException("No se encontro la publicacion con id " + publicacionId));
+    PublicacionIntercambio publicacion = getById(dto.getPublicacionId());
 
     // Validar cupos disponibles
-    try {
-      publicacion.validarCuposDisponibles();
-    } catch (CuposAgotadosException e) {
-      throw new ConflictException(e.getMessage());
-    }
+    publicacion.validarCuposDisponibles();
 
     // Obtener y validar figuritas para oferta
-    List<FiguritaColeccion> figuritasParaOfrecer;
-    try {
-      figuritasParaOfrecer = usuario.obtenerFiguritasParaOferta(idFiguritas);
-    } catch (FiguritaNoEncontradaException | FiguritaNoDisponibleException e) {
-      throw new BadInputException(e.getMessage());
-    }
+    List<Figurita> figuritasParaOfrecer;
 
+    figuritasParaOfrecer = usuario.obtenerFiguritasParaOferta(dto.getIdFiguritas());
 
-    List<Figurita> figuritasOfrecidas = figuritasParaOfrecer.stream()
-        .map(FiguritaColeccion::getFigurita)
-        .toList();
+    PropuestaIntercambio propuesta = new PropuestaIntercambio(publicacion, figuritasParaOfrecer, usuario);
 
-    PropuestaIntercambio propuesta = new PropuestaIntercambio(publicacion, figuritasOfrecidas, usuario);
+    usuariosService.saveUser(usuario);
+    propuesta = propuestasIntercambioRepository.save(propuesta);
 
     publicacion.agregarPropuesta(propuesta);
-    propuestasIntercambioRepository.save(propuesta);
+    publicacionesIntercambioRepository.save(publicacion);
     return propuesta;
   }
 
@@ -131,7 +134,6 @@ public class PublicacionesService {
    * Retorna todas las propuestas de intercambio recibidas sobre las publicaciones propias del usuario.
    *
    * @param userId identificador del usuario publicante
-   * @return lista de {@link PropuestaRecibidaDto} con los datos de cada propuesta recibida
    * @throws UserNotFoundException si el usuario no existe
    */
   public List<PropuestaRecibidaDto> obtenerPropuestasRecibidas(Integer userId) {
@@ -149,43 +151,6 @@ public class PublicacionesService {
     return propuestaMapper.toDtoList(propuestasRecibidas);
   }
 
-  /**
-   * Rechaza una propuesta de intercambio pendiente.
-   * Verifica que la propuesta y la publicación estén relacionadas, que el usuario sea el dueño
-   * de la publicación y que la propuesta aún se encuentre en estado PENDIENTE.
-   *
-   * @param publicacionId identificador de la publicación de intercambio
-   * @param propuestaId   identificador de la propuesta a rechazar
-   * @param userId        identificador del usuario dueño de la publicación
-   * @throws UserNotFoundException   si el usuario no existe
-   * @throws NotFoundException       si la propuesta o la publicación no existen
-   * @throws BadInputException       si la propuesta no corresponde a la publicación indicada
-   * @throws UnauthorizedException   si el usuario no es el dueño de la publicación
-   * @throws ConflictException       si la propuesta ya fue aceptada o rechazada previamente
-   */
-  @Transactional
-  public void rechazarPropuesta(Integer publicacionId, Integer propuestaId, Integer userId) {
-    Usuario usuario = usuariosRepository.findById(userId)
-        .orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
-
-    PropuestaIntercambio propuesta = propuestasIntercambioRepository.findById(propuestaId)
-        .orElseThrow(() -> new NotFoundException("No se encontro la propuesta"));
-
-    PublicacionIntercambio publicacion = publicacionesIntercambioRepository.findById(publicacionId)
-        .orElseThrow(() -> new NotFoundException("No se encontro la publicacion"));
-
-    try {
-      publicacion.rechazarPropuesta(propuesta, usuario);
-    } catch (PropuestaNoCorrespondeException e) {
-      throw new BadInputException(e.getMessage());
-    } catch (UsuarioNoAutorizadoException e) {
-      throw new UnauthorizedException(e.getMessage());
-    } catch (PropuestaYaProcesadaException e) {
-      throw new ConflictException(e.getMessage());
-    }
-
-    propuestasIntercambioRepository.save(propuesta);
-  }
 
   /**
    * Acepta una propuesta de intercambio pendiente y ejecuta la transferencia de figuritas.
@@ -194,8 +159,6 @@ public class PublicacionesService {
    * cierra la publicación cuando el stock llega a cero y rechaza automáticamente el resto
    * de propuestas pendientes.
    *
-   * @param publicacionId identificador de la publicación de intercambio
-   * @param propuestaId   identificador de la propuesta a aceptar
    * @param userId        identificador del usuario dueño de la publicación
    * @throws UserNotFoundException   si el usuario no existe
    * @throws NotFoundException       si la propuesta o la publicación no existen
@@ -204,30 +167,76 @@ public class PublicacionesService {
    * @throws ConflictException       si la propuesta ya fue aceptada o rechazada previamente
    */
   @Transactional
-  public void aceptarPropuesta(Integer publicacionId, Integer propuestaId, Integer userId) {
-    Usuario usuario = usuariosRepository.findById(userId)
-        .orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
-
-    PropuestaIntercambio propuesta = propuestasIntercambioRepository.findById(propuestaId)
-        .orElseThrow(() -> new NotFoundException("No se encontro la propuesta"));
-
-    PublicacionIntercambio publicacion = publicacionesIntercambioRepository.findById(publicacionId)
-        .orElseThrow(() -> new NotFoundException("No se encontro la publicacion"));
-
-    try {
-      publicacion.aceptarPropuesta(propuesta, usuario);
-    } catch (PropuestaNoCorrespondeException e) {
-      throw new BadInputException(e.getMessage());
-    } catch (UsuarioNoAutorizadoException e) {
-      throw new UnauthorizedException(e.getMessage());
-    } catch (PropuestaYaProcesadaException e) {
-      throw new ConflictException(e.getMessage());
+  public void reviewProposal(ReviewProposalDto dto, String userId) {
+    Usuario owner = usuariosService.obtenerUsuario(userId);
+    PublicacionIntercambio publicacionIntercambio = getById(dto.getPublicacionId());
+    publicacionIntercambio.validateOwner(owner);
+    PropuestaIntercambio propuesta =  publicacionIntercambio.getPropuestas().stream().
+        filter(propuestaIntercambio -> propuestaIntercambio.getId().equals(dto.getPropuestaId())).
+        findFirst().orElseThrow(() -> new NotFoundException("No se encontro la propuesta"));
+    if (!(propuesta.getEstado() == EstadoPropuesta.PENDIENTE)) {
+      throw new ConflictException("La propuesta ya fue revisada");
     }
+    Usuario proposer = propuesta.getUsuario();
 
-    propuestasIntercambioRepository.save(propuesta);
-    publicacionesIntercambioRepository.save(publicacion);
+    if (dto.getAction() == ReviewAction.REJECT){
+      propuesta.rechazar();
+      List<String> figuritasId = propuesta.getFiguritas().stream().map(Figurita::getId).toList();
+      proposer.restoreFiguritasFromProposal(figuritasId, TipoParticipacion.INTERCAMBIO);
+      propuestasIntercambioRepository.save(propuesta);
+      usuariosService.saveUser(proposer);
+    } else {
+      propuesta.aceptar();
+      publicacionIntercambio.aceptarPropuesta(propuesta, owner);
+      //mover figus a colecciones
+      owner.completeExchange(propuesta.getFiguritas(), publicacionIntercambio.getFigurita());
+      //remove from proposer
+      proposer.removeFromCollectionForExchange(propuesta.getFiguritas());
+      if (publicacionIntercambio.getEstado() == EstadoPublicacion.FINALIZADA) {
+        //rechazar las otras propuestas
+        List<PropuestaIntercambio> proposalsToReject = publicacionIntercambio.getPropuestas().stream()
+            .filter(p -> !p.getId().equals(propuesta.getId())).toList();
+
+        proposalsToReject.forEach(proposal -> {
+          proposal.rechazar();
+          Usuario user = proposal.getUsuario();
+          user.restoreFiguritasFromProposal(proposal.getFiguritas().stream().map(Figurita::getId).toList(), TipoParticipacion.INTERCAMBIO);
+          usuariosService.saveUser(user);
+        });
+        propuestasIntercambioRepository.saveAll(proposalsToReject);
+      }
+      usuariosService.saveUser(proposer);
+      usuariosService.saveUser(owner);
+      publicacionesIntercambioRepository.save(publicacionIntercambio);
+    }
   }
 
+  public void publishFeedback(String userId, NewFeedbackDto dto) {
+    Usuario usuario = usuariosService.obtenerUsuario(userId);
+    PublicacionIntercambio publication = getById(dto.getPublicacionId());
+
+    List<PropuestaIntercambio> acceptedProposals = publication.getPropuestasAceptada().stream().filter(propuesta -> propuesta.getUsuario().getId() == userId).toList();
+
+    if (publication.getPublicante().getId() != userId) {
+      if(acceptedProposals.isEmpty()) {
+        throw new ConflictException("No eres dueño de la publicacion o tu propuesta no fue aceptada");
+      }
+    }
+
+    List<Feedback> feedbacksPublicacion = publication.getFeedbacks();
+    Optional<Feedback> existingFeedback = feedbacksPublicacion.stream().filter(
+        feedback -> feedback.getCalificador().getId() == userId
+    ).findFirst();
+    if (existingFeedback.isPresent()) {
+      throw new ConflictException("Ya dejaste un comentario sobre la publicacion");
+    }
+    Feedback feedback = new Feedback();
+    feedback.setCalificacion(dto.getRating());
+    feedback.setComentario(dto.getCommentary());
+    feedback.setCalificador(usuario);
+    publication.agregarFeedback(feedback);
+    publicacionesIntercambioRepository.save(publication);
+  }
   /**
    * Busca publicaciones de intercambio activas aplicando filtros opcionales y devuelve el resultado paginado.
    *
@@ -271,5 +280,10 @@ public class PublicacionesService {
     }
     return filterValue.trim();
 
+  }
+
+  public PublicacionIntercambio getById(String publicacionId) {
+    return publicacionesIntercambioRepository.findById(publicacionId)
+        .orElseThrow(() -> new NotFoundException("No se encontro la publicacion"));
   }
 }

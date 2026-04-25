@@ -1,5 +1,6 @@
 package com.tacs.tp1c2026.entities;
 
+import com.tacs.tp1c2026.entities.enums.TipoParticipacion;
 import com.tacs.tp1c2026.exceptions.FiguritaNoDisponibleException;
 import com.tacs.tp1c2026.exceptions.FiguritaNoEncontradaException;
 import com.tacs.tp1c2026.exceptions.FiguritasInsuficientesException;
@@ -9,6 +10,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import java.time.LocalDate;
+import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
 // subdoc que vive dentro del usuario en mongo, representa a una figurita de su colección
 // nuevo: compromisedCount (figuritas que ya ofreció o propuso - es decir, activas) y availableCount que es la cantidad - la comprometida
@@ -19,10 +21,12 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Builder
 public class FiguritaColeccion {
-
+    @DocumentReference
     private Figurita figurita;
-    private Integer quantity;
-    private Integer compromisedCount;
+    private Integer quantityForAuction;
+    private Integer quantityForExchange;
+    private Integer compromisedInAuction;
+    private Integer compromisedInExchange;
     private LocalDate adquisitionDate;
     private String adquisitionOrigin;
 
@@ -85,4 +89,51 @@ public class FiguritaColeccion {
         );
 
     }
+
+  public void addExchangeQuantity(Integer cantidad) {
+      this.quantityForExchange += cantidad;
+  }
+
+  public void addAuctionQuantity(Integer cantidad) {
+      this.quantityForAuction += cantidad;
+  }
+
+  public void removeAuctionQuantity(Integer cantidad) {
+      this.quantityForAuction -= cantidad;
+  }
+
+  public void removeExchangeQuantity(Integer cantidad) {
+      this.quantityForExchange -= cantidad;
+  }
+
+  public void addByTipoParticipacion(Integer quantity, TipoParticipacion tipoParticipacion) {
+    if (tipoParticipacion == TipoParticipacion.INTERCAMBIO) {
+      quantityForExchange += quantity;
+    } else {
+      quantityForAuction += quantity;
+    }
+  }
+
+  public boolean canPublishExchange(Integer quantity) {
+      Integer quantityAvailable = quantityForExchange - compromisedInExchange;
+      return quantity <= quantityAvailable;
+  }
+
+  public void addCompromisedQuantity(Integer quantity, TipoParticipacion tipoParticipacion) {
+    if (tipoParticipacion == TipoParticipacion.INTERCAMBIO) {
+      compromisedInExchange += quantity;
+    } else {
+      compromisedInAuction += quantity;
+    }
+
+  }
+
+  public void reduceCompromisedQuantity(Integer quantity, TipoParticipacion tipoParticipacion) {
+    if (tipoParticipacion == TipoParticipacion.INTERCAMBIO) {
+      compromisedInExchange -= quantity;
+    } else {
+      compromisedInAuction -= quantity;
+    }
+  }
+
 }

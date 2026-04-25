@@ -5,6 +5,7 @@
 
 package com.tacs.tp1c2026.entities;
 
+import com.tacs.tp1c2026.entities.enums.Categoria;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,10 +22,11 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "figuritas")
 public class Figurita {
     @Id
-    private Integer id;
+    private String id;
     private Integer number;
+    private String name;
     private String description;
     private String country;
     private String team;
-    private String category;
+    private Categoria category;
 }

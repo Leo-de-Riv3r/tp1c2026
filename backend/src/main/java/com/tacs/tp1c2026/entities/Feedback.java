@@ -8,13 +8,9 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
-@Document(collection = "feedback")
 @Setter
 @Getter
 public class Feedback {
-  @Id
-  private String id;
-
   @DocumentReference
   private Usuario calificador;
 

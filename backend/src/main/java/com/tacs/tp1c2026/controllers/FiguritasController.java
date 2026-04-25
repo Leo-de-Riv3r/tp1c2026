@@ -13,7 +13,7 @@ import java.util.List;
     /figuritas/search -> búsqueda de figuritas disponbiles en publicaciones y subastas activas (a implementar cuando estén migradas esas colecciones)
  */
 @RestController
-@RequestMapping("/figuritas")
+@RequestMapping("/catalog")
 public class FiguritasController {
 
     private final FiguritasService figuritasService;
@@ -22,13 +22,13 @@ public class FiguritasController {
         this.figuritasService = figuritasService;
     }
 
-    @GetMapping("/catalog")
+    @GetMapping("/")
     public ResponseEntity<List<Figurita>> getCatalog() {
         return ResponseEntity.ok(figuritasService.getCatalog());
     }
 
-    @GetMapping("/catalog/{id}")
-    public ResponseEntity<Figurita> getCatalogById(@PathVariable Integer id) {
+    @GetMapping("/{id}")
+    public ResponseEntity<Figurita> getCatalogById(@PathVariable String id) {
         return ResponseEntity.ok(figuritasService.getById(id));
     }
 

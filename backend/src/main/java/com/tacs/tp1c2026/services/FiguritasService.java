@@ -21,7 +21,7 @@ public class FiguritasService {
 
     // Para obtener el detalle desde el FE o bien para llenar los combos de selección desde el perfil cuando
     // el usuario quiera agregar faltantes o figuritas a su colección, etc
-    public Figurita getById(Integer id) {
+    public Figurita getById(String id) {
         return figuritasRepository
             .findById(id)
             .orElseThrow(() -> new NotFoundException("Figurita no encontrada: " + id));

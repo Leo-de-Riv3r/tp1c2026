@@ -22,10 +22,10 @@ import org.springframework.data.mongodb.core.mapping.DocumentReference;
 @NoArgsConstructor
 public class PropuestaIntercambio {
   @Id
-  private Integer id;
-
+  private String id;
+  @DocumentReference
   private PublicacionIntercambio publicacion;
-
+  @DocumentReference
   private List<Figurita> figuritas = new ArrayList<>();
 
   @DocumentReference
@@ -35,7 +35,7 @@ public class PropuestaIntercambio {
 
   public PropuestaIntercambio(PublicacionIntercambio publicacion, List<Figurita> figuritas, Usuario usuario) {
     this.publicacion = publicacion;
-    this.figuritas = new ArrayList<>(figuritas);
+    this.figuritas = figuritas;
     this.usuario = usuario;
   }
 
