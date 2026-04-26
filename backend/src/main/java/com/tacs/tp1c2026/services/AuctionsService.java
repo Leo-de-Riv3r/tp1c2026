@@ -14,7 +14,7 @@ import com.tacs.tp1c2026.exceptions.FiguritaNoEncontradaException;
 import com.tacs.tp1c2026.exceptions.OfertaYaProcesadaException;
 import com.tacs.tp1c2026.exceptions.SubastaCerradaException;
 import com.tacs.tp1c2026.repositories.OfertasSubastaRepository;
-import com.tacs.tp1c2026.repositories.SubastaRepository;
+import com.tacs.tp1c2026.repositories.AuctionRepository;
 import com.tacs.tp1c2026.repositories.UsuariosRepository;
 
 import java.util.*;
@@ -28,13 +28,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuctionsService {
 
   private final UsuariosRepository usuariosRepository;
-  private final SubastaRepository subastaRepository;
+  private final AuctionRepository auctionRepository;
   private final OfertasSubastaRepository ofertasSubastaRepository;
   private final SubastaMapper subastaMapper;
 
-  public AuctionsService(UsuariosRepository usuariosRepository, SubastaRepository subastaRepository, OfertasSubastaRepository ofertasSubastaRepository, SubastaMapper mapper){
+  public AuctionsService(UsuariosRepository usuariosRepository, AuctionRepository auctionRepository, OfertasSubastaRepository ofertasSubastaRepository, SubastaMapper mapper){
     this.usuariosRepository = usuariosRepository;
-    this.subastaRepository = subastaRepository;
+    this.auctionRepository = auctionRepository;
     this.ofertasSubastaRepository = ofertasSubastaRepository;
     this.subastaMapper = mapper;
   }
@@ -84,7 +84,7 @@ public class AuctionsService {
 
     usuariosRepository.save(usuario);
 
-    return subastaRepository.save(auction).getId();
+    return auctionRepository.save(auction).getId();
   }
 
 
@@ -109,7 +109,7 @@ public class AuctionsService {
     validate(nuevaOferta);
 
     Usuario postor = usuariosRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
-    Auction auction = subastaRepository.findById(subastaId).orElseThrow(() -> new NotFoundException("No se encontro la subasta"));
+    Auction auction = auctionRepository.findById(subastaId).orElseThrow(() -> new NotFoundException("No se encontro la subasta"));
 
     if (Objects.equals(auction.getUsuarioPublicanteId(), userId)) {
       throw new UnauthorizedException("No puedes ofertar en tu propia subasta");
@@ -121,7 +121,7 @@ public class AuctionsService {
 
     if (auction.getFechaCierre() != null && LocalDateTime.now().isAfter(auction.getFechaCierre())) {
       auction.setEstado(EstadoSubasta.VENCIDA);
-      subastaRepository.save(auction);
+      auctionRepository.save(auction);
       throw new ConflictException("La subasta ya vencio");
     }
 
@@ -170,7 +170,7 @@ public class AuctionsService {
 
     auction.addOffer(ofertaGuardada);
 
-    subastaRepository.save(auction);
+    auctionRepository.save(auction);
     usuariosRepository.save(postor);
 
   }
@@ -192,7 +192,7 @@ public class AuctionsService {
   public void acceptAuctionOffer(Integer userId, Integer subastaId, Integer ofertaId) {
 
     Usuario usuario = usuariosRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
-    Auction auction = subastaRepository.findById(subastaId).orElseThrow(() -> new NotFoundException("No se encontro la subasta"));
+    Auction auction = auctionRepository.findById(subastaId).orElseThrow(() -> new NotFoundException("No se encontro la subasta"));
     AuctionOffer oferta = ofertasSubastaRepository.findById(ofertaId).orElseThrow(() -> new NotFoundException("No se encontro la oferta"));
 
     if (!Objects.equals(auction.getUsuarioPublicanteId(), usuario.getId())) {
@@ -217,7 +217,7 @@ public class AuctionsService {
         });
 
     ofertasSubastaRepository.save(oferta);
-    subastaRepository.save(auction);
+    auctionRepository.save(auction);
   }
 
 
@@ -236,7 +236,7 @@ public class AuctionsService {
    */
   public void rejectAuctionOffer(Integer userId, Integer subastaId, Integer ofertaId) {
     Usuario usuario = usuariosRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
-    Auction auction = subastaRepository.findById(subastaId).orElseThrow(() -> new NotFoundException("No se encontro la subasta"));
+    Auction auction = auctionRepository.findById(subastaId).orElseThrow(() -> new NotFoundException("No se encontro la subasta"));
     AuctionOffer oferta = ofertasSubastaRepository.findById(ofertaId).orElseThrow(() -> new NotFoundException("No se encontro la oferta"));
 
     if (!Objects.equals(auction.getUsuarioPublicanteId(), usuario.getId())) {
@@ -255,7 +255,7 @@ public class AuctionsService {
   }
 
 
-  public List<AuctionDTO> getAllAuctionsActive() {    return subastaRepository.findByEstado(EstadoSubasta.ACTIVA)
+  public List<AuctionDTO> getAllAuctionsActive() {    return auctionRepository.findByEstado(EstadoSubasta.ACTIVA)
             .stream()
             .map(subastaMapper::mapSubasta)
             .toList();
@@ -321,11 +321,11 @@ public class AuctionsService {
     Usuario usuario = usuariosRepository.findById(userId)
         .orElseThrow(() -> new NotFoundException("Usuario no encontrado con id: " + userId));
 
-    Auction auction = subastaRepository.findById(subastaId)
+    Auction auction = auctionRepository.findById(subastaId)
         .orElseThrow(() -> new NotFoundException("Subasta no encontrada con id: " + subastaId));
 
     auction.addInterestedUser(usuario);
-    subastaRepository.save(auction);
+    auctionRepository.save(auction);
   }
 
 }
