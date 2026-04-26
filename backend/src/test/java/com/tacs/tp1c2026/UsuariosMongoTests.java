@@ -1,7 +1,7 @@
 package com.tacs.tp1c2026;
 
 import com.tacs.tp1c2026.entities.User;
-import com.tacs.tp1c2026.repositories.UsuariosRepository;
+import com.tacs.tp1c2026.repositories.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,14 +31,14 @@ public class UsuariosMongoTests {
     private MockMvc mockMvc;
 
     @Autowired
-    private UsuariosRepository usuariosRepository;
+    private UserRepository userRepository;
 
     private String userId;
 
     @BeforeEach
     void setUp() {
-        usuariosRepository.deleteAll();
-        userId = usuariosRepository.save(
+        userRepository.deleteAll();
+        userId = userRepository.save(
             User.builder()
                 .name("Test User")
                 .email("test@test.com")

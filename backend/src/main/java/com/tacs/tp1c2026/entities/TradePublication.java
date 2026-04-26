@@ -26,7 +26,7 @@ public class TradePublication {
 
   private PublicationStatus status = PublicationStatus.ACTIVE;
 
-  private List<TradeProposal> proposals = new ArrayList<>();
+  private final List<TradeProposal> proposals = new ArrayList<>();
 
   private Feedback feedback;
 

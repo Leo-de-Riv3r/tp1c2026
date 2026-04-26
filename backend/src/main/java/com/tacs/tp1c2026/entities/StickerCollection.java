@@ -2,9 +2,10 @@ package com.tacs.tp1c2026.entities;
 
 import com.tacs.tp1c2026.exceptions.FiguritaNoDisponibleException;
 import com.tacs.tp1c2026.exceptions.FiguritaNoEncontradaException;
-import com.tacs.tp1c2026.exceptions.FiguritasInsuficientesException;
+import com.tacs.tp1c2026.exceptions.InsufficientStickerException;
 import lombok.Builder;
 import lombok.Getter;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -14,9 +15,11 @@ import java.util.List;
 @Builder
 public class StickerCollection {
 
-
+    @Getter
     private Sticker sticker;
-    private Integer quantity;
+    private Integer idleStickers;
+    private Integer availableForAuction;
+    private Integer availableForTrade;
     private LocalDate adquisitionDate;
     private String adquisitionOrigin;
     private List<TradePublication> publications;
@@ -24,60 +27,33 @@ public class StickerCollection {
 
     public StickerCollection(Sticker sticker, User user){
         this.sticker = sticker;
-        this.quantity = 1;
+        this.idleStickers = 0;
+        this.availableForAuction = 0;
+        this.availableForTrade = 0;
         this.publications = new ArrayList<>();
         this.auctions = new ArrayList<>();
         this.adquisitionDate = LocalDateTime.now().toLocalDate();
         this.adquisitionOrigin = user.getName();
     }
 
-    public Integer getAvailableAmount() {
-        return availableAmount();
-    }
-
-    public boolean hasInsufficientAmount(Integer requestedAmount) {
-        return requestedAmount == null || requestedAmount <= 0 || requestedAmount > availableAmount();
-    }
-
-    public void validateAvailableForOffer() {
-        if (availableAmount() <= 0) {
-            Integer stickerNumber = this.sticker != null ? this.sticker.getNumber() : null;
-            throw new FiguritaNoDisponibleException("La figurita " + stickerNumber + " no esta disponible para oferta");
-        }
-    }
-
-    public void increaseAmount() {
-        this.quantity = this.quantity + 1;
-    }
-
-    public void decreaseAmount() {
-        if (this.quantity == 0) {
-            throw new FiguritasInsuficientesException("No hay suficientes figuritas para reducir cantidad");
-        }
-        this.quantity = this.quantity - 1;
-    }
-
-    private int availableAmount() {
-        return Math.max(0, this.quantity - this.cardsInPublications() - this.cardsInAuctions());
-    }
-
-    private int cardsInPublications(){
-        return this.publications.stream().filter(TradePublication::notCancelled).map(TradePublication::getAmountTraded).reduce(0, Integer::sum);
-    }
-
-    private int cardsInAuctions(){
-        return Math.toIntExact(this.auctions.stream().filter(Auction::notCancelled).count());
-    }
-
-    public TradePublication createPublication(Integer amount) throws FiguritaNoEncontradaException,
-            FiguritasInsuficientesException {
-        if (availableAmount() - amount < 0) {
-            throw new FiguritasInsuficientesException("No hay suficientes tarjetas para publicas");
+    public TradePublication createPublication(Integer amount) throws InsufficientStickerException {
+        if (availableForTrade - amount < 0) {
+            throw new InsufficientStickerException("Insufficient stickers to trade with");
         }
         TradePublication tp =  new TradePublication(
                 amount
         );
         this.publications.add(tp);
+        return tp;
+    }
+
+    public Auction createAuction(Integer auctionDurationHours, Integer minimumAmount) {
+        if (availableForAuction - 1 < 0) {
+            throw new InsufficientStickerException("Insufficient stickers to auction");
+        }
+        Auction auction = new Auction(auctionDurationHours, minimumAmount);
+        this.auctions.add(auction);
+        return auction;
     }
 
     public boolean isOf(Sticker sticker) {
@@ -87,5 +63,32 @@ public class StickerCollection {
     public boolean isOf(Integer stickerNumber) {
         return this.sticker.getNumber().equals(stickerNumber);
     }
+
+    public void addIdle() {
+        this.idleStickers += 1;
+    }
+
+    public void addForTrade(){
+        this.availableForTrade += 1;
+    }
+
+    public void addForAuction(){
+        this.availableForAuction +=1;
+    }
+
+    public void removeIdle() {
+        if (this.idleStickers - 1 < 0){
+            throw new InsufficientStickerException("Insufficient stickers to remove");
+        }
+        this.idleStickers -= 1;
+    }
+
+    public boolean isEmptyCollection() {
+        int total = (this.idleStickers == null ? 0 : this.idleStickers)
+                + (this.availableForAuction == null ? 0 : this.availableForAuction)
+                + (this.availableForTrade == null ? 0 : this.availableForTrade);
+        return total <= 0;
+    }
+
 
 }

@@ -1,5 +1,7 @@
  package com.tacs.tp1c2026.entities;
 
+ import com.tacs.tp1c2026.services.ProfileGroupManager;
+
  import java.util.LinkedHashMap;
  import java.util.List;
  import java.util.Map;
@@ -61,6 +63,26 @@
          }
           values.put(collectionSticker.getSticker().getId(), -1);
      }
+
+      /**
+       * Removes any entry related to the provided sticker collection from the profile.
+       */
+      public void removeSticker(StickerCollection collectionSticker) {
+          if (collectionSticker == null || collectionSticker.getSticker() == null || collectionSticker.getSticker().getId() == null) {
+              return;
+          }
+          values.remove(collectionSticker.getSticker().getId());
+      }
+
+      /**
+       * Removes any entry related to the provided sticker from the profile.
+       */
+        public void removeSticker(Sticker sticker) {
+            if (sticker == null || sticker.getId() == null) {
+                return;
+            }
+            values.remove(sticker.getId());
+        }
 
      /**
       * Calcula el puntaje de complementariedad entre dos perfiles.

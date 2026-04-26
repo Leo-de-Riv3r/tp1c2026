@@ -1,6 +1,6 @@
  package com.tacs.tp1c2026.entities;
 
- import com.tacs.tp1c2026.properties.PerfilProperties;
+ import com.tacs.tp1c2026.properties.ProfileProperties;
 
  import java.util.*;
 
@@ -21,11 +21,12 @@
      private Profile representativeProfile = initializeVectorProfile();
 
      @DocumentReference
-     private final List<User> neighbours = new ArrayList<>();
+     @Getter
+     private final Set<User> neighbours = new HashSet<>();
 
-     private final PerfilProperties properties;
+     private final ProfileProperties properties;
 
-     public ProfileGroup(PerfilProperties properties){
+     public ProfileGroup(ProfileProperties properties){
          this.properties = properties;
 
      }
@@ -47,7 +48,7 @@
        * @param neighborUser usuario a remover
       */
      public void removeNeighbor(User neighborUser) {
-         this.neighbours.add(neighborUser);
+          this.neighbours.remove(neighborUser);
      }
 
      /**
@@ -66,7 +67,7 @@
      @PostConstruct
      private Profile initializeVectorProfile() {
          assert properties != null;
-          int maxCards = properties.getMaxInitialCards();
+          int maxCards = properties.getTotalNumberOfStickers();
           Map<Integer, Integer> initialValues = new LinkedHashMap<>();
 
           for (int index = 0; index < maxCards; index++) {

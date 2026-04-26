@@ -17,7 +17,6 @@ public class Auction {
   @Id
   private Integer id;
 
-  private Sticker sticker;
 
   @Setter
   @DocumentReference
@@ -39,9 +38,8 @@ public class Auction {
   @DocumentReference
   private final List<User> interestedUsers = new ArrayList<>();
 
-  public Auction(User publisherUser, Sticker sticker, Integer auctionDurationHours, Integer minimumStickerCount) {
+  public Auction(Integer auctionDurationHours, Integer minimumStickerCount) {
     this.setPublisherUser(publisherUser);
-    this.sticker = sticker;
     this.closeDate = this.creationDate.plusHours(auctionDurationHours);
     this.minimumStickerCount = minimumStickerCount;
   }

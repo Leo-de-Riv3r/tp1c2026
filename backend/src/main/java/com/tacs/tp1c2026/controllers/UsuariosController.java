@@ -4,7 +4,7 @@ import com.tacs.tp1c2026.entities.User;
 import com.tacs.tp1c2026.entities.StickerCollection;
 import com.tacs.tp1c2026.entities.FiguritaFaltante;
 import com.tacs.tp1c2026.entities.dto.input.usuario.*;
-import com.tacs.tp1c2026.services.UsuariosService;
+import com.tacs.tp1c2026.services.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
@@ -14,28 +14,28 @@ import java.util.List;
 @RequestMapping("/users")
 public class UsuariosController {
 
-    private final UsuariosService usuariosService;
+    private final UserService userService;
 
-    public UsuariosController(UsuariosService usuariosService) {
-        this.usuariosService = usuariosService;
+    public UsuariosController(UserService userService) {
+        this.userService = userService;
     }
 
     // Todos los users - para la view del admin - ver si se usa o despues descartar
     @GetMapping
     public ResponseEntity<List<User>> getAll() {
-        return ResponseEntity.ok(usuariosService.listarUsuarios());
+        return ResponseEntity.ok(userService.listarUsuarios());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<User> getById(@PathVariable Integer id) {
-        return ResponseEntity.ok(usuariosService.obtenerUsuario(id));
+        return ResponseEntity.ok(userService.obtenerUsuario(id));
     }
 
     /* Métodos para operar sobre la colección del usuario */
 
     @GetMapping("/{id}/collection")
     public ResponseEntity<List<StickerCollection>> getCollection(@PathVariable Integer id) {
-        return ResponseEntity.ok(usuariosService.obtenerColeccion(id));
+        return ResponseEntity.ok(userService.obtenerColeccion(id));
     }
 
     // Agrega una figurita a la colección o incrementa la cantidad si ya existía
@@ -43,7 +43,7 @@ public class UsuariosController {
     public ResponseEntity<StickerCollection> addToCollection(
             @PathVariable Integer id,
             @Valid @RequestBody AddToCollectionRequest request) {
-        return ResponseEntity.ok(usuariosService.agregarAColeccion(id, request.figuritaId()));
+        return ResponseEntity.ok(userService.agregarAColeccion(id, request.figuritaId()));
     }
 
     // Decrementa la cantidad de una figurita de la colección, si llega a cero la quita
@@ -51,7 +51,7 @@ public class UsuariosController {
     public ResponseEntity<Void> decrementFromCollection(
             @PathVariable Integer id,
             @PathVariable Integer figuritaId) {
-        usuariosService.decrementFromCollection(id, figuritaId);
+        userService.decrementFromCollection(id, figuritaId);
         return ResponseEntity.noContent().build();
     }
 
@@ -59,7 +59,7 @@ public class UsuariosController {
 
     @GetMapping("/{id}/missing-cards")
     public ResponseEntity<List<FiguritaFaltante>> getMissingCards(@PathVariable Integer id) {
-        return ResponseEntity.ok(usuariosService.obtenerFaltantes(id));
+        return ResponseEntity.ok(userService.obtenerFaltantes(id));
     }
 
     // Marca una figurita como faltante
@@ -67,7 +67,7 @@ public class UsuariosController {
     public ResponseEntity<FiguritaFaltante> addMissingCard(
             @PathVariable Integer id,
             @Valid @RequestBody AddMissingCardRequest request) {
-        return ResponseEntity.ok(usuariosService.agregarFaltante(id, request.figuritaId()));
+        return ResponseEntity.ok(userService.agregarFaltante(id, request.figuritaId()));
     }
 
     /* Métodos para las sugerencias - No sé qué más se hará sobre esto, asi que dejo este x ahora */
