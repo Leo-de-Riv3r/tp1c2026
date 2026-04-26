@@ -20,7 +20,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Subasta {
+public class Auction {
   @Id
   private Integer id;
 
@@ -42,17 +42,19 @@ public class Subasta {
   private Integer mejorOfertaId;
 
   @Transient
-  private OfertaSubasta mejorOferta;
+  private AuctionOffer mejorOferta;
 
-  private List<OfertaSubasta> ofertas;
+  private List<AuctionOffer> ofertas = new ArrayList<>();
 
-  private List<Usuario> usuariosInteresados = new ArrayList<>();
+  private List<Integer> usuariosInteresadosIds = new ArrayList<>();
 
-  public Subasta(Usuario usuario, Figurita coleccion, Integer duracionSubasta, Integer cantidadMinFiguritas){
+  public Auction(Usuario usuario, Figurita coleccion, Integer duracionSubasta, Integer cantidadMinFiguritas){
     this.setUsuarioPublicante(usuario);
     this.figurita = coleccion;
+    this.fechaCreacion = LocalDateTime.now();
     this.fechaCierre = this.fechaCreacion.plusHours(duracionSubasta);
     this.cantidadMinFiguritas = cantidadMinFiguritas;
+    this.estado = EstadoSubasta.ACTIVA;
   }
 
   public void setUsuarioPublicante(Usuario usuarioPublicante) {
@@ -60,43 +62,46 @@ public class Subasta {
     this.usuarioPublicanteId = usuarioPublicante != null ? usuarioPublicante.getId() : null;
   }
 
-  public void setMejorOferta(OfertaSubasta mejorOferta) {
+  public void setBestOffer(AuctionOffer mejorOferta) {
     this.mejorOferta = mejorOferta;
     this.mejorOfertaId = mejorOferta != null ? mejorOferta.getId() : null;
   }
 
-  public void agregarOferta(OfertaSubasta ofertaSubasta){
-    this.ofertas.add(ofertaSubasta);
+  public void addOffer(AuctionOffer auctionOffer){
+    if (this.ofertas == null) {
+      this.ofertas = new ArrayList<>();
+    }
+    this.ofertas.add(auctionOffer);
   }
 
-  public void rechazarOferta(OfertaSubasta oferta) throws OfertaYaProcesadaException, IllegalArgumentException {
-    if (!Objects.equals(oferta.getSubasta().getId(), this.id)) {
+  public void rejectOffer(AuctionOffer oferta) throws OfertaYaProcesadaException, IllegalArgumentException {
+    if (oferta.getAuction() == null || !Objects.equals(oferta.getAuction().getId(), this.id)) {
       throw new IllegalArgumentException("La oferta no corresponde a la subasta");
     }
-    if (!oferta.estaPendiente()) {
+    if (!oferta.isPending()) {
       throw new OfertaYaProcesadaException("La oferta ya fue aceptada o rechazada");
     }
-    oferta.rechazar();
+    oferta.reject();
   }
 
-  public boolean permiteAceptarOfertas() {
+  public boolean canAcceptOffers() {
     return !EstadoSubasta.CERRADA.equals(this.estado) && !EstadoSubasta.ADJUDICADA.equals(this.estado);
   }
 
-  public void aceptarOferta(OfertaSubasta oferta) throws SubastaCerradaException, OfertaYaProcesadaException, IllegalArgumentException {
-    if (!permiteAceptarOfertas()) {
+  public void acceptOffer(AuctionOffer oferta) throws SubastaCerradaException, OfertaYaProcesadaException, IllegalArgumentException {
+    if (!canAcceptOffers()) {
       throw new SubastaCerradaException("La subasta no permite aceptar ofertas");
     }
-    if (!oferta.estaPendiente()) {
+    if (!oferta.isPending()) {
       throw new OfertaYaProcesadaException("La oferta ya fue aceptada o rechazada");
     }
-    if (!Objects.equals(oferta.getSubasta().getId(), this.id)) {
+    if (oferta.getAuction() == null || !Objects.equals(oferta.getAuction().getId(), this.id)) {
       throw new IllegalArgumentException("La oferta no corresponde a la subasta");
     }
 
-    oferta.aceptar();
+    oferta.accept();
     this.estado = EstadoSubasta.ADJUDICADA;
-    this.setMejorOferta(oferta);
+    this.setBestOffer(oferta);
 
     if (this.ofertas == null) {
       return;
@@ -104,11 +109,16 @@ public class Subasta {
 
     this.ofertas.stream()
         .filter(o -> !Objects.equals(o.getId(), oferta.getId()))
-        .filter(OfertaSubasta::estaPendiente)
-        .forEach(OfertaSubasta::rechazar);
+        .filter(AuctionOffer::isPending)
+        .forEach(AuctionOffer::reject);
   }
 
-  public void agregarInteresado(Usuario usuario) {
-    this.usuariosInteresados.add(usuario);
+  public void addInterestedUser(Usuario usuario) {
+    if (usuario == null || usuario.getId() == null) {
+      return;
+    }
+    if (!this.usuariosInteresadosIds.contains(usuario.getId())) {
+      this.usuariosInteresadosIds.add(usuario.getId());
+    }
   }
 }

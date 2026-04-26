@@ -1,14 +1,13 @@
-/*package com.tacs.tp1c2026.repositories;
+package com.tacs.tp1c2026.repositories;
 
-import com.tacs.tp1c2026.entities.OfertaSubasta;
-import org.springframework.data.jpa.repository.JpaRepository;
-
+import com.tacs.tp1c2026.entities.AuctionOffer;
 import java.util.List;
+import org.springframework.data.mongodb.repository.MongoRepository;
 
+public interface OfertasSubastaRepository extends MongoRepository<AuctionOffer, Integer> {
+  List<AuctionOffer> findByAuctionId(Integer subastaId);
 
-public interface OfertasSubastaRepository extends JpaRepository<OfertaSubasta, Integer>{
-  List<OfertaSubasta> findBySubastaId(Integer subastaId);
-  List<OfertaSubasta> findByUsuarioPostorId(Integer userId);
-  List<OfertaSubasta> findBySubastaUsuarioPublicanteId(Integer userId);
+  List<AuctionOffer> findByUsuarioPostorId(Integer userId);
+
+  List<AuctionOffer> findByAuctionUsuarioPublicanteId(Integer userId);
 }
-*/

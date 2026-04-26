@@ -1,7 +1,7 @@
 package com.tacs.tp1c2026.entities;
 
 import com.tacs.tp1c2026.exceptions.FiguritaNoDisponibleException;
-import com.tacs.tp1c2026.exceptions.FiguritaNoEncontradaException;
+//import com.tacs.tp1c2026.exceptions.FiguritaNoEncontradaException;
 import com.tacs.tp1c2026.exceptions.FiguritasInsuficientesException;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,7 +18,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class FiguritaColeccion {
+public class  FiguritaColeccion {
 
     private Figurita figurita;
     private Integer quantity;
@@ -73,16 +73,16 @@ public class FiguritaColeccion {
         return this.compromisedCount == null ? 0 : this.compromisedCount;
     }
 
-    public PublicacionIntercambio crearPublicacion(Usuario publicante, Integer cantidad) throws FiguritaNoEncontradaException,
-            FiguritasInsuficientesException {
-        if (cantidadLibre() - cantidad < 0){
-            throw new FiguritasInsuficientesException("No hay suficientes tarjetas para publicas");
-        }
-        return new PublicacionIntercambio(
-                publicante,
-                this,
-                cantidad
-        );
-
-    }
+//    public PublicacionIntercambio crearPublicacion(Usuario publicante, Integer cantidad) throws FiguritaNoEncontradaException,
+//            FiguritasInsuficientesException {
+//        if (cantidadLibre() - cantidad < 0){
+//            throw new FiguritasInsuficientesException("No hay suficientes tarjetas para publicas");
+//        }
+//        return new PublicacionIntercambio(
+//                publicante,
+//                this,
+//                cantidad
+//        );
+//
+//    }
 }

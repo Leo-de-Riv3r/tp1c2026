@@ -7,7 +7,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Transient;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
@@ -17,45 +16,46 @@ import org.springframework.data.mongodb.core.mapping.DocumentReference;
 @Getter
 @Setter
 @NoArgsConstructor
-public class OfertaSubasta {
+public class AuctionOffer {
   @Id
   private Integer id;
 
   @DocumentReference
-  private Subasta subasta;
+  private Auction auction;
 
   @DocumentReference
   private Usuario usuarioPostor;
 
-  private List<ItemOfertaSubasta> itemsOfrecidos = new ArrayList<>();
+  private List<AuctionOfferItems> itemsOfrecidos = new ArrayList<>();
 
   private EstadoOfertaSubasta estado = EstadoOfertaSubasta.PENDIENTE;
 
-  public OfertaSubasta(Usuario postor, Subasta subasta, List<ItemOfertaSubasta> ofertas) {
+  public AuctionOffer(Usuario postor, Auction auction, List<AuctionOfferItems> ofertas) {
     this.setUsuarioPostor(postor);
-    this.setSubasta(subasta);
+    this.setAuction(auction);
     this.itemsOfrecidos = ofertas;
   }
 
-  public void agregarItem(ItemOfertaSubasta item) {
+
+  public void agregarItem(AuctionOfferItems item) {
     this.itemsOfrecidos.add(item);
   }
 
   public Integer getTotalFiguritas() {
     return this.itemsOfrecidos.stream()
-        .map(ItemOfertaSubasta::getCantidad)
+        .map(AuctionOfferItems::getCantidad)
         .reduce(0, Integer::sum);
   }
 
-  public boolean estaPendiente() {
+  public boolean isPending() {
     return EstadoOfertaSubasta.PENDIENTE.equals(this.estado);
   }
 
-  public void aceptar() {
+  public void accept() {
     this.estado = EstadoOfertaSubasta.ACEPTADA;
   }
 
-  public void rechazar() {
+  public void reject() {
     this.estado = EstadoOfertaSubasta.RECHAZADA;
   }
 }

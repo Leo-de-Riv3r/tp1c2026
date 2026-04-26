@@ -4,11 +4,11 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class NuevaSubastaOfertaDto {
-    private List<ItemOfertaDto> itemsOfertados;
+public class NewAuctionOfferDTO {
+    private List<ItemsOffer> itemsOffer;
 
     @Data
-    public static class ItemOfertaDto {
+    public static class ItemsOffer {
         private Integer figuritaId;
         private Integer cantidad;
     }

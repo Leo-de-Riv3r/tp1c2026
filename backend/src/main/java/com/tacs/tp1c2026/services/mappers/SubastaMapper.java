@@ -1,10 +1,10 @@
 package com.tacs.tp1c2026.services.mappers;
 
-import com.tacs.tp1c2026.entities.ItemOfertaSubasta;
-import com.tacs.tp1c2026.entities.OfertaSubasta;
-import com.tacs.tp1c2026.entities.Subasta;
-import com.tacs.tp1c2026.entities.dto.output.OfertaSubastaDto;
-import com.tacs.tp1c2026.entities.dto.output.SubastaDto;
+import com.tacs.tp1c2026.entities.AuctionOfferItems;
+import com.tacs.tp1c2026.entities.AuctionOffer;
+import com.tacs.tp1c2026.entities.Auction;
+import com.tacs.tp1c2026.entities.dto.output.AuctionOfferDto;
+import com.tacs.tp1c2026.entities.dto.output.AuctionDTO;
 import java.util.List;
 import java.util.Objects;
 import org.springframework.stereotype.Component;
@@ -16,35 +16,37 @@ import org.springframework.stereotype.Component;
 public class SubastaMapper {
 
   /**
-   * Convierte una {@link Subasta} a su representación DTO.
+   * Convierte una {@link Auction} a su representación DTO.
    *
-   * @param subasta entidad de subasta
-   * @return {@link SubastaDto} con las propiedades principales de la subasta
+   * @param auction entidad de subasta
+   * @return {@link AuctionDTO} con las propiedades principales de la subasta
    */
-  public SubastaDto mapSubasta(Subasta subasta) {
-    return new SubastaDto(
-            subasta.getId(),
-            subasta.getUsuarioPublicante() != null ? subasta.getUsuarioPublicante().getId() : null,
-            subasta.getFigurita() != null ? subasta.getFigurita().getNumber() : null,
-            subasta.getCantidadMinFiguritas(),
-            subasta.getFechaCreacion(),
-            subasta.getFechaCierre(),
-            subasta.getEstado() != null ? subasta.getEstado().name() : null
+  public AuctionDTO mapSubasta(Auction auction) {
+    return new AuctionDTO(
+            auction.getId(),
+            auction.getUsuarioPublicanteId() != null
+                ? auction.getUsuarioPublicanteId()
+                : (auction.getUsuarioPublicante() != null ? auction.getUsuarioPublicante().getId() : null),
+            auction.getFigurita() != null ? auction.getFigurita().getNumber() : null,
+            auction.getCantidadMinFiguritas(),
+            auction.getFechaCreacion(),
+            auction.getFechaCierre(),
+            auction.getEstado() != null ? auction.getEstado().name() : null
     );
   }
 
   /**
-   * Convierte una {@link OfertaSubasta} a su representación DTO.
+   * Convierte una {@link AuctionOffer} a su representación DTO.
    *
-   * @param ofertaSubasta entidad de oferta de subasta
-   * @return {@link OfertaSubastaDto} con el estado, figuritas ofrecidas y referencias asociadas
+   * @param auctionOffer entidad de oferta de subasta
+   * @return {@link AuctionOfferDto} con el estado, figuritas ofrecidas y referencias asociadas
    */
-  public OfertaSubastaDto mapOfertaSubasta(OfertaSubasta ofertaSubasta) {
-    List<ItemOfertaSubasta> items = ofertaSubasta.getItemsOfrecidos() == null ? List.of() : ofertaSubasta.getItemsOfrecidos();
+  public AuctionOfferDto mapOfertaSubasta(AuctionOffer auctionOffer) {
+    List<AuctionOfferItems> items = auctionOffer.getItemsOfrecidos() == null ? List.of() : auctionOffer.getItemsOfrecidos();
 
     Integer cantidadTotal = items.stream()
         .filter(Objects::nonNull)
-        .map(ItemOfertaSubasta::getCantidad)
+        .map(AuctionOfferItems::getCantidad)
         .filter(Objects::nonNull)
         .reduce(0, Integer::sum);
 
@@ -55,24 +57,24 @@ public class SubastaMapper {
         .filter(Objects::nonNull)
         .toList();
 
-    List<OfertaSubastaDto.ItemOfertaDetalleDto> itemsDetalle = items.stream()
+    List<AuctionOfferDto.OfferItemDetailDto> itemsDetalle = items.stream()
         .filter(Objects::nonNull)
         .filter(i -> i.getFigurita() != null)
-        .map(i -> new OfertaSubastaDto.ItemOfertaDetalleDto(
+        .map(i -> new AuctionOfferDto.OfferItemDetailDto(
             i.getFigurita().getId(),
             i.getFigurita().getNumber(),
             i.getCantidad()
         ))
         .toList();
 
-    return new OfertaSubastaDto(
-        ofertaSubasta.getId(),
-        ofertaSubasta.getSubasta() != null ? ofertaSubasta.getSubasta().getId() : ofertaSubasta.getSubastaId(),
-        ofertaSubasta.getUsuarioPostor() != null ? ofertaSubasta.getUsuarioPostor().getId() : ofertaSubasta.getUsuarioPostorId(),
+    return new AuctionOfferDto(
+        auctionOffer.getId(),
+        auctionOffer.getAuction() != null ? auctionOffer.getAuction().getId() : null,
+        auctionOffer.getUsuarioPostor() != null ? auctionOffer.getUsuarioPostor().getId() : null,
         cantidadTotal,
         idsFiguritas,
         itemsDetalle,
-        ofertaSubasta.getEstado().name()
+        auctionOffer.getEstado().name()
     );
   }
 }

@@ -1,13 +1,13 @@
 package com.tacs.tp1c2026.services;
 
 import com.tacs.tp1c2026.entities.FiguritaColeccion;
-import com.tacs.tp1c2026.entities.ItemOfertaSubasta;
-import com.tacs.tp1c2026.entities.OfertaSubasta;
-import com.tacs.tp1c2026.entities.Subasta;
+import com.tacs.tp1c2026.entities.AuctionOfferItems;
+import com.tacs.tp1c2026.entities.AuctionOffer;
+import com.tacs.tp1c2026.entities.Auction;
 import com.tacs.tp1c2026.entities.Usuario;
-import com.tacs.tp1c2026.entities.dto.input.NuevaSubastaDto;
-import com.tacs.tp1c2026.entities.dto.input.NuevaSubastaOfertaDto;
-import com.tacs.tp1c2026.entities.dto.output.SubastaDto;
+import com.tacs.tp1c2026.entities.dto.input.NewAuctionDTO;
+import com.tacs.tp1c2026.entities.dto.input.NewAuctionOfferDTO;
+import com.tacs.tp1c2026.entities.dto.output.AuctionDTO;
 import com.tacs.tp1c2026.entities.enums.EstadoSubasta;
 import com.tacs.tp1c2026.exceptions.*;
 import com.tacs.tp1c2026.exceptions.FiguritaNoEncontradaException;
@@ -18,20 +18,21 @@ import com.tacs.tp1c2026.repositories.SubastaRepository;
 import com.tacs.tp1c2026.repositories.UsuariosRepository;
 
 import java.util.*;
+import java.time.LocalDateTime;
 
 import com.tacs.tp1c2026.services.mappers.SubastaMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class SubastasService {
+public class AuctionsService {
 
   private final UsuariosRepository usuariosRepository;
   private final SubastaRepository subastaRepository;
   private final OfertasSubastaRepository ofertasSubastaRepository;
   private final SubastaMapper subastaMapper;
 
-  public SubastasService( UsuariosRepository usuariosRepository,SubastaRepository subastaRepository, OfertasSubastaRepository ofertasSubastaRepository, SubastaMapper mapper){
+  public AuctionsService(UsuariosRepository usuariosRepository, SubastaRepository subastaRepository, OfertasSubastaRepository ofertasSubastaRepository, SubastaMapper mapper){
     this.usuariosRepository = usuariosRepository;
     this.subastaRepository = subastaRepository;
     this.ofertasSubastaRepository = ofertasSubastaRepository;
@@ -52,7 +53,7 @@ public class SubastasService {
    * @throws ConflictException     si la figurita no está habilitada para participar en subastas
    * @throws BadInputException     si los datos de la subasta no cumplen los requisitos mínimos
    */
-  public Integer crearSubasta(Integer userId, NuevaSubastaDto sub) {
+  public Integer createAuction(Integer userId, NewAuctionDTO sub) {
 
     validate(sub);
 
@@ -65,17 +66,25 @@ public class SubastasService {
       throw new BadInputException(e.getMessage());
     }
 
-    Subasta subasta = null;
     try {
-        subasta = figuritaPublicada.subastar(
-                sub.getCantidadMinFiguritas(),
-                sub.getDuracionSubastaHs()
-        );
+      if (figuritaPublicada.noTieneSuficientes(1)) {
+        throw new BadInputException("No hay figuritas disponibles para crear la subasta");
+      }
+      figuritaPublicada.aumentarCantidadOfertada();
     } catch (FiguritasInsuficientesException e) {
-        throw new BadInputException("No hay suficientes figuritas para crear la subasta");
+      throw new BadInputException("No hay suficientes figuritas para crear la subasta");
     }
 
-      return subastaRepository.save(subasta).getId();
+    Auction auction = new Auction(
+        usuario,
+        figuritaPublicada.getFigurita(),
+        sub.getDuracionSubastaHs(),
+        sub.getCantidadMinFiguritas()
+    );
+
+    usuariosRepository.save(usuario);
+
+    return subastaRepository.save(auction).getId();
   }
 
 
@@ -94,56 +103,75 @@ public class SubastasService {
    * @throws ConflictException      si la subasta no está activa o ya venció
    * @throws BadInputException      si las figuritas son inválidas o insuficientes
    */
-  public void ofertarSubasta(Integer userId, Integer subastaId, NuevaSubastaOfertaDto nuevaOferta){
+  public void placeAuctionOffer(Integer userId, Integer subastaId, NewAuctionOfferDTO nuevaOferta){
 
-
+    // valida la oferta
     validate(nuevaOferta);
 
     Usuario postor = usuariosRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
-    Subasta subasta = subastaRepository.findById(subastaId).orElseThrow(() -> new NotFoundException("No se encontro la subasta"));
+    Auction auction = subastaRepository.findById(subastaId).orElseThrow(() -> new NotFoundException("No se encontro la subasta"));
 
-    Map<FiguritaColeccion, Integer> repetidasPostor = new HashMap<>();
+    if (Objects.equals(auction.getUsuarioPublicanteId(), userId)) {
+      throw new UnauthorizedException("No puedes ofertar en tu propia subasta");
+    }
 
-    nuevaOferta.getItemsOfertados().forEach(item -> {
-      FiguritaColeccion repetida;
-      try {
-        repetida = postor.getRepetidaByNumero(item.getFiguritaId());
-      } catch (FiguritaNoEncontradaException e) {
-        throw new BadInputException(e.getMessage());
+    if (!EstadoSubasta.ACTIVA.equals(auction.getEstado())) {
+      throw new ConflictException("La subasta no esta activa");
+    }
+
+    if (auction.getFechaCierre() != null && LocalDateTime.now().isAfter(auction.getFechaCierre())) {
+      auction.setEstado(EstadoSubasta.VENCIDA);
+      subastaRepository.save(auction);
+      throw new ConflictException("La subasta ya vencio");
+    }
+
+    Map<Integer, Integer> cantidadesPorFiguritaId = new LinkedHashMap<>();
+
+    nuevaOferta.getItemsOffer().forEach(item -> {
+      if (item == null || item.getFiguritaId() == null || item.getCantidad() == null || item.getCantidad() < 1) {
+        throw new BadInputException("Cada item debe incluir figuritaId y cantidad mayor a 0");
       }
-      repetidasPostor.put(repetida, item.getCantidad());
+      cantidadesPorFiguritaId.merge(item.getFiguritaId(), item.getCantidad(), Integer::sum);
     });
 
-    repetidasPostor.forEach((key, value) -> {
-        if (!key.getUsuario().equals(postor)) {
-            throw new BadInputException("El usuario no posee la figurita " + key.getFigurita().getNumero());
-        }
-        if (key.noTieneSuficientes(value)) {
-            throw new BadInputException("El usuario no posee suficientes duplicadas de la figurita " + key.getFigurita().getNumero());
-        }
-    });
+    List<AuctionOfferItems> itemsOfrecidos = new ArrayList<>();
+    int totalFiguritasOfrecidas = 0;
 
-    List<ItemOfertaSubasta> itemsOfrecidos = repetidasPostor.entrySet().stream()
-        .map(entry -> {
-            try {
-                entry.getKey().reducirDisponible(entry.getValue());
-            } catch (FiguritasInsuficientesException e) {
-                throw new BadInputException("No hay suficientes figuritas para ofrecer en la oferta");
-            }
-            return new ItemOfertaSubasta(
-                  entry.getKey().getFigurita(),
-                  entry.getValue()
-          );
-                }).toList();
+    for (Map.Entry<Integer, Integer> entry : cantidadesPorFiguritaId.entrySet()) {
+      Integer figuritaId = entry.getKey();
+      Integer cantidad = entry.getValue();
+
+      FiguritaColeccion repetida = findRepetidaByFiguritaId(postor, figuritaId);
+
+      if (repetida.noTieneSuficientes(cantidad)) {
+        throw new BadInputException("No tienes cantidad suficiente de la figurita " + figuritaId);
+      }
+
+      for (int i = 0; i < cantidad; i++) {
+        repetida.aumentarCantidadOfertada();
+      }
+
+      itemsOfrecidos.add(new AuctionOfferItems(repetida.getFigurita(), cantidad));
+      totalFiguritasOfrecidas += cantidad;
+    }
+
+    if (auction.getCantidadMinFiguritas() != null && totalFiguritasOfrecidas < auction.getCantidadMinFiguritas()) {
+      throw new BadInputException("La oferta no cumple la cantidad minima de figuritas");
+    }
 
 
-    OfertaSubasta ofertaSubasta = new OfertaSubasta(
-      postor,
-      subasta,
-      itemsOfrecidos
-    );
+    AuctionOffer auctionOffer = new AuctionOffer(postor, auction, itemsOfrecidos);
 
-    subasta.agregarOferta(ofertaSubasta);
+    AuctionOffer ofertaGuardada = ofertasSubastaRepository.save(auctionOffer);
+
+    if (auction.getMejorOferta() == null || ofertaGuardada.getTotalFiguritas() > auction.getMejorOferta().getTotalFiguritas()) {
+      auction.setBestOffer(ofertaGuardada);
+    }
+
+    auction.addOffer(ofertaGuardada);
+
+    subastaRepository.save(auction);
+    usuariosRepository.save(postor);
 
   }
 
@@ -161,26 +189,35 @@ public class SubastasService {
    * @throws UnauthorizedException  si el usuario no es el dueño de la subasta
    * @throws ConflictException      si la subasta no permite aceptar ofertas o la oferta ya fue procesada
    */
-  public void aceptarOfertaSubasta(Integer userId, Integer subastaId, Integer ofertaId) {
+  public void acceptAuctionOffer(Integer userId, Integer subastaId, Integer ofertaId) {
 
     Usuario usuario = usuariosRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
-    Subasta subasta = subastaRepository.findById(subastaId).orElseThrow(() -> new NotFoundException("No se encontro la subasta"));
-    OfertaSubasta oferta = ofertasSubastaRepository.findById(ofertaId).orElseThrow(() -> new NotFoundException("No se encontro la oferta"));
+    Auction auction = subastaRepository.findById(subastaId).orElseThrow(() -> new NotFoundException("No se encontro la subasta"));
+    AuctionOffer oferta = ofertasSubastaRepository.findById(ofertaId).orElseThrow(() -> new NotFoundException("No se encontro la oferta"));
 
-    if (!subasta.getUsuarioPublicante().equals(usuario)) {
+    if (!Objects.equals(auction.getUsuarioPublicanteId(), usuario.getId())) {
       throw new UnauthorizedException("El usuario no es el dueño de la subasta");
     }
 
     try {
-      subasta.aceptarOferta(oferta);
+      auction.acceptOffer(oferta);
     } catch (SubastaCerradaException | OfertaYaProcesadaException e) {
       throw new ConflictException(e.getMessage());
     } catch (IllegalArgumentException e) {
       throw new BadInputException(e.getMessage());
     }
 
+    List<AuctionOffer> ofertas = ofertasSubastaRepository.findByAuctionId(subastaId);
+    ofertas.stream()
+        .filter(o -> !Objects.equals(o.getId(), ofertaId))
+        .filter(AuctionOffer::isPending)
+        .forEach(o -> {
+          o.reject();
+          ofertasSubastaRepository.save(o);
+        });
+
     ofertasSubastaRepository.save(oferta);
-    subastaRepository.save(subasta);
+    subastaRepository.save(auction);
   }
 
 
@@ -197,17 +234,17 @@ public class SubastasService {
    * @throws UnauthorizedException  si el usuario no es el dueño de la subasta
    * @throws ConflictException      si la oferta ya fue aceptada o rechazada previamente
    */
-  public void rechazarOfertaSubasta(Integer userId, Integer subastaId, Integer ofertaId) {
+  public void rejectAuctionOffer(Integer userId, Integer subastaId, Integer ofertaId) {
     Usuario usuario = usuariosRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
-    Subasta subasta = subastaRepository.findById(subastaId).orElseThrow(() -> new NotFoundException("No se encontro la subasta"));
-    OfertaSubasta oferta = ofertasSubastaRepository.findById(ofertaId).orElseThrow(() -> new NotFoundException("No se encontro la oferta"));
+    Auction auction = subastaRepository.findById(subastaId).orElseThrow(() -> new NotFoundException("No se encontro la subasta"));
+    AuctionOffer oferta = ofertasSubastaRepository.findById(ofertaId).orElseThrow(() -> new NotFoundException("No se encontro la oferta"));
 
-    if (!subasta.getUsuarioPublicante().equals(usuario)) {
+    if (!Objects.equals(auction.getUsuarioPublicanteId(), usuario.getId())) {
       throw new UnauthorizedException("El usuario no es el dueño de la subasta");
     }
 
     try {
-      subasta.rechazarOferta(oferta);
+      auction.rejectOffer(oferta);
     } catch (OfertaYaProcesadaException e) {
       throw new ConflictException(e.getMessage());
     } catch (IllegalArgumentException e) {
@@ -218,7 +255,7 @@ public class SubastasService {
   }
 
 
-  public List<SubastaDto> obtenerSubastasActivasGlobales() {    return subastaRepository.findByEstado(EstadoSubasta.ACTIVA)
+  public List<AuctionDTO> getAllAuctionsActive() {    return subastaRepository.findByEstado(EstadoSubasta.ACTIVA)
             .stream()
             .map(subastaMapper::mapSubasta)
             .toList();
@@ -233,7 +270,7 @@ public class SubastasService {
    * @throws BadInputException si falta la figurita, la duración es insuficiente
    *                           o la cantidad mínima de figuritas es inválida
    */
-  private void validate(NuevaSubastaDto dto) {
+  private void validate(NewAuctionDTO dto) {
 
     if (dto.getNumFiguritaPublicada() == null) {
       throw new BadInputException("Debe indicar la figurita a subastar");
@@ -254,16 +291,25 @@ public class SubastasService {
    * @param dto DTO de la nueva oferta
    * @throws BadInputException si la oferta es nula o no incluye al menos 1 item
    */
-  private void validate(NuevaSubastaOfertaDto dto) {
-    if (dto == null || dto.getItemsOfertados() == null || dto.getItemsOfertados().isEmpty()) {
+  private void validate(NewAuctionOfferDTO dto) {
+    if (dto == null || dto.getItemsOffer() == null || dto.getItemsOffer().isEmpty()) {
       throw new BadInputException("Se necesita ofrecer como minimo 1 item");
     }
    }
 
 
 
-  private SubastaDto mapSubasta(Subasta subasta) {
-    return subastaMapper.mapSubasta(subasta);
+  private FiguritaColeccion findRepetidaByFiguritaId(Usuario usuario, Integer figuritaId) {
+    if (usuario.getCollection() == null) {
+      throw new BadInputException("El usuario no posee figuritas repetidas");
+    }
+
+    return usuario.getCollection().stream()
+        .filter(Objects::nonNull)
+        .filter(fc -> fc.getFigurita() != null)
+        .filter(fc -> Objects.equals(fc.getFigurita().getId(), figuritaId))
+        .findFirst()
+        .orElseThrow(() -> new BadInputException("La figurita " + figuritaId + " no esta en tus repetidas"));
   }
 
 
@@ -271,15 +317,15 @@ public class SubastasService {
    * ...existing code...
    */
   @Transactional
-  public void agregarUsuarioInteresado(Integer subastaId, Integer userId) {
+  public void addInterestedUser(Integer subastaId, Integer userId) {
     Usuario usuario = usuariosRepository.findById(userId)
         .orElseThrow(() -> new NotFoundException("Usuario no encontrado con id: " + userId));
 
-    Subasta subasta = subastaRepository.findById(subastaId)
+    Auction auction = subastaRepository.findById(subastaId)
         .orElseThrow(() -> new NotFoundException("Subasta no encontrada con id: " + subastaId));
 
-    subasta.agregarInteresado(usuario);
-    subastaRepository.save(subasta);
+    auction.addInterestedUser(usuario);
+    subastaRepository.save(auction);
   }
 
 }

@@ -1,7 +1,7 @@
 package com.tacs.tp1c2026.controllers;
 
 import com.tacs.tp1c2026.entities.dto.input.InteresadoDto;
-import com.tacs.tp1c2026.services.SubastasService;
+import com.tacs.tp1c2026.services.AuctionsService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/subastas")
 public class SubastaController {
 
-  private final SubastasService subastaService;
+  private final AuctionsService subastaService;
 
-  public SubastaController(SubastasService subastaService) {
+  public SubastaController(AuctionsService subastaService) {
     this.subastaService = subastaService;
   }
 
@@ -31,7 +31,7 @@ public class SubastaController {
   public ResponseEntity<String> agregarUsuarioInteresado(
       @PathVariable Integer subastaId,
       @RequestBody InteresadoDto dto) {
-    subastaService.agregarUsuarioInteresado(subastaId, dto.getUserId());
+    subastaService.addInterestedUser(subastaId, dto.getUserId());
     return ResponseEntity.ok("Usuario agregado como interesado");
   }
 }
