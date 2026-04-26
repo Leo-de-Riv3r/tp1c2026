@@ -44,7 +44,7 @@ public class AuctionService {
     }
 
     @Transactional
-    public void createAuctionOffer(Integer ownerId, Integer userId, CreationAuctionOfferDTO dto) {
+    public void createAuctionOffer(Integer ownerId, Integer userId, CreationAuctionOfferDTO dto) throws MissingStickerException {
         User proposer = this.usuarioRepository.findOrThrow(userId);
         User owner = this.usuarioRepository.findOrThrow(ownerId);
         Auction auction = owner.findAuctionById(dto.auctionId());

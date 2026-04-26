@@ -1,6 +1,7 @@
 package com.tacs.tp1c2026.entities;
 
 import com.tacs.tp1c2026.entities.enums.AuctionStatus;
+import com.tacs.tp1c2026.exceptions.MissingStickerException;
 import com.tacs.tp1c2026.exceptions.OfertaYaProcesadaException;
 import com.tacs.tp1c2026.exceptions.SubastaCerradaException;
 import com.tacs.tp1c2026.entities.conditions.AuctionCondition;
@@ -58,7 +59,9 @@ public class Auction {
    * Convenience overload: create and add an offer from a bidder and a list of items.
    * Validation and reservation of items happens in the AuctionOffer / User domain logic.
    */
-  public void addOffer(User bidder, List<AuctionItem> items) {
+  public void addOffer(User bidder, List<AuctionItem> items) throws  MissingStickerException{
+
+    for (AuctionItem i : items) { bidder.checkAuctionSticker(i.getSticker(), i.getAmount()); }
     items.forEach(i -> bidder.removeAuctionStickers(i.getSticker(), i.getAmount()));
     AuctionOffer offer = new AuctionOffer( bidder, items);
     this.addOffer(offer);

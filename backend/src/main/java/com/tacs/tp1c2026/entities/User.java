@@ -183,4 +183,24 @@ public class User {
     }
 
 
+    public void checkAuctionSticker(Sticker sticker, Integer amount) throws MissingStickerException {
+        StickerCollection collection = this.findCollection(sticker);
+        if (collection == null) {
+            throw new MissingStickerException("El usuario no posee la figurita " + sticker.getNumber());
+        }
+        if (!collection.hasEnoughForAuction(amount)) {
+            throw new InsufficientStickerException("Insufficient stickers for auction");
+        }
+    }
+
+    public void checkSufficientTradedSticker(Sticker sticker) throws MissingStickerException {
+        StickerCollection collection = this.findCollection(sticker);
+        if (collection == null) {
+            throw new MissingStickerException("El usuario no posee la figurita " + sticker.getNumber());
+        }
+        if (collection.hasNoStickersForTrading()) {
+            throw new InsufficientStickerException("Insufficient stickers to trade with");
+        }
+    }
+
 }

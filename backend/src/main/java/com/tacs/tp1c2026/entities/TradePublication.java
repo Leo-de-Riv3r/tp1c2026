@@ -130,7 +130,17 @@ public class TradePublication {
   }
 
   public void createProposal(User user, List<Sticker> stickers) throws InsufficientStickerException {
-      stickers.forEach(user::removeTradedSticker);
+      try {
+          for (Sticker sticker : stickers) {
+              user.checkSufficientTradedSticker(sticker);
+          }
+      } catch (MissingStickerException e) {
+          throw new InsufficientStickerException(e.getMessage());
+      }
+
+      for (Sticker sticker : stickers) {
+          user.removeTradedSticker(sticker);
+      }
       this.proposals.add(new TradeProposal(stickers, user));
   }
 }
