@@ -1,5 +1,53 @@
 services:
-  app:
-    build: .
+  mongo:
+    image: mongo:7
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - tacs-network
+
+  backend:
+    build:
+      context: .
     ports:
       - "8080:8080"
+    depends_on:
+      - mongo
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://mongo:27017/tacs_db
+      MONGO_DATABASE: tacs_db
+    networks:
+      - tacs-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    build:
+      context: ../../tacs-2026-c1-FE
+      args:
+        VITE_API_BASE_URL: http://localhost:8080
+    ports:
+      - "80:80"
+    networks:
+      - tacs-network
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+networks:
+  tacs-network:
+    driver: bridge
+
+volumes:
+  mongo_data:

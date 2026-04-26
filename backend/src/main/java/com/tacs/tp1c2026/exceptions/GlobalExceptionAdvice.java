@@ -1,6 +1,8 @@
 package com.tacs.tp1c2026.exceptions;
 
-import org.springframework.http.HttpStatus;
+import com.tacs.tp1c2026.entities.dto.common.ApiError;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -8,13 +10,24 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionAdvice {
 
-  @ExceptionHandler(CustomException.class)
-  public ResponseEntity<String> handleCustomException(CustomException ex) {
-    return new ResponseEntity<String>(ex.getMessage(), ex.getHttpStatus());
-  }
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionAdvice.class);
 
-  @ExceptionHandler(Exception.class)
-  public ResponseEntity<String> handleUnexpectedError(Exception ex) {
-    return new ResponseEntity<String>("Error inesperado", HttpStatus.INTERNAL_SERVER_ERROR);
-  }
+    @ExceptionHandler(CustomException.class)
+    public ResponseEntity<ApiError> handleCustomException(CustomException ex) {
+        return ResponseEntity
+            .status(ex.getHttpStatus())
+            .body(ApiError.of(
+                ex.getHttpStatus().value(),
+                ex.getHttpStatus().getReasonPhrase(),
+                ex.getMessage()
+            ));
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiError> handleUnexpectedError(Exception ex) {
+        log.error("Unexpected error: {}", ex.getMessage(), ex);
+        return ResponseEntity
+            .internalServerError()
+            .body(ApiError.of(500, "Internal Server Error", "An unexpected error occurred"));
+    }
 }
