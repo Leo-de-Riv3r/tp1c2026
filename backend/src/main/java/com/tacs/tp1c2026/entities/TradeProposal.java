@@ -1,7 +1,7 @@
 package com.tacs.tp1c2026.entities;
 
 import com.tacs.tp1c2026.entities.enums.TradeProposalStatus;
-import com.tacs.tp1c2026.exceptions.FiguritaNoEncontradaException;
+import com.tacs.tp1c2026.exceptions.MissingStickerException;
 import com.tacs.tp1c2026.exceptions.PropuestaYaProcesadaException;
 import java.util.ArrayList;
 import java.util.List;
@@ -68,13 +68,10 @@ public class TradeProposal {
    * Transfiere las figuritas ofrecidas al usuario destino.
    * Aumenta las repetidas del destino, elimina de faltantes si corresponde,
    * y reduce las repetidas del usuario que hizo la propuesta.
-   *
-   * @param destinationUser usuario que recibe las figuritas
    */
-  public void execute(User destinationUser) throws FiguritaNoEncontradaException{
+  public void execute() throws MissingStickerException {
       for (Sticker s : this.stickers){
-        this.proposerUser.removeSticker(s);
-        destinationUser.addSticker(s,this.proposerUser);
+        this.proposerUser.removeTradedSticker(s);
       }
   }
 

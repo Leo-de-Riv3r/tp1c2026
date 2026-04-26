@@ -16,5 +16,9 @@ public class AuctionItem {
 
   private Integer amount;
 
+  public AuctionItem(Sticker sticker, Integer amount) {
+    this.sticker = sticker;
+    this.amount = amount;
+  }
 
 }

@@ -14,25 +14,26 @@ public class AuctionOffer {
   private Integer id;
 
   @DocumentReference
-  @Field("subasta")
-  private Auction auction;
-
-  @DocumentReference
-  private User bidder;
+  private final User bidder;
 
   private List<AuctionItem> offeredItems = new ArrayList<>();
 
   private AuctionOfferStatus status = AuctionOfferStatus.PENDING;
 
-
-  public void addItem(AuctionItem offerItem) {
-    this.offeredItems.add(offerItem);
+  public void reserveItems() throws com.tacs.tp1c2026.exceptions.InsufficientStickerException {
+    for (AuctionItem item : this.offeredItems) {
+      if (!this.bidder.hasEnoughForAuction(item.getSticker(), item.getAmount())) {
+        throw new com.tacs.tp1c2026.exceptions.InsufficientStickerException("Insufficient stickers for auction");
+      }
+    }
+    for (AuctionItem item : this.offeredItems) {
+      this.bidder.removeAuctionStickers(item.getSticker(), item.getAmount());
+    }
   }
 
-  public Integer getTotalStickers() {
-    return this.offeredItems.stream()
-            .map(AuctionItem::getAmount)
-            .reduce(0, Integer::sum);
+  public AuctionOffer(User bidder, List<AuctionItem> items) {
+    this.bidder = bidder;
+    this.offeredItems = new java.util.ArrayList<>(items == null ? java.util.List.of() : items);
   }
 
   public boolean isPending() {

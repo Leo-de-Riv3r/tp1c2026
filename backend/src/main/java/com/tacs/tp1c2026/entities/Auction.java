@@ -3,10 +3,12 @@ package com.tacs.tp1c2026.entities;
 import com.tacs.tp1c2026.entities.enums.AuctionStatus;
 import com.tacs.tp1c2026.exceptions.OfertaYaProcesadaException;
 import com.tacs.tp1c2026.exceptions.SubastaCerradaException;
+import com.tacs.tp1c2026.entities.conditions.AuctionCondition;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -14,38 +16,52 @@ import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
 @Document(collection = "auctions")
 public class Auction {
-  @Id
-  private Integer id;
 
+  @Id
+  @Getter
+  private Integer id;
 
   @Setter
   @DocumentReference
   private User publisherUser;
 
-  private LocalDateTime creationDate;
+  private final LocalDateTime creationDate;
 
   private LocalDateTime closeDate;
 
-  private Integer minimumStickerCount;
+  private List<AuctionCondition> conditions = new ArrayList<>();
 
   private AuctionStatus status = AuctionStatus.ACTIVE;
 
   @Setter
   private AuctionOffer bestOffer;
 
-  private List<AuctionOffer> offers;
+  private final List<AuctionOffer> offers = new ArrayList<>();
 
   @DocumentReference
   private final List<User> interestedUsers = new ArrayList<>();
 
-  public Auction(Integer auctionDurationHours, Integer minimumStickerCount) {
+  public Auction(Integer auctionDurationHours, List<AuctionCondition> conditions) {
     this.setPublisherUser(publisherUser);
+    this.creationDate = LocalDateTime.now();
     this.closeDate = this.creationDate.plusHours(auctionDurationHours);
-    this.minimumStickerCount = minimumStickerCount;
+    this.conditions = new ArrayList<>(conditions == null ? List.of() : conditions);
   }
 
   public void addOffer(AuctionOffer auctionOffer) {
+    // Reserve the offered stickers from the bidder before accepting the offer
+    auctionOffer.reserveItems();
     this.offers.add(auctionOffer);
+  }
+
+  /**
+   * Convenience overload: create and add an offer from a bidder and a list of items.
+   * Validation and reservation of items happens in the AuctionOffer / User domain logic.
+   */
+  public void addOffer(User bidder, List<AuctionItem> items) {
+    items.forEach(i -> bidder.removeAuctionStickers(i.getSticker(), i.getAmount()));
+    AuctionOffer offer = new AuctionOffer( bidder, items);
+    this.addOffer(offer);
   }
 
   public void rejectOffer(AuctionOffer offer) throws OfertaYaProcesadaException, IllegalArgumentException {

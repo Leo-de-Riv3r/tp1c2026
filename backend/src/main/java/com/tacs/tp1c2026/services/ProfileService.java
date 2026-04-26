@@ -11,9 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Set;
 import java.util.Comparator;
-import java.util.stream.Collectors;
 
 @Service
 public class ProfileService {
@@ -45,7 +43,7 @@ public class ProfileService {
             List<Suggestion> suggestions = closesMatchingUsers.stream().map(u ->
                             new Suggestion(
                                     u,
-                                    user.stickersItCanGetFrom(u)
+                                    user.missingStickersItCanGetFrom(u)
                             )
                     ).toList();
 

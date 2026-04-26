@@ -1,10 +1,8 @@
 package com.tacs.tp1c2026.entities;
 
 import com.tacs.tp1c2026.entities.enums.PublicationStatus;
-import com.tacs.tp1c2026.exceptions.CuposAgotadosException;
-import com.tacs.tp1c2026.exceptions.PropuestaNoCorrespondeException;
-import com.tacs.tp1c2026.exceptions.PropuestaYaProcesadaException;
-import com.tacs.tp1c2026.exceptions.UsuarioNoAutorizadoException;
+import com.tacs.tp1c2026.exceptions.*;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +15,7 @@ import org.springframework.data.annotation.Id;
 public class TradePublication {
 
   @Id
+  @Getter
   private Integer id;
 
   @Getter
@@ -126,8 +125,12 @@ public class TradePublication {
     this.feedback = feedback;
   }
 
-
   public boolean notCancelled() {
     return this.status != PublicationStatus.CANCELLED;
+  }
+
+  public void createProposal(User user, List<Sticker> stickers) throws InsufficientStickerException {
+      stickers.forEach(user::removeTradedSticker);
+      this.proposals.add(new TradeProposal(stickers, user));
   }
 }

@@ -53,8 +53,6 @@ public class StickerService {
                 .orElseThrow(() -> new NotFoundException("Sticker not found with given parameters"));
     }
 
-
-
     private boolean matchesSearchParams(Sticker s, StickerSearchParamsDTO dto) {
         if (dto.playerOrDescription() != null) {
             String needle = dto.playerOrDescription().toLowerCase();
