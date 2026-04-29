@@ -1,6 +1,7 @@
 package com.tacs.tp1c2026.controllers;
 
 import com.tacs.tp1c2026.entities.card.Card;
+import com.tacs.tp1c2026.exceptions.NotFoundException;
 import com.tacs.tp1c2026.services.CardService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -37,7 +38,7 @@ public class CardsController {
      * @return the card, or 404 if not found
      */
     @GetMapping("/catalog/{id}")
-    public ResponseEntity<Card> getCatalogById(@PathVariable String id) {
+    public ResponseEntity<Card> getCatalogById(@PathVariable Integer id) throws NotFoundException {
         return ResponseEntity.ok(cardService.getById(id));
     }
 

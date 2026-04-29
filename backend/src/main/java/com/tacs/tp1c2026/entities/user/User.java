@@ -1,92 +1,165 @@
 package com.tacs.tp1c2026.entities.user;
 
+import com.tacs.tp1c2026.entities.auction.AuctionItem;
+import com.tacs.tp1c2026.entities.auction.AuctionOffer;
+import com.tacs.tp1c2026.entities.user.embedded.Alert;
+import com.tacs.tp1c2026.entities.auction.Auction;
+import com.tacs.tp1c2026.entities.auction.conditions.AuctionCondition;
+import com.tacs.tp1c2026.entities.card.Card;
+import com.tacs.tp1c2026.entities.exchange.TradeProposal;
+import com.tacs.tp1c2026.entities.exchange.TradePublication;
+import com.tacs.tp1c2026.entities.profiles.Profile;
+import com.tacs.tp1c2026.entities.user.embedded.CardCollection;
+import com.tacs.tp1c2026.entities.user.embedded.Suggestion;
+import com.tacs.tp1c2026.exceptions.InsufficientCardException;
+import com.tacs.tp1c2026.exceptions.MissingCardException;
+import jakarta.annotation.PostConstruct;
+import lombok.Getter;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Transient;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.DocumentReference;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import org.springframework.data.mongodb.core.mapping.Document;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import com.tacs.tp1c2026.entities.user.embedded.CollectionCard;
-import com.tacs.tp1c2026.entities.user.embedded.MissingCard;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-@TypeAlias("user")
-@Document(collection = "users") // nombre de la collection en mongo
+
+@TypeAlias("usuario")
+@Document(collection = "usuarios")
 public class User {
-  @Id
-  private String id;
-  private String name;
-  @Indexed(unique = true)
-  private String email;
-  private String passwordHash;
-  private String avatarId; // vamos a hacer 5 svgs fijos para el front nada mas
-  @Builder.Default
-  private Double rating = null;
-  @Builder.Default
-  private Integer exchangesCount = 0;
-  private LocalDateTime lastLogin;
-  @Builder.Default
-  private LocalDateTime creationDate = LocalDateTime.now();
-  // Figuritas de la colección del usuario, cambio la lista de repetidas por esta porque serían las de esta colección con cantidad > 1
-  @Builder.Default
-  private List<CollectionCard> collection = new ArrayList<>();
-  @Builder.Default
-  private List<MissingCard> missingCards = new ArrayList<>();
-  @Builder.Default
-  private List<String> suggestionsIds = new ArrayList<>();
 
-  // @Transient // no se guarda en mongo
-  // private VectorProfile vectorProfile;
+    @Id
+    private String id;
 
-  // desde el botón "agregar figurita" del perfil
-  public void addToCollection(CollectionCard newCard) {
-    collection.stream()
-      .filter(f -> f.getCardId().equals(newCard.getCardId()))
-      .findFirst()
-      .ifPresentOrElse(
-        f -> f.setQuantity(f.getQuantity() + newCard.getQuantity()),
-        () -> collection.add(newCard)  
-      );
-  }
+    @Getter
+    private String name;
 
-  // Desde el botón "agregar faltantes" del perfil
-  public void addToMissingCards(MissingCard missingCard) {
-    boolean alreadyExists = this.missingCards.stream()
-        .anyMatch(f -> f.getCardId().equals(missingCard.getCardId()));
-    if (!alreadyExists) {
-      this.missingCards.add(missingCard);
+    @Indexed(unique = true)
+    private String email;
+
+    private String passwordHash;
+
+    private Integer avatarId;
+
+    private Double rating = null;
+
+    private Integer exchangesCount = 0;
+
+    private LocalDateTime lastLogin;
+
+    private final LocalDateTime creationDate = LocalDateTime.now();
+
+    @Getter
+    private final List<CardCollection> collections = new ArrayList<>();
+
+    @Getter
+    private final List<Card> missingCards = new ArrayList<>();
+
+    private List<Suggestion> suggestions = new ArrayList<>();
+
+    private final List<Alert> alerts = new ArrayList<>();
+
+    @DocumentReference
+    private final List<TradePublication> publications = new ArrayList<>();
+
+    @DocumentReference
+    private final List<Auction> auctions = new ArrayList<>();
+
+    private Profile vectorProfile = new Profile();
+
+    public Profile getProfile() { return this.vectorProfile; }
+
+    public void addMissingCard(Card card) {
+        this.missingCards.add(card);
+        this.vectorProfile.addMissingCard(card);
     }
-  }
 
-  // para saber cuantas figuritas puede realmente ofrecer
-  // sería total - comprometidas (ya ofrecidas o propuestas)
-  public int getAvailableQuantity(String cardId) {
-    return collection.stream()
-      .filter(f -> f.getCardId().equals(cardId))
-      .mapToInt(f -> f.getQuantity() - f.getCompromisedCount())
-      .findFirst()
-      .orElse(0); 
+    public void removeMissingCard(Card card) {
+        this.missingCards.remove(card);
+        this.vectorProfile.removeCard(card);
     }
-  
-  // public VectorProfile getVectorProfile() {;
-  //   if (this.vectorProfile == null) {
-  //     this.vectorProfile = new VectorProfile(this.collection, this.missingCards);
-  //   }
-  //   return this.vectorProfile;
-  // }
 
-  public void removerSugerencias() {
-    this.suggestionsIds.clear();
-  }
+    public CardCollection getCollectionByCard(Card card) throws MissingCardException {
+        return this.collections.stream()
+                .filter(repeatedCard -> repeatedCard.isOf(card))
+                .findFirst()
+                .orElseThrow(() -> new MissingCardException("User does not have the card " + card.getId()));
+    }
+
+    private CardCollection findCollection(Card card) {
+        return this.collections.stream().filter(c -> c.isOf(card)).findAny().orElse(null);
+    }
+
+    public void removeCardFromCollection(Card card,Integer count) throws InsufficientCardException, MissingCardException {
+        CardCollection collection = getCollectionByCard(card);
+        collection.reduce(count);
+        if (collection.getAvailable() == 0){
+            this.vectorProfile.removeCard(card);
+        }
+    }
+
+    public void addCardToCollection(Card card) {
+        CardCollection collection = getOrCreateCollection(card);
+        collection.add();
+    }
+
+    public int duplicateCount(Card card){
+        CardCollection collection = getOrCreateCollection(card);
+        return collection.getAvailable();
+    }
+
+    public boolean hasInCollection(Card u){
+        return this.collections.stream().anyMatch(c -> c.isOf(u));
+    }
+
+    public void updateSuggestions(List<Suggestion> suggestions) {
+        this.suggestions = suggestions;
+    }
+
+    public void createPublication(Card card, Integer amount) throws MissingCardException, InsufficientCardException {
+        CardCollection collection = getCollectionByCard(card);
+        collection.reduce(amount);
+        TradePublication publication = new TradePublication(this,card,amount);
+        this.publications.add(publication);
+    }
+
+    public void createAuction(Card card, Integer auctionDurationHours, List<AuctionCondition> conditions) throws MissingCardException, InsufficientCardException {
+        CardCollection collection = getCollectionByCard(card);
+        collection.reduce(1);
+        Auction auction = new Auction(this,auctionDurationHours, conditions);
+        this.auctions.add(auction);
+    }
+
+    public AuctionOffer createAuctionOffer(List<AuctionItem> offerItems) throws InsufficientCardException, MissingCardException {
+        for (AuctionItem ai : offerItems){
+            this.removeCardFromCollection(ai.getCard(),ai.getAmount());
+        }
+        return new AuctionOffer(this, offerItems);
+    }
+
+    public TradeProposal createTradeProposal(TradePublication publication, User proposer, List<Card> cards) throws InsufficientCardException, MissingCardException {
+        for (Card c : cards){
+            this.removeCardFromCollection(c,1);
+        }
+        return new TradeProposal(cards, proposer);
+    }
+
+    @PostConstruct
+    private void initializeVectorProfile() {
+        this.vectorProfile = new Profile(this.collections.stream().map(CardCollection::getCard).toList(), this.missingCards);
+    }
+
+    private CardCollection getOrCreateCollection(Card card) {
+        CardCollection collection = this.findCollection(card);
+        if (collection == null) {
+            collection = new CardCollection(card);
+        }
+        return collection;
+    }
+
+    public List<Card> missingCardsItCanGetFrom(User u) {
+        return this.missingCards.stream().filter(u::hasInCollection).toList();
+    }
 }

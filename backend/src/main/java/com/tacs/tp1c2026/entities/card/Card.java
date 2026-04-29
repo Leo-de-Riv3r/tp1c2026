@@ -6,6 +6,7 @@
 package com.tacs.tp1c2026.entities.card;
 
 import com.tacs.tp1c2026.entities.enums.CardType;
+import com.tacs.tp1c2026.entities.enums.Category;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,18 +16,15 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 @Document(collection = "cards")
 public class Card {
     @Id
-    private String id;
+    private Integer id;
     private Integer number;
     private CardType type;
+    private String player;
     private String description;
     private String country;
     private String team;
-    private String category;
+    private Category category;
 }
