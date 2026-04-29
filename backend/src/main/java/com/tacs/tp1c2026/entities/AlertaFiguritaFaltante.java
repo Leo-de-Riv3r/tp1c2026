@@ -5,21 +5,19 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.TypeAlias;
-import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
 @Getter
 @Setter
 @NoArgsConstructor
-@Document(collection = "alertas")
 @TypeAlias("alertaFiguritaFaltante")
 public class AlertaFiguritaFaltante extends Alerta {
 
     @DocumentReference
-    private Figurita figurita;
+    private Card card;
 
-    public AlertaFiguritaFaltante(Figurita figurita) {
-        this.figurita = figurita;
+    public AlertaFiguritaFaltante(Card card) {
+        this.card = card;
     }
 
     @Override

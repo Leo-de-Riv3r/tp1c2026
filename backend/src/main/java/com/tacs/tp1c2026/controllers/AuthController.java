@@ -5,6 +5,7 @@ import com.tacs.tp1c2026.entities.dto.input.RegisterDTO;
 import com.tacs.tp1c2026.entities.dto.output.LoginResponseDto;
 import com.tacs.tp1c2026.entities.dto.output.UserDto;
 import com.tacs.tp1c2026.services.AuthService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,17 +24,17 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponseDto> login(@RequestBody LoginDTO loginDTO) {
+    public ResponseEntity<LoginResponseDto> login(@Valid @RequestBody LoginDTO loginDTO) {
         return ResponseEntity.ok(authService.login(loginDTO));
     }
 
     @PostMapping("/register")
-    public ResponseEntity<UserDto> register(@RequestBody RegisterDTO registerDTO) {
+    public ResponseEntity<UserDto> register(@Valid @RequestBody RegisterDTO registerDTO) {
         return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(registerDTO));
     }
 
     @PostMapping("/admin/login")
-    public ResponseEntity<LoginResponseDto> adminLogin(@RequestBody LoginDTO loginDTO) {
+    public ResponseEntity<LoginResponseDto> adminLogin(@Valid @RequestBody LoginDTO loginDTO) {
         return ResponseEntity.ok(authService.adminLogin(loginDTO));
     }
 

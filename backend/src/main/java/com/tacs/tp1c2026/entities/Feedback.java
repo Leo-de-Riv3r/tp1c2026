@@ -2,20 +2,19 @@
 package com.tacs.tp1c2026.entities;
 
 import java.time.LocalDateTime;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
-@Setter
 @Getter
+@Builder
 public class Feedback {
   @DocumentReference
-  private Usuario calificador;
-
-  private Integer calificacion;
-  private String comentario;
-  private LocalDateTime fecha = LocalDateTime.now();
+  private Usuario qualifier;
+  private Integer qualification;
+  private String comment;
+  @Builder.Default
+  private LocalDateTime datetime = LocalDateTime.now();
 }
 

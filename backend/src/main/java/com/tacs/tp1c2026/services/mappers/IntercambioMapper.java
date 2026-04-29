@@ -1,12 +1,10 @@
 package com.tacs.tp1c2026.services.mappers;
 
-import com.tacs.tp1c2026.entities.Figurita;
-import com.tacs.tp1c2026.entities.PropuestaIntercambio;
-import com.tacs.tp1c2026.entities.PublicacionIntercambio;
-import com.tacs.tp1c2026.entities.dto.output.PropuestaIntercambioDto;
-import com.tacs.tp1c2026.entities.dto.output.PublicacionIntercambioDto;
+import com.tacs.tp1c2026.entities.ExchangeProposal;
+import com.tacs.tp1c2026.entities.ExchangePublication;
+import com.tacs.tp1c2026.entities.dto.output.ExchangePublicationDto;
+import com.tacs.tp1c2026.entities.dto.output.ExchangeProposalDto;
 import java.util.List;
-import java.util.Objects;
 import org.springframework.stereotype.Component;
 
 /**
@@ -16,54 +14,55 @@ import org.springframework.stereotype.Component;
 public class IntercambioMapper {
 
   /**
-   * Convierte una {@link PublicacionIntercambio} a su representación DTO.
+   * Convierte una {@link ExchangePublication} a su representación DTO.
    *
-   * @param publicacion entidad de publicación de intercambio
-   * @return {@link PublicacionIntercambioDto} con los datos básicos de la publicación
+   * @param publication entidad de publicación de intercambio
+   * @return {@link ExchangePublicationDto} con los datos básicos de la publicación
    */
-  public PublicacionIntercambioDto mapPublicacion(PublicacionIntercambio publicacion) {
-    Integer numFigurita = null;
-    if (publicacion.getFiguritaColeccion() != null) {
-      numFigurita = publicacion.getFiguritaColeccion().getNumber();
-    }
-    return new PublicacionIntercambioDto(
-        publicacion.getId(),
-        numFigurita,
-        publicacion.getEstado().name()
+  public ExchangePublicationDto mapPublication(ExchangePublication publication) {
+    return new ExchangePublicationDto(
+        publication.getId(),
+        publication.getQuantity(),
+        publication.getCard().getNumber(),
+        publication.getState(),
+        publication.getName(),
+        publication.getDescription(),
+        publication.getCountry(),
+        publication.getTeam(),
+        publication.getCategory()
     );
   }
 
+  public List<ExchangePublicationDto> mapPublications(List<ExchangePublication> publication) {
+    return publication.stream().map(this::mapPublication).toList();
+  }
   /**
-   * Convierte una {@link PropuestaIntercambio} a su representación DTO.
+   * Convierte una {@link ExchangeProposal} a su representación DTO.
    *
    * @param propuesta entidad de propuesta de intercambio
-   * @return {@link PropuestaIntercambioDto} con el estado, figuritas ofrecidas y referencias asociadas
+   * @return {@link ExchangeProposalDto} con el estado, figuritas ofrecidas y referencias asociadas
    */
-  public PropuestaIntercambioDto mapPropuesta(PropuestaIntercambio propuesta) {
-    List<Figurita> figuritasOfrecidas = propuesta.getFiguritas() == null ? List.of() : propuesta.getFiguritas();
+  public ExchangeProposalDto mapPropuesta(ExchangeProposal propuesta) {
 
-    Integer publicacionId = null;
-    Integer numFiguritaPublicada = null;
-    if (propuesta.getPublicacion() != null) {
-      publicacionId = propuesta.getPublicacion().getId();
-      if (propuesta.getPublicacion().getFiguritaColeccion() != null) {
-        numFiguritaPublicada = propuesta.getPublicacion().getFiguritaColeccion().getNumber();
-      }
-    }
-
-    return new PropuestaIntercambioDto(
+    return new ExchangeProposalDto(
         propuesta.getId(),
-        publicacionId,
-        numFiguritaPublicada,
-        figuritasOfrecidas.size(),
-        figuritasOfrecidas.stream()
-            .filter(Objects::nonNull)
-            .map(Figurita::getNumber)
-            .filter(Objects::nonNull)
-            .toList(),
-        propuesta.getUsuarioId(),
-        propuesta.getEstado().name()
-    );
+        propuesta.getPublication().getId(),
+        propuesta.getCards(),
+        propuesta.getExchangeUser().getId(),
+        propuesta.getState(),
+        propuesta.getCreationDate()
+        );
+  }
+
+
+  /**{
+   * Convierte una lista de {@link ExchangeProposal} a una lista de {@link ExchangeProposalDto}.
+   * @param proposals lista de propuestas de intercambio
+   * @return lista de DTOs de propuestas de intercambio
+   */
+  public List<ExchangeProposalDto> mapProposals(List<ExchangeProposal> proposals) {
+    return proposals.stream().map(this::mapPropuesta).toList();
   }
 }
+
 

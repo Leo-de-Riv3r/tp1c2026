@@ -1,8 +1,8 @@
 /*
 package com.tacs.tp1c2026.entities.ReglasStrategies;
 
-import com.tacs.tp1c2026.entities.OfertaSubasta;
-import com.tacs.tp1c2026.entities.enums.Categoria;
+import com.tacs.tp1c2026.entities.AuctionOffer;
+import com.tacs.tp1c2026.entities.enums.CardCategory;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
@@ -18,20 +18,20 @@ public class CategoriaStrategy extends IReglaStrategy {
 
   @Enumerated(EnumType.STRING)
   @Column
-  private Categoria categoriaRequerida;
+  private CardCategory categoriaRequerida;
 
   protected CategoriaStrategy() {}
 
-  public CategoriaStrategy(Integer cantidadMinima, Categoria categoriaRequerida) {
+  public CategoriaStrategy(Integer cantidadMinima, CardCategory categoriaRequerida) {
     this.cantidadMinima = cantidadMinima;
     this.categoriaRequerida = categoriaRequerida;
   }
 
   @Override
-  public Boolean cumpleRegla(OfertaSubasta ofertaSubasta) {
+  public Boolean cumpleRegla(AuctionOffer ofertaSubasta) {
     Integer cantidadCategoria = ofertaSubasta.getItemsOfrecidos().stream()
-        .filter(item -> item.getFigurita() != null)
-        .filter(item -> item.getFigurita().getCategoria() == categoriaRequerida)
+        .filter(item -> item.getCard() != null)
+        .filter(item -> item.getCard().getCategoria() == categoriaRequerida)
         .map(item -> item.getCantidad() == null ? 0 : item.getCantidad())
         .reduce(0, Integer::sum);
     return cantidadCategoria > cantidadMinima;

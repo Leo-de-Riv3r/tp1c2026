@@ -8,7 +8,7 @@ import com.tacs.tp1c2026.entities.dto.output.UserDto;
 import com.tacs.tp1c2026.exceptions.BadInputException;
 import com.tacs.tp1c2026.exceptions.ConflictException;
 import com.tacs.tp1c2026.exceptions.UnauthorizedException;
-import com.tacs.tp1c2026.repositories.UsuariosRepository;
+import com.tacs.tp1c2026.repositories.UsersRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -24,7 +24,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Service
 public class AuthService {
 
-  private final UsuariosRepository usuariosRepository;
+  private final UsersRepository usersRepository;
   private final SecretKey jwtSecretKey;
   private final long jwtExpirationMs;
   private final PasswordEncoder passwordEncoder;
@@ -32,13 +32,13 @@ public class AuthService {
   private final String adminPassword;
   private final String adminPasswordHash;
 
-  public AuthService(UsuariosRepository usuariosRepository,
-					 @Value("${jwt.secret}") String jwtSecret,
-					 @Value("${jwt.expiration}") long jwtExpirationMs,
-					 @Value("${admin.email:admin@tacs.local}") String adminEmail,
-					 @Value("${admin.password:}") String adminPassword,
-					 @Value("${admin.password-hash:}") String adminPasswordHash) {
-	this.usuariosRepository = usuariosRepository;
+  public AuthService(UsersRepository usersRepository,
+                     @Value("${jwt.secret}") String jwtSecret,
+                     @Value("${jwt.expiration}") long jwtExpirationMs,
+                     @Value("${admin.email:admin@tacs.local}") String adminEmail,
+                     @Value("${admin.password:}") String adminPassword,
+                     @Value("${admin.password-hash:}") String adminPasswordHash) {
+	this.usersRepository = usersRepository;
 	this.jwtSecretKey = Keys.hmacShaKeyFor(jwtSecret.getBytes());
 	this.jwtExpirationMs = jwtExpirationMs;
 	this.passwordEncoder = new BCryptPasswordEncoder();
@@ -49,21 +49,20 @@ public class AuthService {
 
 
   public UserDto register(RegisterDTO registerDTO) {
-	validarRegistro(registerDTO);
 	String email = registerDTO.getEmail().trim().toLowerCase();
 
-	if (usuariosRepository.existsByEmail(email)) {
+	if (usersRepository.existsByEmail(email)) {
 	  throw new ConflictException("El email ya se encuentra registrado");
 	}
 
 	Usuario nuevoUsuario = new Usuario();
 	nuevoUsuario.setName(registerDTO.getName().trim());
 	nuevoUsuario.setEmail(email);
-	nuevoUsuario.setAvatarId(registerDTO.getAvatarId().trim());
+	nuevoUsuario.setAvatarId(registerDTO.getAvatarId());
 	nuevoUsuario.setPasswordHash(passwordEncoder.encode(registerDTO.getPassword()));
 	nuevoUsuario.setCreationDate(LocalDateTime.now());
 
-	Usuario usuarioCreado = usuariosRepository.save(nuevoUsuario);
+	Usuario usuarioCreado = usersRepository.save(nuevoUsuario);
 	return mapUser(usuarioCreado);
   }
 
@@ -74,7 +73,7 @@ public class AuthService {
 
 	String email = loginDTO.getEmail().trim().toLowerCase();
 
-	Usuario usuario = usuariosRepository.findByEmail(email)
+	Usuario usuario = usersRepository.findByEmail(email)
 		.orElseThrow(() -> new UnauthorizedException("Credenciales invalidas"));
 
 
@@ -83,7 +82,7 @@ public class AuthService {
 	}
 
 	usuario.setLastLogin(LocalDateTime.now());
-	usuariosRepository.save(usuario);
+	usersRepository.save(usuario);
 
 	return buildResponse(usuario);
   }
@@ -108,27 +107,6 @@ public class AuthService {
 	response.setToken(generarJwtToken("admin", emailAdmin, "ADMIN"));
 	response.setUser(mapAdminUser(emailAdmin));
 	return response;
-  }
-
-  private void validarRegistro(RegisterDTO registerDTO) {
-	if (registerDTO == null) {
-	  throw new BadInputException("Request de registro invalido");
-	}
-	if (isBlank(registerDTO.getName())) {
-	  throw new BadInputException("El nombre es obligatorio");
-	}
-	if (isBlank(registerDTO.getEmail())) {
-	  throw new BadInputException("El email es obligatorio");
-	}
-	if (isBlank(registerDTO.getPassword())) {
-	  throw new BadInputException("La contraseña es obligatoria");
-	}
-	if (isBlank(registerDTO.getAvatarId())) {
-	  throw new BadInputException("El avatar es obligatorio");
-	}
-	if (registerDTO.getPassword().length() < 6) {
-	  throw new BadInputException("La contraseña debe tener al menos 6 caracteres");
-	}
   }
 
   private LoginResponseDto buildResponse(Usuario usuario) {

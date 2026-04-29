@@ -6,7 +6,7 @@
 // import com.tacs.tp1c2026.exceptions.UserNotFoundException;
 // import com.tacs.tp1c2026.properties.PerfilProperties;
 // import com.tacs.tp1c2026.repositories.PerfilRepository;
-// import com.tacs.tp1c2026.repositories.UsuariosRepository;
+// import com.tacs.tp1c2026.repositories.UsersRepository;
 // import java.util.ArrayList;
 // import java.util.Comparator;
 // import java.util.HashMap;
@@ -20,10 +20,10 @@
 // public class PerfilService {
 
 //     private final PerfilRepository perfilRepository;
-//     private final UsuariosRepository usuariosRepository;
+//     private final UsersRepository usuariosRepository;
 //     private final PerfilProperties properties;
 
-//     public PerfilService(PerfilRepository perfilRepository, UsuariosRepository usuariosRepository, PerfilProperties properties) {
+//     public PerfilService(PerfilRepository perfilRepository, UsersRepository usuariosRepository, PerfilProperties properties) {
 //         this.perfilRepository = perfilRepository;
 //         this.usuariosRepository = usuariosRepository;
 //         this.properties = properties;

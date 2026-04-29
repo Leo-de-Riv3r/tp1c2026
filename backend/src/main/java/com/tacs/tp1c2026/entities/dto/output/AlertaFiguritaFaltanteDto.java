@@ -1,22 +1,24 @@
 package com.tacs.tp1c2026.entities.dto.output;
 
+import com.tacs.tp1c2026.entities.enums.CardCategory;
+
 public class AlertaFiguritaFaltanteDto extends AlertaDto {
 
-  private final Integer figuritaId;
+  private final String figuritaId;
   private final Integer figuritaNumero;
   private final String figuritaDescripcion;
   private final String figuritaPais;
   private final String figuritaEquipo;
-  private final String figuritaCategoria;
+  private final CardCategory figuritaCategoria;
 
   public AlertaFiguritaFaltanteDto(
-      Integer id,
-      Integer figuritaId,
+      String id,
+      String figuritaId,
       Integer figuritaNumero,
       String figuritaDescripcion,
       String figuritaPais,
       String figuritaEquipo,
-      String figuritaCategoria) {
+      CardCategory figuritaCategoria) {
     super(id, "FIGURITA_FALTANTE");
     this.figuritaId = figuritaId;
     this.figuritaNumero = figuritaNumero;
@@ -27,7 +29,7 @@ public class AlertaFiguritaFaltanteDto extends AlertaDto {
   }
 
 
-  public Integer getFiguritaId() {
+  public String getFiguritaId() {
     return figuritaId;
   }
 
@@ -47,7 +49,7 @@ public class AlertaFiguritaFaltanteDto extends AlertaDto {
     return figuritaEquipo;
   }
 
-  public String getFiguritaCategoria() {
+  public CardCategory getFiguritaCategoria() {
     return figuritaCategoria;
   }
 }

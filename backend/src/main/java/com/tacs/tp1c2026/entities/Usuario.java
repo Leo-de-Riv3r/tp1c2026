@@ -1,15 +1,11 @@
 package com.tacs.tp1c2026.entities;
 
-import com.tacs.tp1c2026.entities.enums.TipoParticipacion;
+import com.tacs.tp1c2026.entities.enums.ParticipationType;
 import com.tacs.tp1c2026.exceptions.ConflictException;
 import com.tacs.tp1c2026.exceptions.FiguritaNoDisponibleException;
-import com.tacs.tp1c2026.exceptions.FiguritaNoEncontradaException;
-import com.tacs.tp1c2026.exceptions.FiguritaYaPublicadaException;
-import com.tacs.tp1c2026.exceptions.FiguritasInsuficientesException;
+
 import com.tacs.tp1c2026.exceptions.NotFoundException;
-import jakarta.annotation.PostConstruct;
 import java.util.Optional;
-import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -38,7 +34,7 @@ public class Usuario {
   @Indexed(unique = true)
   private String email;
   private String passwordHash;
-  private Integer avatarId;
+  private String avatarId;
   @Builder.Default
   private Double rating = null;
   @Builder.Default
@@ -47,63 +43,61 @@ public class Usuario {
   @Builder.Default
   private LocalDateTime creationDate = LocalDateTime.now();
   @Builder.Default
-  private List<FiguritaColeccion> collection = new ArrayList<>();
+  private List<CardCollection> collection = new ArrayList<>();
   @Builder.Default
   @DocumentReference
-  private List<Figurita> missingCards = new ArrayList<>();
+  private List<Card> missingCards = new ArrayList<>();
   @Builder.Default
-  private List<Integer> suggestionsIds = new ArrayList<>();
+  private List<String> suggestionsIds = new ArrayList<>();
   @Builder.Default
-  private List<Alerta> alertas = new ArrayList<>();
+  @DocumentReference
+  private List<Alerta> alert = new ArrayList<>();
 
-  @Builder.Default
-  private Perfil perfil = new Perfil();
+//  @Builder.Default
+//  private Perfil perfil = new Perfil();
   public void agregarSugerencia(Usuario sugerencias) {
     this.suggestionsIds.add(sugerencias.id);
   }
 
-  public void agregarRepetidas(FiguritaColeccion figuritaColeccion) {
-    this.collection.add(figuritaColeccion);
-    this.perfil.addCard(figuritaColeccion);
+  public void agregarRepetidas(CardCollection cardCollection) {
+    this.collection.add(cardCollection);
+    //this.perfil.addCard(cardCollection);
   }
 
-  public void agregarFaltantes(Figurita figurita) {
-    this.missingCards.add(new FiguritaFaltante(figurita));
-    this.perfil.addCard(figurita);
+  public void agregarFaltantes(Card card) {
+    this.missingCards.add(card);
+    //this.perfil.addCard(card);
   }
 
-  public FiguritaColeccion getRepetidaByNumero(Integer numFiguritaPublicada) throws FiguritaNoEncontradaException {
+  public CardCollection getRepetidaByNumero(Integer numFiguritaPublicada) {
     return this.collection.stream()
-        .filter(repetida -> repetida.getFigurita().getNumber().equals(numFiguritaPublicada))
+        .filter(repetida -> repetida.getCard().getNumber().equals(numFiguritaPublicada))
         .findFirst()
-        .orElseThrow(() -> new FiguritaNoEncontradaException("El usuario no posee la figurita " + numFiguritaPublicada));
+        .orElseThrow(() -> new NotFoundException("El usuario no posee la card " + numFiguritaPublicada));
   }
 
-  public FiguritaColeccion getRepetidaById(String idFigurita) {
+  public CardCollection getRepetidaById(String idFigurita) {
     return this.collection.stream()
-        .filter(repetida -> repetida.getFigurita().getId().equals(idFigurita))
+        .filter(repetida -> repetida.getCard().getId().equals(idFigurita))
         .findFirst()
-        .orElseThrow(() -> new NotFoundException("El usuario no posee la figurita con ID " + idFigurita));
+        .orElseThrow(() -> new NotFoundException("El usuario no posee la card con ID " + idFigurita));
   }
 
   /**
    * Obtiene las figuritas repetidas indicadas por sus números y valida que estén disponibles para oferta.
    *
-   * @param numerosFiguritas lista de números de figuritas a obtener
-   * @return lista de FiguritaColeccion encontradas y disponibles para oferta
-   * @throws FiguritaNoEncontradaException si alguna figurita no se encuentra
-   * @throws FiguritaNoDisponibleException si alguna figurita no está disponible para oferta
+   * @throws FiguritaNoDisponibleException si alguna card no está disponible para oferta
    */
-  public List<Figurita> obtenerFiguritasParaOferta(List<String> idFiguritas) {
-    List<Figurita> figuritasEncontradas = new ArrayList<>();
+  public List<Card> obtenerFiguritasParaOferta(List<String> idFiguritas) {
+    List<Card> figuritasEncontradas = new ArrayList<>();
 
     for (String idFigurita : idFiguritas) {
-      FiguritaColeccion figurita = getRepetidaById(idFigurita);
+      CardCollection figurita = getRepetidaById(idFigurita);
       if (!figurita.canPublishExchange(1)) {
-        throw new FiguritaNoDisponibleException("La figurita " + figurita.getFigurita().getNumber() + " no puede ser ofrecida en intercambio.");
+        throw new FiguritaNoDisponibleException("La card " + figurita.getCard().getNumber() + " no puede ser ofrecida en intercambio.");
       }
-      figurita.addCompromisedQuantity(1, TipoParticipacion.INTERCAMBIO);
-      figuritasEncontradas.add(figurita.getFigurita());
+      figurita.addCompromisedQuantity(1, ParticipationType.INTERCAMBIO);
+      figuritasEncontradas.add(figurita.getCard());
     }
 
     if (figuritasEncontradas.size() != idFiguritas.size()) {
@@ -114,40 +108,36 @@ public class Usuario {
   }
 
 
-  public void agregarAlerta(Alerta alerta) {
-    this.alertas.add(alerta);
-  }
+//  public void agregarAlerta(Alerta alerta) {
+//    this.alertas.add(alerta);
+//  }
 
+  /*
   @PostConstruct
   private void initializeVectorProfile() {
     this.perfil = new Perfil(this.collection, this.missingCards);
   }
-
+*/
   public void removerSugerencias() {
     this.suggestionsIds.clear();
   }
 
-  public void restoreFiguritasFromProposal(List<String> figuritasId, TipoParticipacion tipoParticipacion) {
+  public void restoreFiguritasFromProposal(List<String> figuritasId, ParticipationType participationType) {
     this.collection.stream()
-        .filter(item -> figuritasId.contains(item.getFigurita().getId()))
-        .forEach(item -> item.reduceCompromisedQuantity(1, tipoParticipacion));
+        .filter(item -> figuritasId.contains(item.getCard().getId()))
+        .forEach(item -> item.reduceCompromisedQuantity(1, participationType));
   }
 
-  public void completeExchange(List<Figurita> received, Figurita figuritaPublicacion) {
-    FiguritaColeccion repeatedInCollection = this.collection.stream().filter(item -> item.getFigurita().getId().equals(figuritaPublicacion.getId()))
-        .findFirst().get();
-    repeatedInCollection.removeExchangeQuantity(1);
-    repeatedInCollection.reduceCompromisedQuantity(1, TipoParticipacion.INTERCAMBIO);
-
-    for (Figurita receivedFigurita : received) {
-      if (this.missingCards.contains(receivedFigurita)) {
-        this.missingCards.removeIf(faltante -> faltante.getId().equals(receivedFigurita.getId()));
+  public void addReceivedToCollection(List<Card> receivedCards) {
+    for (Card receivedCard : receivedCards) {
+      if (this.missingCards.contains(receivedCard)) {
+        this.missingCards.removeIf(faltante -> faltante.getId().equals(receivedCard.getId()));
       } else {
-        Optional<FiguritaColeccion> hasRepeated = this.collection.stream()
-            .filter(item -> item.getFigurita().getId().equals(receivedFigurita.getId())).findFirst();
+        Optional<CardCollection> hasRepeated = this.collection.stream()
+            .filter(item -> item.getCard().getId().equals(receivedCard.getId())).findFirst();
         if (hasRepeated.isEmpty()) {
-          this.collection.add(FiguritaColeccion.builder()
-              .figurita(receivedFigurita)
+          this.collection.add(CardCollection.builder()
+              .card(receivedCard)
               .quantityForExchange(1)
               .build());
         } else {
@@ -157,15 +147,39 @@ public class Usuario {
     }
   }
 
-  public void removeFromCollectionForExchange(List<Figurita> toRemoveBeRemoved) {
-    for (Figurita figurita : toRemoveBeRemoved) {
-      FiguritaColeccion repeatedInCollection = this.collection.stream()
-          .filter(item -> item.getFigurita().getId().equals(figurita.getId()))
+  public void removeFromCollectionForAuctionAndReceive(List<Card> toRemoveBeRemoved, List<Card> receivedCards) {
+    for (Card card : toRemoveBeRemoved) {
+      CardCollection repeatedInCollection = this.collection.stream()
+          .filter(item -> item.getCard().getId().equals(card.getId()))
+          .findFirst().get();
+
+      repeatedInCollection.removeAuctionQuantity(1);
+      repeatedInCollection.reduceCompromisedQuantity(1, ParticipationType.SUBASTA);
+    }
+    addReceivedToCollection(receivedCards);
+  }
+  public void removeFromCollectionForExchangeAndReceive(List<Card> toRemoveBeRemoved, List<Card> receivedCards) {
+    for (Card card : toRemoveBeRemoved) {
+      CardCollection repeatedInCollection = this.collection.stream()
+          .filter(item -> item.getCard().getId().equals(card.getId()))
           .findFirst().get();
       repeatedInCollection.removeExchangeQuantity(1);
-      repeatedInCollection.reduceCompromisedQuantity(1, TipoParticipacion.INTERCAMBIO);
+      repeatedInCollection.reduceCompromisedQuantity(1, ParticipationType.INTERCAMBIO);
     }
+    addReceivedToCollection(receivedCards);
   }
 
 
+  public void restoreFiguritasFromAuction(List<Card> offeredCards) {
+    for(Card cardToRestore: offeredCards){
+      CardCollection repeatedInCollection = this.collection.stream()
+          .filter(item -> item.getCard().getId() == cardToRestore.getId())
+          .findFirst().get();
+      repeatedInCollection.reduceCompromisedQuantity(1, ParticipationType.SUBASTA);
+    }
+  }
+
+  public void addAlert(Alerta alert) {
+    this.alert.add(alert);
+  }
 }

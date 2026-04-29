@@ -1,5 +1,6 @@
 package com.tacs.tp1c2026.exceptions;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
@@ -15,17 +16,17 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionAdvice {
 
   @ExceptionHandler(CustomException.class)
-  public ResponseEntity<String> handleCustomException(CustomException ex) {
-    return new ResponseEntity<String>(ex.getMessage(), ex.getHttpStatus());
+  public ResponseEntity<Map<String, Object>> handleCustomException(CustomException ex) {
+
+    Map<String, Object> body = Map.of(
+        "timestamp", LocalDateTime.now(),
+        "message", ex.getMessage()
+    );
+
+    // Usas .status() y .body() para construir la respuesta
+    return ResponseEntity.status(ex.getHttpStatus()).body(body);
   }
 
-  @ExceptionHandler(Exception.class)
-  public ResponseEntity<String> handleUnexpectedError(Exception ex) {
-    log.error("Error inesperado: {}", ex.getMessage(), ex);
-    return new ResponseEntity<String>("Error inesperado", HttpStatus.INTERNAL_SERVER_ERROR);
-  }
-
-  // Esta función "atrapa" la excepción que lanza el @Valid
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
 
@@ -40,5 +41,15 @@ public class GlobalExceptionAdvice {
 
     // Devolvemos un JSON limpio con código 400
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errores);
+  }
+
+  @ExceptionHandler(Exception.class)
+  public ResponseEntity<Map<String, Object>> handleUnexpectedError(Exception ex) {
+    log.error("Error inesperado: {}", ex.getMessage(), ex);
+    Map<String, Object> body = Map.of(
+        "timestamp", LocalDateTime.now(),
+        "message", "Error inesperado"
+    );
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
   }
 }

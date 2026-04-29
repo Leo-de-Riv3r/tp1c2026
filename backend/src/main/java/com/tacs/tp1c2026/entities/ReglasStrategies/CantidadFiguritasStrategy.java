@@ -1,7 +1,7 @@
 /*
 package com.tacs.tp1c2026.entities.ReglasStrategies;
 
-import com.tacs.tp1c2026.entities.OfertaSubasta;
+import com.tacs.tp1c2026.entities.AuctionOffer;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
@@ -20,7 +20,7 @@ public class CantidadFiguritasStrategy extends IReglaStrategy {
   }
 
   @Override
-  public Boolean cumpleRegla(OfertaSubasta oferta) {
+  public Boolean cumpleRegla(AuctionOffer oferta) {
     return oferta.getTotalFiguritas() >= this.cantidadMinimaFiguritas;
   }
 }

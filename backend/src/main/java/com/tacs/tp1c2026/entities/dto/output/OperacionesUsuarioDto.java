@@ -5,9 +5,9 @@
 //
 //@Data
 //public class OperacionesUsuarioDto {
-//  private List<PublicacionIntercambioDto> publicacionesIntercambioPropias;
-//  private List<PropuestaIntercambioDto> propuestasEnviadas;
-//  private List<PropuestaIntercambioDto> propuestasRecibidas;
+//  private List<ExchangePublicationDto> publicacionesIntercambioPropias;
+//  private List<NewExchangeProposalDto> propuestasEnviadas;
+//  private List<NewExchangeProposalDto> propuestasRecibidas;
 //  private List<SubastaOperacionDto> subastasActivas;
 //  private List<OfertaSubastaOperacionDto> ofertasSubastaEnviadas;
 //}

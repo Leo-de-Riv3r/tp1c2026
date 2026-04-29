@@ -6,16 +6,16 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content; // <-- ESTE ES EL CORRECTO
 
-import com.tacs.tp1c2026.entities.FiguritaColeccion;
+import com.tacs.tp1c2026.entities.CardCollection;
 import com.tacs.tp1c2026.entities.Usuario;
-import com.tacs.tp1c2026.entities.dto.input.FiguritaFaltanteDto;
-import com.tacs.tp1c2026.entities.dto.input.FiguritaRepetidaDto;
-import com.tacs.tp1c2026.entities.dto.input.PropuestaIntercambioDto;
-import com.tacs.tp1c2026.entities.enums.Categoria;
-import com.tacs.tp1c2026.entities.enums.TipoParticipacion;
-import com.tacs.tp1c2026.repositories.PropuestasIntercambioRepository;
-import com.tacs.tp1c2026.repositories.PublicacionesIntercambioRepository;
-import com.tacs.tp1c2026.repositories.UsuariosRepository;
+import com.tacs.tp1c2026.entities.dto.input.MissingCardDto;
+import com.tacs.tp1c2026.entities.dto.input.RegisterRepeatedCardDto;
+import com.tacs.tp1c2026.entities.dto.input.NewExchangeProposalDto;
+import com.tacs.tp1c2026.entities.enums.CardCategory;
+import com.tacs.tp1c2026.entities.enums.ParticipationType;
+import com.tacs.tp1c2026.repositories.ExchangeProposalsRepository;
+import com.tacs.tp1c2026.repositories.ExchangePublicationsRepository;
+import com.tacs.tp1c2026.repositories.UsersRepository;
 import jakarta.transaction.Transactional;
 import java.util.List;
 
@@ -35,13 +35,13 @@ public class Us1_3_5_10Tests {
   private MockMvc mockMvc;
 
   @Autowired
-  private UsuariosRepository usuariosRepository; // Repo real (H2)
+  private UsersRepository usuariosRepository; // Repo real (H2)
 
   @Autowired
-  private PublicacionesIntercambioRepository publicacionesIntercambioRepository;
+  private ExchangePublicationsRepository publicacionesIntercambioRepository;
 
   @Autowired
-  private PropuestasIntercambioRepository propuestasIntercambioRepository;
+  private ExchangeProposalsRepository propuestasIntercambioRepository;
 
   @Autowired
   private ObjectMapper objectMapper;
@@ -65,14 +65,14 @@ public class Us1_3_5_10Tests {
   @Transactional
   void registrarFigurita() throws Exception {
     // Preparar el DTO
-    FiguritaRepetidaDto dto = new FiguritaRepetidaDto();
+    RegisterRepeatedCardDto dto = new RegisterRepeatedCardDto();
     dto.setNumero(10);
     dto.setJugador("Lionel Messi");
     dto.setSeleccion("Argentina");
-    dto.setCategoria(Categoria.LEGENDARIO);
+    dto.setCardCategory(CardCategory.LEGENDARIO);
     dto.setDescripcion("El mejor jugador del mundo");
     dto.setCantidad(1);
-    dto.setTipoParticipacion(TipoParticipacion.INTERCAMBIO);
+    dto.setParticipationType(ParticipationType.INTERCAMBIO);
 
     // Ejecutar POST usando el ID del usuario que creamos en el setUp
     mockMvc.perform(post("/api/figuritas/registrar-repetida")
@@ -81,7 +81,7 @@ public class Us1_3_5_10Tests {
             .content(objectMapper.writeValueAsString(dto)))
 
         .andExpect(status().isOk())
-        .andExpect(content().string("Figurita repetida agregada"));
+        .andExpect(content().string("Card repetida agregada"));
 
     // Verificación extra: ¿Realmente se guardó en la DB?
     Usuario usuarioPostTest = usuariosRepository.findById(idUser1).get();
@@ -92,11 +92,11 @@ public class Us1_3_5_10Tests {
   @Transactional
   void registrarFaltante() throws Exception {
     // Preparar el DTO
-    FiguritaFaltanteDto dto = new FiguritaFaltanteDto();
+    MissingCardDto dto = new MissingCardDto();
     dto.setNumero(10);
     dto.setJugador("El diegote");
     dto.setEquipo("Napoli");
-    dto.setCategoria(Categoria.LEGENDARIO);
+    dto.setCardCategory(CardCategory.LEGENDARIO);
     dto.setDescripcion("El diego, el diegote, hasta los huevos diego");
 
     // Ejecutar POST
@@ -116,14 +116,14 @@ public class Us1_3_5_10Tests {
   void ofrecerPropuestaIntercambioYAceptar() throws Exception {
     //setup all
     // Preparar el DTO
-    FiguritaRepetidaDto dto = new FiguritaRepetidaDto();
+    RegisterRepeatedCardDto dto = new RegisterRepeatedCardDto();
     dto.setNumero(10);
     dto.setJugador("Lionel Messi");
     dto.setSeleccion("Argentina");
-    dto.setCategoria(Categoria.LEGENDARIO);
+    dto.setCardCategory(CardCategory.LEGENDARIO);
     dto.setDescripcion("El mejor jugador del mundo");
     dto.setCantidad(1);
-    dto.setTipoParticipacion(TipoParticipacion.INTERCAMBIO);
+    dto.setParticipationType(ParticipationType.INTERCAMBIO);
 
     mockMvc.perform(post("/api/figuritas/registrar-repetida")
         .param("userId", idUser1.toString())
@@ -140,7 +140,7 @@ public class Us1_3_5_10Tests {
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(dto)));
 
-    PropuestaIntercambioDto dtoPropuesta = new PropuestaIntercambioDto();
+    NewExchangeProposalDto dtoPropuesta = new NewExchangeProposalDto();
     dtoPropuesta.setNumfiguritas(List.of(10));
 
     mockMvc.perform(post("/api/publicaciones/intercambios/1/propuestas")
@@ -148,10 +148,10 @@ public class Us1_3_5_10Tests {
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(dtoPropuesta)))
         .andExpect(status().isOk());
-    //verificar figurita coleccion
+    //verificar card coleccion
     Usuario user2 = usuariosRepository.findById(2)
         .orElseThrow(() -> new RuntimeException("No se encontro el usuario"));
-    FiguritaColeccion figuUsuario = user2.getRepetidas().get(0);
+    CardCollection figuUsuario = user2.getRepetidas().get(0);
     assertEquals(1, figuUsuario.getCantidadOfertada());
 
 
@@ -159,10 +159,10 @@ public class Us1_3_5_10Tests {
         .param("userId", idUser1.toString()))
         .andExpect(status().isOk());
 
-    //verificar que el usuario ya no tiene figurita
+    //verificar que el usuario ya no tiene card
     Usuario user2B = usuariosRepository.findById(idUser2)
         .orElseThrow(() -> new RuntimeException("No se encontro el usuario"));
-    FiguritaColeccion figuOfrecidaUsuario = user2B.getRepetidas().get(0);
+    CardCollection figuOfrecidaUsuario = user2B.getRepetidas().get(0);
     assertEquals(0, figuOfrecidaUsuario.getCantidadLibre());
     assertEquals(0, figuOfrecidaUsuario.getCantidadOfertada());
   }

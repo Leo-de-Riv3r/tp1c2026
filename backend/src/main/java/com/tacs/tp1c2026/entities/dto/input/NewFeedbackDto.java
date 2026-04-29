@@ -10,7 +10,7 @@ import lombok.Data;
 @Data
 public class NewFeedbackDto {
   @NotBlank(message = "Se requiere un ID de publicacion")
-  private String publicacionId;
+  private String publicationId;
   @NotBlank(message = "Se requiere un comentario")
   @Size(max = 150, message = "El comentario no puede superar los 255 caracteres")
   private String commentary;

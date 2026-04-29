@@ -1,8 +1,8 @@
 /*
 package com.tacs.tp1c2026.entities.ReglasStrategies;
 
-import com.tacs.tp1c2026.entities.OfertaSubasta;
-import com.tacs.tp1c2026.entities.Subasta;
+import com.tacs.tp1c2026.entities.AuctionOffer;
+import com.tacs.tp1c2026.entities.Auction;
 import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.DiscriminatorType;
 import jakarta.persistence.Entity;
@@ -27,7 +27,7 @@ public abstract class IReglaStrategy {
 
   @ManyToOne
   @JoinColumn(name = "subasta_id")
-  private Subasta subasta;
+  private Auction subasta;
 
   protected IReglaStrategy() {}
 
@@ -35,14 +35,14 @@ public abstract class IReglaStrategy {
     return id;
   }
 
-  public Subasta getSubasta() {
+  public Auction getAuction() {
     return subasta;
   }
 
-  public void setSubasta(Subasta subasta) {
+  public void setAuction(Auction subasta) {
     this.subasta = subasta;
   }
 
-  public abstract Boolean cumpleRegla(OfertaSubasta ofertaSubasta);
+  public abstract Boolean cumpleRegla(AuctionOffer ofertaSubasta);
 }
 */

@@ -1,7 +1,7 @@
 /*package com.tacs.tp1c2026.entities.dto.output;
 
-import com.tacs.tp1c2026.entities.Figurita;
-import com.tacs.tp1c2026.entities.FiguritaColeccion;
+import com.tacs.tp1c2026.entities.Card;
+import com.tacs.tp1c2026.entities.CardCollection;
 import jakarta.persistence.Column;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;

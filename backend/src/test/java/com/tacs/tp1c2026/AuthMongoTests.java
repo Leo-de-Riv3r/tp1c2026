@@ -1,6 +1,6 @@
 package com.tacs.tp1c2026;
 
-import com.tacs.tp1c2026.repositories.UsuariosRepository;
+import com.tacs.tp1c2026.repositories.UsersRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,11 +21,11 @@ public class AuthMongoTests {
     private MockMvc mockMvc;
 
     @Autowired
-    private UsuariosRepository usuariosRepository;
+    private UsersRepository usersRepository;
 
     @BeforeEach
     void setUp() {
-        usuariosRepository.deleteAll();
+        usersRepository.deleteAll();
     }
 
     @Test

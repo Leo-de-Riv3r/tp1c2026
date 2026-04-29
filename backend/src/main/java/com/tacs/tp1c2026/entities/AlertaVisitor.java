@@ -10,15 +10,15 @@ import org.springframework.stereotype.Component;
 public class AlertaVisitor {
 
   public AlertaDto visit(AlertaFiguritaFaltante alerta) {
-    Figurita figurita = alerta.getFigurita();
+    Card card = alerta.getCard();
     return new AlertaFiguritaFaltanteDto(
         alerta.getId(),
-        figurita != null ? figurita.getId() : null,
-        figurita != null ? figurita.getNumber() : null,
-        figurita != null ? figurita.getDescription() : null,
-        figurita != null ? figurita.getCountry() : null,
-        figurita != null ? figurita.getTeam() : null,
-        figurita != null ? figurita.getCategory() : null
+        card != null ? card.getId() : null,
+        card != null ? card.getNumber() : null,
+        card != null ? card.getDescription() : null,
+        card != null ? card.getCountry() : null,
+        card != null ? card.getTeam() : null,
+        card != null ? card.getCategory() : null
     );
   }
 
@@ -32,12 +32,12 @@ public class AlertaVisitor {
   }
 
   public AlertaDto visit(AlertaSubastaProxima alerta) {
-    Figurita figurita = alerta.getFigurita();
+    Card card = alerta.getCard();
     return new AlertaSubastaProximaDto(
         alerta.getId(),
         alerta.getSubastaId(),
-        figurita != null ? figurita.getId() : null,
-        figurita != null ? figurita.getNumber() : null,
+        card != null ? card.getId() : null,
+        card != null ? card.getNumber() : null,
         alerta.getFechaCierre()
     );
   }

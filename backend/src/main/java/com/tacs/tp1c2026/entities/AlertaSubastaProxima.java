@@ -6,25 +6,25 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.TypeAlias;
-import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
 @Getter
 @Setter
 @NoArgsConstructor
-@Document(collection = "alertas")
 @TypeAlias("alertaSubastaProxima")
 public class AlertaSubastaProxima extends Alerta {
 
-  private Integer subastaId;
-  private Figurita figurita;
+  private String subastaId;
+  @DocumentReference
+  private Card card;
   private LocalDateTime fechaCierre;
 
   public AlertaSubastaProxima(
-      Integer subastaId,
-      Figurita figurita,
+      String subastaId,
+      Card card,
       LocalDateTime fechaCierre) {
     this.subastaId = subastaId;
-    this.figurita = figurita;
+    this.card = card;
     this.fechaCierre = fechaCierre;
   }
 

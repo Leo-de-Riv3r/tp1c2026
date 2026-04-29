@@ -2,13 +2,13 @@ package com.tacs.tp1c2026.entities.dto.input;
 
 public class InteresadoDto {
 
-  private Integer userId;
+  private String userId;
 
-  public Integer getUserId() {
+  public String getUserId() {
     return userId;
   }
 
-  public void setUserId(Integer userId) {
+  public void setUserId(String userId) {
     this.userId = userId;
   }
 }

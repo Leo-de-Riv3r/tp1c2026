@@ -1,6 +1,6 @@
 package com.tacs.tp1c2026.entities.dto.output;
 
-import com.tacs.tp1c2026.entities.enums.Categoria;
+import com.tacs.tp1c2026.entities.enums.CardCategory;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -11,6 +11,6 @@ public class PublicacionDto {
   private String jugador;
   private String seleccion;
   private String equipo;
-  private Categoria categoria;
+  private CardCategory cardCategory;
   private Integer cantidad;
 }
