@@ -1,0 +1,5002 @@
+[
+  {
+    "_id": "card_001",
+    "number": 1,
+    "type": "TROFEO",
+    "description": "Copa del Mundo FIFA 2026",
+    "country": null,
+    "team": null,
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_002",
+    "number": 2,
+    "type": "ESPECIAL",
+    "description": "Logo oficial Copa del Mundo FIFA 2026",
+    "country": null,
+    "team": null,
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_003",
+    "number": 3,
+    "type": "ESTADIO",
+    "description": "MetLife Stadium - Nueva York/Nueva Jersey",
+    "country": null,
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_004",
+    "number": 4,
+    "type": "ESTADIO",
+    "description": "Rose Bowl - Los Ángeles",
+    "country": null,
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_005",
+    "number": 5,
+    "type": "ESTADIO",
+    "description": "AT&T Stadium - Dallas",
+    "country": null,
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_006",
+    "number": 6,
+    "type": "ESTADIO",
+    "description": "Estadio Azteca - Ciudad de México",
+    "country": null,
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_007",
+    "number": 7,
+    "type": "ESTADIO",
+    "description": "BC Place - Vancouver",
+    "country": null,
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_008",
+    "number": 8,
+    "type": "ESTADIO",
+    "description": "SoFi Stadium - Los Ángeles",
+    "country": null,
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_009",
+    "number": 9,
+    "type": "ESPECIAL",
+    "description": "Mascota oficial: Striker 2026",
+    "country": null,
+    "team": null,
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_010",
+    "number": 10,
+    "type": "ESPECIAL",
+    "description": "Balón oficial del torneo",
+    "country": null,
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_011",
+    "number": 11,
+    "type": "ESPECIAL",
+    "description": "Panel de árbitros FIFA 2026",
+    "country": null,
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_012",
+    "number": 12,
+    "type": "ESPECIAL",
+    "description": "Ceremonia de apertura",
+    "country": null,
+    "team": null,
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_013",
+    "number": 13,
+    "type": "ESPECIAL",
+    "description": "País anfitrión: Estados Unidos",
+    "country": null,
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_014",
+    "number": 14,
+    "type": "ESPECIAL",
+    "description": "País anfitrión: México",
+    "country": null,
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_015",
+    "number": 15,
+    "type": "ESPECIAL",
+    "description": "País anfitrión: Canadá",
+    "country": null,
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_016",
+    "number": 16,
+    "type": "ESPECIAL",
+    "description": "Los mejores goles históricos del Mundial",
+    "country": null,
+    "team": null,
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_017",
+    "number": 17,
+    "type": "ESPECIAL",
+    "description": "Historia de la Copa del Mundo",
+    "country": null,
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_018",
+    "number": 18,
+    "type": "ESPECIAL",
+    "description": "Récords del torneo",
+    "country": null,
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_019",
+    "number": 19,
+    "type": "ESPECIAL",
+    "description": "Premio FIFA Fair Play",
+    "country": null,
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_020",
+    "number": 20,
+    "type": "ESPECIAL",
+    "description": "Historia del Botín de Oro",
+    "country": null,
+    "team": null,
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_021",
+    "number": 21,
+    "type": "ESCUDO",
+    "description": "Escudo oficial de Argentina",
+    "country": "Argentina",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_022",
+    "number": 22,
+    "type": "EQUIPO",
+    "description": "Plantel completo de Argentina - Mundial 2026",
+    "country": "Argentina",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_023",
+    "number": 23,
+    "type": "ESPECIAL",
+    "description": "Leyendas de Argentina",
+    "country": "Argentina",
+    "team": null,
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_024",
+    "number": 24,
+    "type": "ESCUDO",
+    "description": "Escudo oficial de Brasil",
+    "country": "Brasil",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_025",
+    "number": 25,
+    "type": "EQUIPO",
+    "description": "Plantel completo de Brasil - Mundial 2026",
+    "country": "Brasil",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_026",
+    "number": 26,
+    "type": "ESPECIAL",
+    "description": "Leyendas de Brasil",
+    "country": "Brasil",
+    "team": null,
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_027",
+    "number": 27,
+    "type": "ESCUDO",
+    "description": "Escudo oficial de Francia",
+    "country": "Francia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_028",
+    "number": 28,
+    "type": "EQUIPO",
+    "description": "Plantel completo de Francia - Mundial 2026",
+    "country": "Francia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_029",
+    "number": 29,
+    "type": "ESPECIAL",
+    "description": "Leyendas de Francia",
+    "country": "Francia",
+    "team": null,
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_030",
+    "number": 30,
+    "type": "ESCUDO",
+    "description": "Escudo oficial de España",
+    "country": "España",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_031",
+    "number": 31,
+    "type": "EQUIPO",
+    "description": "Plantel completo de España - Mundial 2026",
+    "country": "España",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_032",
+    "number": 32,
+    "type": "ESPECIAL",
+    "description": "Leyendas de España",
+    "country": "España",
+    "team": null,
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_033",
+    "number": 33,
+    "type": "ESCUDO",
+    "description": "Escudo oficial de Inglaterra",
+    "country": "Inglaterra",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_034",
+    "number": 34,
+    "type": "EQUIPO",
+    "description": "Plantel completo de Inglaterra - Mundial 2026",
+    "country": "Inglaterra",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_035",
+    "number": 35,
+    "type": "ESPECIAL",
+    "description": "Leyendas de Inglaterra",
+    "country": "Inglaterra",
+    "team": null,
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_036",
+    "number": 36,
+    "type": "ESCUDO",
+    "description": "Escudo oficial de Alemania",
+    "country": "Alemania",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_037",
+    "number": 37,
+    "type": "EQUIPO",
+    "description": "Plantel completo de Alemania - Mundial 2026",
+    "country": "Alemania",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_038",
+    "number": 38,
+    "type": "ESPECIAL",
+    "description": "Leyendas de Alemania",
+    "country": "Alemania",
+    "team": null,
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_039",
+    "number": 39,
+    "type": "ESCUDO",
+    "description": "Escudo oficial de Portugal",
+    "country": "Portugal",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_040",
+    "number": 40,
+    "type": "EQUIPO",
+    "description": "Plantel completo de Portugal - Mundial 2026",
+    "country": "Portugal",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_041",
+    "number": 41,
+    "type": "ESPECIAL",
+    "description": "Leyendas de Portugal",
+    "country": "Portugal",
+    "team": null,
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_042",
+    "number": 42,
+    "type": "ESCUDO",
+    "description": "Escudo oficial de Países Bajos",
+    "country": "Países Bajos",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_043",
+    "number": 43,
+    "type": "EQUIPO",
+    "description": "Plantel completo de Países Bajos - Mundial 2026",
+    "country": "Países Bajos",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_044",
+    "number": 44,
+    "type": "ESPECIAL",
+    "description": "Leyendas de Países Bajos",
+    "country": "Países Bajos",
+    "team": null,
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_045",
+    "number": 45,
+    "type": "ESCUDO",
+    "description": "Escudo oficial de Italia",
+    "country": "Italia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_046",
+    "number": 46,
+    "type": "EQUIPO",
+    "description": "Plantel completo de Italia - Mundial 2026",
+    "country": "Italia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_047",
+    "number": 47,
+    "type": "ESPECIAL",
+    "description": "Leyendas de Italia",
+    "country": "Italia",
+    "team": null,
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_048",
+    "number": 48,
+    "type": "ESCUDO",
+    "description": "Escudo oficial de Bélgica",
+    "country": "Bélgica",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_049",
+    "number": 49,
+    "type": "EQUIPO",
+    "description": "Plantel completo de Bélgica - Mundial 2026",
+    "country": "Bélgica",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_050",
+    "number": 50,
+    "type": "ESPECIAL",
+    "description": "Leyendas de Bélgica",
+    "country": "Bélgica",
+    "team": null,
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_051",
+    "number": 51,
+    "type": "ESCUDO",
+    "description": "Escudo oficial de Uruguay",
+    "country": "Uruguay",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_052",
+    "number": 52,
+    "type": "EQUIPO",
+    "description": "Plantel completo de Uruguay - Mundial 2026",
+    "country": "Uruguay",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_053",
+    "number": 53,
+    "type": "ESPECIAL",
+    "description": "Leyendas de Uruguay",
+    "country": "Uruguay",
+    "team": null,
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_054",
+    "number": 54,
+    "type": "ESCUDO",
+    "description": "Escudo oficial de Colombia",
+    "country": "Colombia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_055",
+    "number": 55,
+    "type": "EQUIPO",
+    "description": "Plantel completo de Colombia - Mundial 2026",
+    "country": "Colombia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_056",
+    "number": 56,
+    "type": "ESPECIAL",
+    "description": "Leyendas de Colombia",
+    "country": "Colombia",
+    "team": null,
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_057",
+    "number": 57,
+    "type": "ESCUDO",
+    "description": "Escudo oficial de México",
+    "country": "México",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_058",
+    "number": 58,
+    "type": "EQUIPO",
+    "description": "Plantel completo de México - Mundial 2026",
+    "country": "México",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_059",
+    "number": 59,
+    "type": "ESPECIAL",
+    "description": "Leyendas de México",
+    "country": "México",
+    "team": null,
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_060",
+    "number": 60,
+    "type": "ESCUDO",
+    "description": "Escudo oficial de Estados Unidos",
+    "country": "Estados Unidos",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_061",
+    "number": 61,
+    "type": "EQUIPO",
+    "description": "Plantel completo de Estados Unidos - Mundial 2026",
+    "country": "Estados Unidos",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_062",
+    "number": 62,
+    "type": "ESPECIAL",
+    "description": "Leyendas de Estados Unidos",
+    "country": "Estados Unidos",
+    "team": null,
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_063",
+    "number": 63,
+    "type": "ESCUDO",
+    "description": "Escudo oficial de Marruecos",
+    "country": "Marruecos",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_064",
+    "number": 64,
+    "type": "EQUIPO",
+    "description": "Plantel completo de Marruecos - Mundial 2026",
+    "country": "Marruecos",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_065",
+    "number": 65,
+    "type": "ESPECIAL",
+    "description": "Leyendas de Marruecos",
+    "country": "Marruecos",
+    "team": null,
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_066",
+    "number": 66,
+    "type": "ESCUDO",
+    "description": "Escudo oficial de Senegal",
+    "country": "Senegal",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_067",
+    "number": 67,
+    "type": "EQUIPO",
+    "description": "Plantel completo de Senegal - Mundial 2026",
+    "country": "Senegal",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_068",
+    "number": 68,
+    "type": "ESPECIAL",
+    "description": "Leyendas de Senegal",
+    "country": "Senegal",
+    "team": null,
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_069",
+    "number": 69,
+    "type": "ESCUDO",
+    "description": "Escudo oficial de Japón",
+    "country": "Japón",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_070",
+    "number": 70,
+    "type": "EQUIPO",
+    "description": "Plantel completo de Japón - Mundial 2026",
+    "country": "Japón",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_071",
+    "number": 71,
+    "type": "ESPECIAL",
+    "description": "Leyendas de Japón",
+    "country": "Japón",
+    "team": null,
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_072",
+    "number": 72,
+    "type": "ESCUDO",
+    "description": "Escudo oficial de Corea del Sur",
+    "country": "Corea del Sur",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_073",
+    "number": 73,
+    "type": "EQUIPO",
+    "description": "Plantel completo de Corea del Sur - Mundial 2026",
+    "country": "Corea del Sur",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_074",
+    "number": 74,
+    "type": "ESPECIAL",
+    "description": "Leyendas de Corea del Sur",
+    "country": "Corea del Sur",
+    "team": null,
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_075",
+    "number": 75,
+    "type": "ESCUDO",
+    "description": "Escudo oficial de Australia",
+    "country": "Australia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_076",
+    "number": 76,
+    "type": "EQUIPO",
+    "description": "Plantel completo de Australia - Mundial 2026",
+    "country": "Australia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_077",
+    "number": 77,
+    "type": "ESPECIAL",
+    "description": "Leyendas de Australia",
+    "country": "Australia",
+    "team": null,
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_078",
+    "number": 78,
+    "type": "ESCUDO",
+    "description": "Escudo oficial de Arabia Saudita",
+    "country": "Arabia Saudita",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_079",
+    "number": 79,
+    "type": "EQUIPO",
+    "description": "Plantel completo de Arabia Saudita - Mundial 2026",
+    "country": "Arabia Saudita",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_080",
+    "number": 80,
+    "type": "ESPECIAL",
+    "description": "Leyendas de Arabia Saudita",
+    "country": "Arabia Saudita",
+    "team": null,
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_081",
+    "number": 81,
+    "type": "JUGADOR",
+    "description": "Lionel Messi",
+    "country": "Argentina",
+    "team": "Inter Miami",
+    "category": "LEGENDARIO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_082",
+    "number": 82,
+    "type": "JUGADOR",
+    "description": "Emiliano Martínez",
+    "country": "Argentina",
+    "team": "Aston Villa",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_083",
+    "number": 83,
+    "type": "JUGADOR",
+    "description": "Rodrigo De Paul",
+    "country": "Argentina",
+    "team": "Atlético Madrid",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_084",
+    "number": 84,
+    "type": "JUGADOR",
+    "description": "Julián Álvarez",
+    "country": "Argentina",
+    "team": "Manchester City",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_085",
+    "number": 85,
+    "type": "JUGADOR",
+    "description": "Enzo Fernández",
+    "country": "Argentina",
+    "team": "Chelsea",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_086",
+    "number": 86,
+    "type": "JUGADOR",
+    "description": "Alexis Mac Allister",
+    "country": "Argentina",
+    "team": "Liverpool",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_087",
+    "number": 87,
+    "type": "JUGADOR",
+    "description": "Ángel Di María",
+    "country": "Argentina",
+    "team": "Benfica",
+    "category": "LEGENDARIO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_088",
+    "number": 88,
+    "type": "JUGADOR",
+    "description": "Lautaro Martínez",
+    "country": "Argentina",
+    "team": "Inter",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_089",
+    "number": 89,
+    "type": "JUGADOR",
+    "description": "Cristian Romero",
+    "country": "Argentina",
+    "team": "Tottenham",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_090",
+    "number": 90,
+    "type": "JUGADOR",
+    "description": "Leandro Paredes",
+    "country": "Argentina",
+    "team": "Roma",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_091",
+    "number": 91,
+    "type": "JUGADOR",
+    "description": "Vinicius Jr.",
+    "country": "Brasil",
+    "team": "Real Madrid",
+    "category": "LEGENDARIO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_092",
+    "number": 92,
+    "type": "JUGADOR",
+    "description": "Rodrygo",
+    "country": "Brasil",
+    "team": "Real Madrid",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_093",
+    "number": 93,
+    "type": "JUGADOR",
+    "description": "Neymar Jr.",
+    "country": "Brasil",
+    "team": "Al-Hilal",
+    "category": "LEGENDARIO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_094",
+    "number": 94,
+    "type": "JUGADOR",
+    "description": "Casemiro",
+    "country": "Brasil",
+    "team": "Manchester United",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_095",
+    "number": 95,
+    "type": "JUGADOR",
+    "description": "Marquinhos",
+    "country": "Brasil",
+    "team": "PSG",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_096",
+    "number": 96,
+    "type": "JUGADOR",
+    "description": "Raphinha",
+    "country": "Brasil",
+    "team": "Barcelona",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_097",
+    "number": 97,
+    "type": "JUGADOR",
+    "description": "Alisson Becker",
+    "country": "Brasil",
+    "team": "Liverpool",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_098",
+    "number": 98,
+    "type": "JUGADOR",
+    "description": "Endrick",
+    "country": "Brasil",
+    "team": "Real Madrid",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_099",
+    "number": 99,
+    "type": "JUGADOR",
+    "description": "Bruno Guimarães",
+    "country": "Brasil",
+    "team": "Newcastle",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_100",
+    "number": 100,
+    "type": "JUGADOR",
+    "description": "Militão",
+    "country": "Brasil",
+    "team": "Real Madrid",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_101",
+    "number": 101,
+    "type": "JUGADOR",
+    "description": "Kylian Mbappé",
+    "country": "Francia",
+    "team": "Real Madrid",
+    "category": "LEGENDARIO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_102",
+    "number": 102,
+    "type": "JUGADOR",
+    "description": "Antoine Griezmann",
+    "country": "Francia",
+    "team": "Atlético Madrid",
+    "category": "LEGENDARIO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_103",
+    "number": 103,
+    "type": "JUGADOR",
+    "description": "Aurélien Tchouaméni",
+    "country": "Francia",
+    "team": "Real Madrid",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_104",
+    "number": 104,
+    "type": "JUGADOR",
+    "description": "Ousmane Dembélé",
+    "country": "Francia",
+    "team": "PSG",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_105",
+    "number": 105,
+    "type": "JUGADOR",
+    "description": "Mike Maignan",
+    "country": "Francia",
+    "team": "AC Milan",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_106",
+    "number": 106,
+    "type": "JUGADOR",
+    "description": "William Saliba",
+    "country": "Francia",
+    "team": "Arsenal",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_107",
+    "number": 107,
+    "type": "JUGADOR",
+    "description": "Marcus Thuram",
+    "country": "Francia",
+    "team": "Inter",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_108",
+    "number": 108,
+    "type": "JUGADOR",
+    "description": "Eduardo Camavinga",
+    "country": "Francia",
+    "team": "Real Madrid",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_109",
+    "number": 109,
+    "type": "JUGADOR",
+    "description": "Randal Kolo Muani",
+    "country": "Francia",
+    "team": "Juventus",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_110",
+    "number": 110,
+    "type": "JUGADOR",
+    "description": "Jules Koundé",
+    "country": "Francia",
+    "team": "Barcelona",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_111",
+    "number": 111,
+    "type": "JUGADOR",
+    "description": "Pedri",
+    "country": "España",
+    "team": "Barcelona",
+    "category": "LEGENDARIO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_112",
+    "number": 112,
+    "type": "JUGADOR",
+    "description": "Lamine Yamal",
+    "country": "España",
+    "team": "Barcelona",
+    "category": "LEGENDARIO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_113",
+    "number": 113,
+    "type": "JUGADOR",
+    "description": "Álvaro Morata",
+    "country": "España",
+    "team": "AC Milan",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_114",
+    "number": 114,
+    "type": "JUGADOR",
+    "description": "Rodri",
+    "country": "España",
+    "team": "Manchester City",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_115",
+    "number": 115,
+    "type": "JUGADOR",
+    "description": "Dani Carvajal",
+    "country": "España",
+    "team": "Real Madrid",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_116",
+    "number": 116,
+    "type": "JUGADOR",
+    "description": "Unai Simón",
+    "country": "España",
+    "team": "Athletic Club",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_117",
+    "number": 117,
+    "type": "JUGADOR",
+    "description": "Nico Williams",
+    "country": "España",
+    "team": "Athletic Club",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_118",
+    "number": 118,
+    "type": "JUGADOR",
+    "description": "Gavi",
+    "country": "España",
+    "team": "Barcelona",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_119",
+    "number": 119,
+    "type": "JUGADOR",
+    "description": "Fabián Ruiz",
+    "country": "España",
+    "team": "PSG",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_120",
+    "number": 120,
+    "type": "JUGADOR",
+    "description": "Aymeric Laporte",
+    "country": "España",
+    "team": "Al-Nassr",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_121",
+    "number": 121,
+    "type": "JUGADOR",
+    "description": "Jude Bellingham",
+    "country": "Inglaterra",
+    "team": "Real Madrid",
+    "category": "LEGENDARIO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_122",
+    "number": 122,
+    "type": "JUGADOR",
+    "description": "Harry Kane",
+    "country": "Inglaterra",
+    "team": "Bayern Munich",
+    "category": "LEGENDARIO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_123",
+    "number": 123,
+    "type": "JUGADOR",
+    "description": "Bukayo Saka",
+    "country": "Inglaterra",
+    "team": "Arsenal",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_124",
+    "number": 124,
+    "type": "JUGADOR",
+    "description": "Phil Foden",
+    "country": "Inglaterra",
+    "team": "Manchester City",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_125",
+    "number": 125,
+    "type": "JUGADOR",
+    "description": "Declan Rice",
+    "country": "Inglaterra",
+    "team": "Arsenal",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_126",
+    "number": 126,
+    "type": "JUGADOR",
+    "description": "Jordan Pickford",
+    "country": "Inglaterra",
+    "team": "Everton",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_127",
+    "number": 127,
+    "type": "JUGADOR",
+    "description": "Marcus Rashford",
+    "country": "Inglaterra",
+    "team": "Manchester United",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_128",
+    "number": 128,
+    "type": "JUGADOR",
+    "description": "Trent Alexander-Arnold",
+    "country": "Inglaterra",
+    "team": "Real Madrid",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_129",
+    "number": 129,
+    "type": "JUGADOR",
+    "description": "John Stones",
+    "country": "Inglaterra",
+    "team": "Manchester City",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_130",
+    "number": 130,
+    "type": "JUGADOR",
+    "description": "Luke Shaw",
+    "country": "Inglaterra",
+    "team": "Manchester United",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_131",
+    "number": 131,
+    "type": "JUGADOR",
+    "description": "Florian Wirtz",
+    "country": "Alemania",
+    "team": "Bayer Leverkusen",
+    "category": "LEGENDARIO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_132",
+    "number": 132,
+    "type": "JUGADOR",
+    "description": "Jamal Musiala",
+    "country": "Alemania",
+    "team": "Bayern Munich",
+    "category": "LEGENDARIO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_133",
+    "number": 133,
+    "type": "JUGADOR",
+    "description": "Manuel Neuer",
+    "country": "Alemania",
+    "team": "Bayern Munich",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_134",
+    "number": 134,
+    "type": "JUGADOR",
+    "description": "Kai Havertz",
+    "country": "Alemania",
+    "team": "Arsenal",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_135",
+    "number": 135,
+    "type": "JUGADOR",
+    "description": "Leroy Sané",
+    "country": "Alemania",
+    "team": "Bayern Munich",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_136",
+    "number": 136,
+    "type": "JUGADOR",
+    "description": "Antonio Rüdiger",
+    "country": "Alemania",
+    "team": "Real Madrid",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_137",
+    "number": 137,
+    "type": "JUGADOR",
+    "description": "Thomas Müller",
+    "country": "Alemania",
+    "team": "Bayern Munich",
+    "category": "LEGENDARIO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_138",
+    "number": 138,
+    "type": "JUGADOR",
+    "description": "İlkay Gündoğan",
+    "country": "Alemania",
+    "team": "Barcelona",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_139",
+    "number": 139,
+    "type": "JUGADOR",
+    "description": "Toni Kroos",
+    "country": "Alemania",
+    "team": "Real Madrid",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_140",
+    "number": 140,
+    "type": "JUGADOR",
+    "description": "Joshua Kimmich",
+    "country": "Alemania",
+    "team": "Bayern Munich",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_141",
+    "number": 141,
+    "type": "JUGADOR",
+    "description": "Cristiano Ronaldo",
+    "country": "Portugal",
+    "team": "Al-Nassr",
+    "category": "LEGENDARIO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_142",
+    "number": 142,
+    "type": "JUGADOR",
+    "description": "Bruno Fernandes",
+    "country": "Portugal",
+    "team": "Manchester United",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_143",
+    "number": 143,
+    "type": "JUGADOR",
+    "description": "Bernardo Silva",
+    "country": "Portugal",
+    "team": "Manchester City",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_144",
+    "number": 144,
+    "type": "JUGADOR",
+    "description": "Rafael Leão",
+    "country": "Portugal",
+    "team": "AC Milan",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_145",
+    "number": 145,
+    "type": "JUGADOR",
+    "description": "Rúben Dias",
+    "country": "Portugal",
+    "team": "Manchester City",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_146",
+    "number": 146,
+    "type": "JUGADOR",
+    "description": "Diogo Jota",
+    "country": "Portugal",
+    "team": "Liverpool",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_147",
+    "number": 147,
+    "type": "JUGADOR",
+    "description": "João Cancelo",
+    "country": "Portugal",
+    "team": "Barcelona",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_148",
+    "number": 148,
+    "type": "JUGADOR",
+    "description": "Vitinha",
+    "country": "Portugal",
+    "team": "PSG",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_149",
+    "number": 149,
+    "type": "JUGADOR",
+    "description": "Gonçalo Ramos",
+    "country": "Portugal",
+    "team": "PSG",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_150",
+    "number": 150,
+    "type": "JUGADOR",
+    "description": "Diogo Costa",
+    "country": "Portugal",
+    "team": "Porto",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_151",
+    "number": 151,
+    "type": "JUGADOR",
+    "description": "Virgil van Dijk",
+    "country": "Países Bajos",
+    "team": "Liverpool",
+    "category": "LEGENDARIO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_152",
+    "number": 152,
+    "type": "JUGADOR",
+    "description": "Memphis Depay",
+    "country": "Países Bajos",
+    "team": "Atlético Madrid",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_153",
+    "number": 153,
+    "type": "JUGADOR",
+    "description": "Cody Gakpo",
+    "country": "Países Bajos",
+    "team": "Liverpool",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_154",
+    "number": 154,
+    "type": "JUGADOR",
+    "description": "Frenkie de Jong",
+    "country": "Países Bajos",
+    "team": "Barcelona",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_155",
+    "number": 155,
+    "type": "JUGADOR",
+    "description": "Xavi Simons",
+    "country": "Países Bajos",
+    "team": "RB Leipzig",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_156",
+    "number": 156,
+    "type": "JUGADOR",
+    "description": "Denzel Dumfries",
+    "country": "Países Bajos",
+    "team": "Inter",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_157",
+    "number": 157,
+    "type": "JUGADOR",
+    "description": "Tijjani Reijnders",
+    "country": "Países Bajos",
+    "team": "AC Milan",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_158",
+    "number": 158,
+    "type": "JUGADOR",
+    "description": "Nathan Aké",
+    "country": "Países Bajos",
+    "team": "Manchester City",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_159",
+    "number": 159,
+    "type": "JUGADOR",
+    "description": "Wout Weghorst",
+    "country": "Países Bajos",
+    "team": "Hoffenheim",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_160",
+    "number": 160,
+    "type": "JUGADOR",
+    "description": "Bart Verbruggen",
+    "country": "Países Bajos",
+    "team": "Brighton",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_161",
+    "number": 161,
+    "type": "JUGADOR",
+    "description": "Gianluigi Donnarumma",
+    "country": "Italia",
+    "team": "PSG",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_162",
+    "number": 162,
+    "type": "JUGADOR",
+    "description": "Federico Chiesa",
+    "country": "Italia",
+    "team": "Liverpool",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_163",
+    "number": 163,
+    "type": "JUGADOR",
+    "description": "Nicolò Barella",
+    "country": "Italia",
+    "team": "Inter",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_164",
+    "number": 164,
+    "type": "JUGADOR",
+    "description": "Leonardo Bonucci",
+    "country": "Italia",
+    "team": "Fenerbahçe",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_165",
+    "number": 165,
+    "type": "JUGADOR",
+    "description": "Sandro Tonali",
+    "country": "Italia",
+    "team": "Newcastle",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_166",
+    "number": 166,
+    "type": "JUGADOR",
+    "description": "Giacomo Raspadori",
+    "country": "Italia",
+    "team": "Napoli",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_167",
+    "number": 167,
+    "type": "JUGADOR",
+    "description": "Marco Verratti",
+    "country": "Italia",
+    "team": "Al-Arabi",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_168",
+    "number": 168,
+    "type": "JUGADOR",
+    "description": "Lorenzo Pellegrini",
+    "country": "Italia",
+    "team": "Roma",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_169",
+    "number": 169,
+    "type": "JUGADOR",
+    "description": "Federico Dimarco",
+    "country": "Italia",
+    "team": "Inter",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_170",
+    "number": 170,
+    "type": "JUGADOR",
+    "description": "Matteo Darmian",
+    "country": "Italia",
+    "team": "Inter",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_171",
+    "number": 171,
+    "type": "JUGADOR",
+    "description": "Kevin De Bruyne",
+    "country": "Bélgica",
+    "team": "Manchester City",
+    "category": "LEGENDARIO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_172",
+    "number": 172,
+    "type": "JUGADOR",
+    "description": "Romelu Lukaku",
+    "country": "Bélgica",
+    "team": "Roma",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_173",
+    "number": 173,
+    "type": "JUGADOR",
+    "description": "Thibaut Courtois",
+    "country": "Bélgica",
+    "team": "Real Madrid",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_174",
+    "number": 174,
+    "type": "JUGADOR",
+    "description": "Eden Hazard",
+    "country": "Bélgica",
+    "team": "Sin club",
+    "category": "LEGENDARIO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_175",
+    "number": 175,
+    "type": "JUGADOR",
+    "description": "Yannick Carrasco",
+    "country": "Bélgica",
+    "team": "Al-Qadsiah",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_176",
+    "number": 176,
+    "type": "JUGADOR",
+    "description": "Axel Witsel",
+    "country": "Bélgica",
+    "team": "Atlético Madrid",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_177",
+    "number": 177,
+    "type": "JUGADOR",
+    "description": "Leandro Trossard",
+    "country": "Bélgica",
+    "team": "Arsenal",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_178",
+    "number": 178,
+    "type": "JUGADOR",
+    "description": "Amadou Onana",
+    "country": "Bélgica",
+    "team": "Aston Villa",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_179",
+    "number": 179,
+    "type": "JUGADOR",
+    "description": "Timothy Castagne",
+    "country": "Bélgica",
+    "team": "Fulham",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_180",
+    "number": 180,
+    "type": "JUGADOR",
+    "description": "Lois Openda",
+    "country": "Bélgica",
+    "team": "RB Leipzig",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_181",
+    "number": 181,
+    "type": "JUGADOR",
+    "description": "Federico Valverde",
+    "country": "Uruguay",
+    "team": "Real Madrid",
+    "category": "LEGENDARIO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_182",
+    "number": 182,
+    "type": "JUGADOR",
+    "description": "Darwin Núñez",
+    "country": "Uruguay",
+    "team": "Liverpool",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_183",
+    "number": 183,
+    "type": "JUGADOR",
+    "description": "Luis Suárez",
+    "country": "Uruguay",
+    "team": "Inter Miami",
+    "category": "LEGENDARIO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_184",
+    "number": 184,
+    "type": "JUGADOR",
+    "description": "Rodrigo Bentancur",
+    "country": "Uruguay",
+    "team": "Tottenham",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_185",
+    "number": 185,
+    "type": "JUGADOR",
+    "description": "Ronald Araújo",
+    "country": "Uruguay",
+    "team": "Barcelona",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_186",
+    "number": 186,
+    "type": "JUGADOR",
+    "description": "Edinson Cavani",
+    "country": "Uruguay",
+    "team": "Boca Juniors",
+    "category": "LEGENDARIO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_187",
+    "number": 187,
+    "type": "JUGADOR",
+    "description": "José María Giménez",
+    "country": "Uruguay",
+    "team": "Atlético Madrid",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_188",
+    "number": 188,
+    "type": "JUGADOR",
+    "description": "Maximiliano Araújo",
+    "country": "Uruguay",
+    "team": "Sporting CP",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_189",
+    "number": 189,
+    "type": "JUGADOR",
+    "description": "Agustín Canobbio",
+    "country": "Uruguay",
+    "team": "Athletic Club",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_190",
+    "number": 190,
+    "type": "JUGADOR",
+    "description": "Sergio Rochet",
+    "country": "Uruguay",
+    "team": "Nacional",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_191",
+    "number": 191,
+    "type": "JUGADOR",
+    "description": "James Rodríguez",
+    "country": "Colombia",
+    "team": "Rayo Vallecano",
+    "category": "LEGENDARIO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_192",
+    "number": 192,
+    "type": "JUGADOR",
+    "description": "Luis Díaz",
+    "country": "Colombia",
+    "team": "Liverpool",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_193",
+    "number": 193,
+    "type": "JUGADOR",
+    "description": "Falcao García",
+    "country": "Colombia",
+    "team": "Rayo Vallecano",
+    "category": "LEGENDARIO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_194",
+    "number": 194,
+    "type": "JUGADOR",
+    "description": "Cuadrado",
+    "country": "Colombia",
+    "team": "Independiente",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_195",
+    "number": 195,
+    "type": "JUGADOR",
+    "description": "Davinson Sánchez",
+    "country": "Colombia",
+    "team": "Galatasaray",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_196",
+    "number": 196,
+    "type": "JUGADOR",
+    "description": "Richard Ríos",
+    "country": "Colombia",
+    "team": "Palmeiras",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_197",
+    "number": 197,
+    "type": "JUGADOR",
+    "description": "Jhon Córdoba",
+    "country": "Colombia",
+    "team": "Krasnodar",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_198",
+    "number": 198,
+    "type": "JUGADOR",
+    "description": "Camilo Vargas",
+    "country": "Colombia",
+    "team": "Atlas",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_199",
+    "number": 199,
+    "type": "JUGADOR",
+    "description": "Daniel Muñoz",
+    "country": "Colombia",
+    "team": "Crystal Palace",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_200",
+    "number": 200,
+    "type": "JUGADOR",
+    "description": "Jhon Jáder Durán",
+    "country": "Colombia",
+    "team": "Aston Villa",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_201",
+    "number": 201,
+    "type": "JUGADOR",
+    "description": "Hirving Lozano",
+    "country": "México",
+    "team": "PSV",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_202",
+    "number": 202,
+    "type": "JUGADOR",
+    "description": "Raúl Jiménez",
+    "country": "México",
+    "team": "Fulham",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_203",
+    "number": 203,
+    "type": "JUGADOR",
+    "description": "Guillermo Ochoa",
+    "country": "México",
+    "team": "Salernitana",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_204",
+    "number": 204,
+    "type": "JUGADOR",
+    "description": "Edson Álvarez",
+    "country": "México",
+    "team": "West Ham",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_205",
+    "number": 205,
+    "type": "JUGADOR",
+    "description": "Carlos Vela",
+    "country": "México",
+    "team": "LAFC",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_206",
+    "number": 206,
+    "type": "JUGADOR",
+    "description": "Héctor Herrera",
+    "country": "México",
+    "team": "Houston Dynamo",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_207",
+    "number": 207,
+    "type": "JUGADOR",
+    "description": "Alexis Vega",
+    "country": "México",
+    "team": "Chivas",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_208",
+    "number": 208,
+    "type": "JUGADOR",
+    "description": "Jesús Gallardo",
+    "country": "México",
+    "team": "Monterrey",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_209",
+    "number": 209,
+    "type": "JUGADOR",
+    "description": "César Montes",
+    "country": "México",
+    "team": "Espanyol",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_210",
+    "number": 210,
+    "type": "JUGADOR",
+    "description": "Santiago Giménez",
+    "country": "México",
+    "team": "Feyenoord",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_211",
+    "number": 211,
+    "type": "JUGADOR",
+    "description": "Christian Pulisic",
+    "country": "Estados Unidos",
+    "team": "AC Milan",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_212",
+    "number": 212,
+    "type": "JUGADOR",
+    "description": "Tyler Adams",
+    "country": "Estados Unidos",
+    "team": "Bournemouth",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_213",
+    "number": 213,
+    "type": "JUGADOR",
+    "description": "Weston McKennie",
+    "country": "Estados Unidos",
+    "team": "Juventus",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_214",
+    "number": 214,
+    "type": "JUGADOR",
+    "description": "Gio Reyna",
+    "country": "Estados Unidos",
+    "team": "Nottingham Forest",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_215",
+    "number": 215,
+    "type": "JUGADOR",
+    "description": "Matt Turner",
+    "country": "Estados Unidos",
+    "team": "Crystal Palace",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_216",
+    "number": 216,
+    "type": "JUGADOR",
+    "description": "Sergiño Dest",
+    "country": "Estados Unidos",
+    "team": "PSV",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_217",
+    "number": 217,
+    "type": "JUGADOR",
+    "description": "Josh Sargent",
+    "country": "Estados Unidos",
+    "team": "Norwich",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_218",
+    "number": 218,
+    "type": "JUGADOR",
+    "description": "Yunus Musah",
+    "country": "Estados Unidos",
+    "team": "AC Milan",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_219",
+    "number": 219,
+    "type": "JUGADOR",
+    "description": "Ricardo Pepi",
+    "country": "Estados Unidos",
+    "team": "PSV",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_220",
+    "number": 220,
+    "type": "JUGADOR",
+    "description": "Tim Weah",
+    "country": "Estados Unidos",
+    "team": "Juventus",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_221",
+    "number": 221,
+    "type": "JUGADOR",
+    "description": "Achraf Hakimi",
+    "country": "Marruecos",
+    "team": "PSG",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_222",
+    "number": 222,
+    "type": "JUGADOR",
+    "description": "Hakim Ziyech",
+    "country": "Marruecos",
+    "team": "Galatasaray",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_223",
+    "number": 223,
+    "type": "JUGADOR",
+    "description": "Youssef En-Nesyri",
+    "country": "Marruecos",
+    "team": "Fenerbahçe",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_224",
+    "number": 224,
+    "type": "JUGADOR",
+    "description": "Sofyan Amrabat",
+    "country": "Marruecos",
+    "team": "Manchester United",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_225",
+    "number": 225,
+    "type": "JUGADOR",
+    "description": "Bono",
+    "country": "Marruecos",
+    "team": "Al-Qadsiah",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_226",
+    "number": 226,
+    "type": "JUGADOR",
+    "description": "Nayef Aguerd",
+    "country": "Marruecos",
+    "team": "West Ham",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_227",
+    "number": 227,
+    "type": "JUGADOR",
+    "description": "Azzedine Ounahi",
+    "country": "Marruecos",
+    "team": "Marseille",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_228",
+    "number": 228,
+    "type": "JUGADOR",
+    "description": "Yahia Attiyat Allah",
+    "country": "Marruecos",
+    "team": "Wydad",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_229",
+    "number": 229,
+    "type": "JUGADOR",
+    "description": "Selim Amallah",
+    "country": "Marruecos",
+    "team": "Standard Liège",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_230",
+    "number": 230,
+    "type": "JUGADOR",
+    "description": "Abde Ezzalzouli",
+    "country": "Marruecos",
+    "team": "Osasuna",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_231",
+    "number": 231,
+    "type": "JUGADOR",
+    "description": "Sadio Mané",
+    "country": "Senegal",
+    "team": "Al-Nassr",
+    "category": "LEGENDARIO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_232",
+    "number": 232,
+    "type": "JUGADOR",
+    "description": "Édouard Mendy",
+    "country": "Senegal",
+    "team": "Al-Ahli",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_233",
+    "number": 233,
+    "type": "JUGADOR",
+    "description": "Kalidou Koulibaly",
+    "country": "Senegal",
+    "team": "Al-Hilal",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_234",
+    "number": 234,
+    "type": "JUGADOR",
+    "description": "Idrissa Gueye",
+    "country": "Senegal",
+    "team": "Everton",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_235",
+    "number": 235,
+    "type": "JUGADOR",
+    "description": "Ismaïla Sarr",
+    "country": "Senegal",
+    "team": "Crystal Palace",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_236",
+    "number": 236,
+    "type": "JUGADOR",
+    "description": "Boulaye Dia",
+    "country": "Senegal",
+    "team": "Lazio",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_237",
+    "number": 237,
+    "type": "JUGADOR",
+    "description": "Pape Matar Sarr",
+    "country": "Senegal",
+    "team": "Tottenham",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_238",
+    "number": 238,
+    "type": "JUGADOR",
+    "description": "Nicolas Jackson",
+    "country": "Senegal",
+    "team": "Chelsea",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_239",
+    "number": 239,
+    "type": "JUGADOR",
+    "description": "Formose Mendy",
+    "country": "Senegal",
+    "team": "Reims",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_240",
+    "number": 240,
+    "type": "JUGADOR",
+    "description": "Lamine Camara",
+    "country": "Senegal",
+    "team": "Monaco",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_241",
+    "number": 241,
+    "type": "JUGADOR",
+    "description": "Takehiro Tomiyasu",
+    "country": "Japón",
+    "team": "Arsenal",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_242",
+    "number": 242,
+    "type": "JUGADOR",
+    "description": "Takumi Minamino",
+    "country": "Japón",
+    "team": "Monaco",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_243",
+    "number": 243,
+    "type": "JUGADOR",
+    "description": "Daichi Kamada",
+    "country": "Japón",
+    "team": "Crystal Palace",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_244",
+    "number": 244,
+    "type": "JUGADOR",
+    "description": "Ritsu Doan",
+    "country": "Japón",
+    "team": "Freiburg",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_245",
+    "number": 245,
+    "type": "JUGADOR",
+    "description": "Shuichi Gonda",
+    "country": "Japón",
+    "team": "Shimizu",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_246",
+    "number": 246,
+    "type": "JUGADOR",
+    "description": "Maya Yoshida",
+    "country": "Japón",
+    "team": "Vissel Kobe",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_247",
+    "number": 247,
+    "type": "JUGADOR",
+    "description": "Wataru Endo",
+    "country": "Japón",
+    "team": "Liverpool",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_248",
+    "number": 248,
+    "type": "JUGADOR",
+    "description": "Kaoru Mitoma",
+    "country": "Japón",
+    "team": "Brighton",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_249",
+    "number": 249,
+    "type": "JUGADOR",
+    "description": "Ayase Ueda",
+    "country": "Japón",
+    "team": "Feyenoord",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_250",
+    "number": 250,
+    "type": "JUGADOR",
+    "description": "Ko Itakura",
+    "country": "Japón",
+    "team": "Borussia M'gladbach",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_251",
+    "number": 251,
+    "type": "JUGADOR",
+    "description": "Son Heung-min",
+    "country": "Corea del Sur",
+    "team": "Tottenham",
+    "category": "LEGENDARIO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_252",
+    "number": 252,
+    "type": "JUGADOR",
+    "description": "Kim Min-jae",
+    "country": "Corea del Sur",
+    "team": "Bayern Munich",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_253",
+    "number": 253,
+    "type": "JUGADOR",
+    "description": "Hwang Hee-chan",
+    "country": "Corea del Sur",
+    "team": "Wolverhampton",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_254",
+    "number": 254,
+    "type": "JUGADOR",
+    "description": "Lee Jae-sung",
+    "country": "Corea del Sur",
+    "team": "Mainz",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_255",
+    "number": 255,
+    "type": "JUGADOR",
+    "description": "Cho Gue-sung",
+    "country": "Corea del Sur",
+    "team": "Midtjylland",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_256",
+    "number": 256,
+    "type": "JUGADOR",
+    "description": "Na Sang-ho",
+    "country": "Corea del Sur",
+    "team": "Jeonbuk",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_257",
+    "number": 257,
+    "type": "JUGADOR",
+    "description": "Kim Young-gwon",
+    "country": "Corea del Sur",
+    "team": "Ulsan",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_258",
+    "number": 258,
+    "type": "JUGADOR",
+    "description": "Hwang In-beom",
+    "country": "Corea del Sur",
+    "team": "Vancouver",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_259",
+    "number": 259,
+    "type": "JUGADOR",
+    "description": "Lee Kang-in",
+    "country": "Corea del Sur",
+    "team": "PSG",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_260",
+    "number": 260,
+    "type": "JUGADOR",
+    "description": "Seung-gyu Kim",
+    "country": "Corea del Sur",
+    "team": "Ulsan",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_261",
+    "number": 261,
+    "type": "JUGADOR",
+    "description": "Mat Ryan",
+    "country": "Australia",
+    "team": "Real Sociedad",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_262",
+    "number": 262,
+    "type": "JUGADOR",
+    "description": "Harry Souttar",
+    "country": "Australia",
+    "team": "Leicester",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_263",
+    "number": 263,
+    "type": "JUGADOR",
+    "description": "Aaron Mooy",
+    "country": "Australia",
+    "team": "Celtic",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_264",
+    "number": 264,
+    "type": "JUGADOR",
+    "description": "Mitchell Duke",
+    "country": "Australia",
+    "team": "Fagiano Okayama",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_265",
+    "number": 265,
+    "type": "JUGADOR",
+    "description": "Mathew Leckie",
+    "country": "Australia",
+    "team": "Melbourne City",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_266",
+    "number": 266,
+    "type": "JUGADOR",
+    "description": "Jackson Irvine",
+    "country": "Australia",
+    "team": "St. Pauli",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_267",
+    "number": 267,
+    "type": "JUGADOR",
+    "description": "Ajdin Hrustic",
+    "country": "Australia",
+    "team": "Hellas Verona",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_268",
+    "number": 268,
+    "type": "JUGADOR",
+    "description": "Marco Tilio",
+    "country": "Australia",
+    "team": "Celtic",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_269",
+    "number": 269,
+    "type": "JUGADOR",
+    "description": "Garang Kuol",
+    "country": "Australia",
+    "team": "Newcastle",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_270",
+    "number": 270,
+    "type": "JUGADOR",
+    "description": "Craig Goodwin",
+    "country": "Australia",
+    "team": "Adelaide United",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_271",
+    "number": 271,
+    "type": "JUGADOR",
+    "description": "Salem Al-Dawsari",
+    "country": "Arabia Saudita",
+    "team": "Al-Hilal",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_272",
+    "number": 272,
+    "type": "JUGADOR",
+    "description": "Mohammed Al-Owais",
+    "country": "Arabia Saudita",
+    "team": "Al-Hilal",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_273",
+    "number": 273,
+    "type": "JUGADOR",
+    "description": "Saleh Al-Shehri",
+    "country": "Arabia Saudita",
+    "team": "Al-Hilal",
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_274",
+    "number": 274,
+    "type": "JUGADOR",
+    "description": "Yasser Al-Shahrani",
+    "country": "Arabia Saudita",
+    "team": "Al-Hilal",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_275",
+    "number": 275,
+    "type": "JUGADOR",
+    "description": "Ali Al-Bulaihi",
+    "country": "Arabia Saudita",
+    "team": "Al-Hilal",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_276",
+    "number": 276,
+    "type": "JUGADOR",
+    "description": "Mohamed Kanno",
+    "country": "Arabia Saudita",
+    "team": "Al-Shabab",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_277",
+    "number": 277,
+    "type": "JUGADOR",
+    "description": "Sami Al-Najei",
+    "country": "Arabia Saudita",
+    "team": "Al-Qadsiah",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_278",
+    "number": 278,
+    "type": "JUGADOR",
+    "description": "Abdullah Al-Hamdan",
+    "country": "Arabia Saudita",
+    "team": "Al-Qadsiah",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_279",
+    "number": 279,
+    "type": "JUGADOR",
+    "description": "Firas Al-Buraikan",
+    "country": "Arabia Saudita",
+    "team": "Al-Fateh",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_280",
+    "number": 280,
+    "type": "JUGADOR",
+    "description": "Hassan Tambakti",
+    "country": "Arabia Saudita",
+    "team": "Al-Shabab",
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_281",
+    "number": 281,
+    "type": "MOMENTO",
+    "description": "Momento icónico: Messi levanta la Copa 2022",
+    "country": "Argentina",
+    "team": null,
+    "category": "LEGENDARIO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_282",
+    "number": 282,
+    "type": "MOMENTO",
+    "description": "Dupla Messi - Di María",
+    "country": "Argentina",
+    "team": null,
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_283",
+    "number": 283,
+    "type": "MOMENTO",
+    "description": "Dupla Messi - Álvarez",
+    "country": "Argentina",
+    "team": null,
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_284",
+    "number": 284,
+    "type": "MOMENTO",
+    "description": "Momento icónico: Ronaldo 2002",
+    "country": "Brasil",
+    "team": null,
+    "category": "LEGENDARIO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_285",
+    "number": 285,
+    "type": "MOMENTO",
+    "description": "Dupla Vinicius - Rodrygo",
+    "country": "Brasil",
+    "team": null,
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_286",
+    "number": 286,
+    "type": "MOMENTO",
+    "description": "Momento icónico: Zidane 1998",
+    "country": "Francia",
+    "team": null,
+    "category": "LEGENDARIO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_287",
+    "number": 287,
+    "type": "MOMENTO",
+    "description": "Dupla Mbappé - Griezmann",
+    "country": "Francia",
+    "team": null,
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_288",
+    "number": 288,
+    "type": "MOMENTO",
+    "description": "Momento icónico: La Roja 2010",
+    "country": "España",
+    "team": null,
+    "category": "LEGENDARIO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_289",
+    "number": 289,
+    "type": "MOMENTO",
+    "description": "Dupla Pedri - Yamal",
+    "country": "España",
+    "team": null,
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_290",
+    "number": 290,
+    "type": "MOMENTO",
+    "description": "Momento icónico: Campeones 1966",
+    "country": "Inglaterra",
+    "team": null,
+    "category": "LEGENDARIO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_291",
+    "number": 291,
+    "type": "MOMENTO",
+    "description": "Dupla Bellingham - Kane",
+    "country": "Inglaterra",
+    "team": null,
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_292",
+    "number": 292,
+    "type": "MOMENTO",
+    "description": "Momento icónico: 7-1 vs Brasil 2014",
+    "country": "Alemania",
+    "team": null,
+    "category": "LEGENDARIO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_293",
+    "number": 293,
+    "type": "MOMENTO",
+    "description": "Dupla Wirtz - Musiala",
+    "country": "Alemania",
+    "team": null,
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_294",
+    "number": 294,
+    "type": "MOMENTO",
+    "description": "Momento icónico: Hat-trick de Ronaldo 2018",
+    "country": "Portugal",
+    "team": null,
+    "category": "LEGENDARIO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_295",
+    "number": 295,
+    "type": "MOMENTO",
+    "description": "Dupla CR7 - Bruno Fernandes",
+    "country": "Portugal",
+    "team": null,
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_296",
+    "number": 296,
+    "type": "MOMENTO",
+    "description": "Momento icónico: Suárez 2010",
+    "country": "Uruguay",
+    "team": null,
+    "category": "LEGENDARIO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_297",
+    "number": 297,
+    "type": "MOMENTO",
+    "description": "Dupla Valverde - Núñez",
+    "country": "Uruguay",
+    "team": null,
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_298",
+    "number": 298,
+    "type": "MOMENTO",
+    "description": "Momento icónico: James Rodríguez 2014",
+    "country": "Colombia",
+    "team": null,
+    "category": "LEGENDARIO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_299",
+    "number": 299,
+    "type": "MOMENTO",
+    "description": "Dupla James - Luis Díaz",
+    "country": "Colombia",
+    "team": null,
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_300",
+    "number": 300,
+    "type": "MOMENTO",
+    "description": "Momento icónico: Semifinal Qatar 2022",
+    "country": "Marruecos",
+    "team": null,
+    "category": "LEGENDARIO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_301",
+    "number": 301,
+    "type": "MOMENTO",
+    "description": "Momento icónico: Campeones AFCON 2022",
+    "country": "Senegal",
+    "team": null,
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_302",
+    "number": 302,
+    "type": "MOMENTO",
+    "description": "Momento icónico: Octavos Qatar 2022",
+    "country": "Japón",
+    "team": null,
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_303",
+    "number": 303,
+    "type": "MOMENTO",
+    "description": "Momento icónico: Semifinal 2002",
+    "country": "Corea del Sur",
+    "team": null,
+    "category": "LEGENDARIO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_304",
+    "number": 304,
+    "type": "MOMENTO",
+    "description": "Momento icónico: Lozano vs Alemania 2018",
+    "country": "México",
+    "team": null,
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_305",
+    "number": 305,
+    "type": "MOMENTO",
+    "description": "Momento icónico: País anfitrión 2026",
+    "country": "Estados Unidos",
+    "team": null,
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_306",
+    "number": 306,
+    "type": "MOMENTO",
+    "description": "Momento icónico: Final 2010",
+    "country": "Países Bajos",
+    "team": null,
+    "category": "LEGENDARIO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_307",
+    "number": 307,
+    "type": "MOMENTO",
+    "description": "Momento icónico: Generación Dorada",
+    "country": "Bélgica",
+    "team": null,
+    "category": "LEGENDARIO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_308",
+    "number": 308,
+    "type": "MOMENTO",
+    "description": "Momento icónico: Campeones Euro 2020",
+    "country": "Italia",
+    "team": null,
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_309",
+    "number": 309,
+    "type": "MOMENTO",
+    "description": "Momento icónico: Octavos Qatar 2022",
+    "country": "Australia",
+    "team": null,
+    "category": "EPICO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_310",
+    "number": 310,
+    "type": "MOMENTO",
+    "description": "Momento icónico: Victoria vs Argentina 2022",
+    "country": "Arabia Saudita",
+    "team": null,
+    "category": "LEGENDARIO",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_311",
+    "number": 311,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Colombia en Mundiales",
+    "country": "Colombia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_312",
+    "number": 312,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de México en Mundiales",
+    "country": "México",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_313",
+    "number": 313,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Estados Unidos en Mundiales",
+    "country": "Estados Unidos",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_314",
+    "number": 314,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Marruecos en Mundiales",
+    "country": "Marruecos",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_315",
+    "number": 315,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Senegal en Mundiales",
+    "country": "Senegal",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_316",
+    "number": 316,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Japón en Mundiales",
+    "country": "Japón",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_317",
+    "number": 317,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Corea del Sur en Mundiales",
+    "country": "Corea del Sur",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_318",
+    "number": 318,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Australia en Mundiales",
+    "country": "Australia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_319",
+    "number": 319,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Arabia Saudita en Mundiales",
+    "country": "Arabia Saudita",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_320",
+    "number": 320,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Argentina en Mundiales",
+    "country": "Argentina",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_321",
+    "number": 321,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Brasil en Mundiales",
+    "country": "Brasil",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_322",
+    "number": 322,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Francia en Mundiales",
+    "country": "Francia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_323",
+    "number": 323,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de España en Mundiales",
+    "country": "España",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_324",
+    "number": 324,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Inglaterra en Mundiales",
+    "country": "Inglaterra",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_325",
+    "number": 325,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Alemania en Mundiales",
+    "country": "Alemania",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_326",
+    "number": 326,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Portugal en Mundiales",
+    "country": "Portugal",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_327",
+    "number": 327,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Países Bajos en Mundiales",
+    "country": "Países Bajos",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_328",
+    "number": 328,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Italia en Mundiales",
+    "country": "Italia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_329",
+    "number": 329,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Bélgica en Mundiales",
+    "country": "Bélgica",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_330",
+    "number": 330,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Uruguay en Mundiales",
+    "country": "Uruguay",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_331",
+    "number": 331,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Colombia en Mundiales",
+    "country": "Colombia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_332",
+    "number": 332,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de México en Mundiales",
+    "country": "México",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_333",
+    "number": 333,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Estados Unidos en Mundiales",
+    "country": "Estados Unidos",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_334",
+    "number": 334,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Marruecos en Mundiales",
+    "country": "Marruecos",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_335",
+    "number": 335,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Senegal en Mundiales",
+    "country": "Senegal",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_336",
+    "number": 336,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Japón en Mundiales",
+    "country": "Japón",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_337",
+    "number": 337,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Corea del Sur en Mundiales",
+    "country": "Corea del Sur",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_338",
+    "number": 338,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Australia en Mundiales",
+    "country": "Australia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_339",
+    "number": 339,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Arabia Saudita en Mundiales",
+    "country": "Arabia Saudita",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_340",
+    "number": 340,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Argentina en Mundiales",
+    "country": "Argentina",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_341",
+    "number": 341,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Brasil en Mundiales",
+    "country": "Brasil",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_342",
+    "number": 342,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Francia en Mundiales",
+    "country": "Francia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_343",
+    "number": 343,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de España en Mundiales",
+    "country": "España",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_344",
+    "number": 344,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Inglaterra en Mundiales",
+    "country": "Inglaterra",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_345",
+    "number": 345,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Alemania en Mundiales",
+    "country": "Alemania",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_346",
+    "number": 346,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Portugal en Mundiales",
+    "country": "Portugal",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_347",
+    "number": 347,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Países Bajos en Mundiales",
+    "country": "Países Bajos",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_348",
+    "number": 348,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Italia en Mundiales",
+    "country": "Italia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_349",
+    "number": 349,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Bélgica en Mundiales",
+    "country": "Bélgica",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_350",
+    "number": 350,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Uruguay en Mundiales",
+    "country": "Uruguay",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_351",
+    "number": 351,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Colombia en Mundiales",
+    "country": "Colombia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_352",
+    "number": 352,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de México en Mundiales",
+    "country": "México",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_353",
+    "number": 353,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Estados Unidos en Mundiales",
+    "country": "Estados Unidos",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_354",
+    "number": 354,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Marruecos en Mundiales",
+    "country": "Marruecos",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_355",
+    "number": 355,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Senegal en Mundiales",
+    "country": "Senegal",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_356",
+    "number": 356,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Japón en Mundiales",
+    "country": "Japón",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_357",
+    "number": 357,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Corea del Sur en Mundiales",
+    "country": "Corea del Sur",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_358",
+    "number": 358,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Australia en Mundiales",
+    "country": "Australia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_359",
+    "number": 359,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Arabia Saudita en Mundiales",
+    "country": "Arabia Saudita",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_360",
+    "number": 360,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Argentina en Mundiales",
+    "country": "Argentina",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_361",
+    "number": 361,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Brasil en Mundiales",
+    "country": "Brasil",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_362",
+    "number": 362,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Francia en Mundiales",
+    "country": "Francia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_363",
+    "number": 363,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de España en Mundiales",
+    "country": "España",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_364",
+    "number": 364,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Inglaterra en Mundiales",
+    "country": "Inglaterra",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_365",
+    "number": 365,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Alemania en Mundiales",
+    "country": "Alemania",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_366",
+    "number": 366,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Portugal en Mundiales",
+    "country": "Portugal",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_367",
+    "number": 367,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Países Bajos en Mundiales",
+    "country": "Países Bajos",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_368",
+    "number": 368,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Italia en Mundiales",
+    "country": "Italia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_369",
+    "number": 369,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Bélgica en Mundiales",
+    "country": "Bélgica",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_370",
+    "number": 370,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Uruguay en Mundiales",
+    "country": "Uruguay",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_371",
+    "number": 371,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Colombia en Mundiales",
+    "country": "Colombia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_372",
+    "number": 372,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de México en Mundiales",
+    "country": "México",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_373",
+    "number": 373,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Estados Unidos en Mundiales",
+    "country": "Estados Unidos",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_374",
+    "number": 374,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Marruecos en Mundiales",
+    "country": "Marruecos",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_375",
+    "number": 375,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Senegal en Mundiales",
+    "country": "Senegal",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_376",
+    "number": 376,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Japón en Mundiales",
+    "country": "Japón",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_377",
+    "number": 377,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Corea del Sur en Mundiales",
+    "country": "Corea del Sur",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_378",
+    "number": 378,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Australia en Mundiales",
+    "country": "Australia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_379",
+    "number": 379,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Arabia Saudita en Mundiales",
+    "country": "Arabia Saudita",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_380",
+    "number": 380,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Argentina en Mundiales",
+    "country": "Argentina",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_381",
+    "number": 381,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Brasil en Mundiales",
+    "country": "Brasil",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_382",
+    "number": 382,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Francia en Mundiales",
+    "country": "Francia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_383",
+    "number": 383,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de España en Mundiales",
+    "country": "España",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_384",
+    "number": 384,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Inglaterra en Mundiales",
+    "country": "Inglaterra",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_385",
+    "number": 385,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Alemania en Mundiales",
+    "country": "Alemania",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_386",
+    "number": 386,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Portugal en Mundiales",
+    "country": "Portugal",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_387",
+    "number": 387,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Países Bajos en Mundiales",
+    "country": "Países Bajos",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_388",
+    "number": 388,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Italia en Mundiales",
+    "country": "Italia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_389",
+    "number": 389,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Bélgica en Mundiales",
+    "country": "Bélgica",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_390",
+    "number": 390,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Uruguay en Mundiales",
+    "country": "Uruguay",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_391",
+    "number": 391,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Colombia en Mundiales",
+    "country": "Colombia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_392",
+    "number": 392,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de México en Mundiales",
+    "country": "México",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_393",
+    "number": 393,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Estados Unidos en Mundiales",
+    "country": "Estados Unidos",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_394",
+    "number": 394,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Marruecos en Mundiales",
+    "country": "Marruecos",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_395",
+    "number": 395,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Senegal en Mundiales",
+    "country": "Senegal",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_396",
+    "number": 396,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Japón en Mundiales",
+    "country": "Japón",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_397",
+    "number": 397,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Corea del Sur en Mundiales",
+    "country": "Corea del Sur",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_398",
+    "number": 398,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Australia en Mundiales",
+    "country": "Australia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_399",
+    "number": 399,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Arabia Saudita en Mundiales",
+    "country": "Arabia Saudita",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_400",
+    "number": 400,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Argentina en Mundiales",
+    "country": "Argentina",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_401",
+    "number": 401,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Brasil en Mundiales",
+    "country": "Brasil",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_402",
+    "number": 402,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Francia en Mundiales",
+    "country": "Francia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_403",
+    "number": 403,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de España en Mundiales",
+    "country": "España",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_404",
+    "number": 404,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Inglaterra en Mundiales",
+    "country": "Inglaterra",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_405",
+    "number": 405,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Alemania en Mundiales",
+    "country": "Alemania",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_406",
+    "number": 406,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Portugal en Mundiales",
+    "country": "Portugal",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_407",
+    "number": 407,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Países Bajos en Mundiales",
+    "country": "Países Bajos",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_408",
+    "number": 408,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Italia en Mundiales",
+    "country": "Italia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_409",
+    "number": 409,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Bélgica en Mundiales",
+    "country": "Bélgica",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_410",
+    "number": 410,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Uruguay en Mundiales",
+    "country": "Uruguay",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_411",
+    "number": 411,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Colombia en Mundiales",
+    "country": "Colombia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_412",
+    "number": 412,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de México en Mundiales",
+    "country": "México",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_413",
+    "number": 413,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Estados Unidos en Mundiales",
+    "country": "Estados Unidos",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_414",
+    "number": 414,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Marruecos en Mundiales",
+    "country": "Marruecos",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_415",
+    "number": 415,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Senegal en Mundiales",
+    "country": "Senegal",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_416",
+    "number": 416,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Japón en Mundiales",
+    "country": "Japón",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_417",
+    "number": 417,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Corea del Sur en Mundiales",
+    "country": "Corea del Sur",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_418",
+    "number": 418,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Australia en Mundiales",
+    "country": "Australia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_419",
+    "number": 419,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Arabia Saudita en Mundiales",
+    "country": "Arabia Saudita",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_420",
+    "number": 420,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Argentina en Mundiales",
+    "country": "Argentina",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_421",
+    "number": 421,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Brasil en Mundiales",
+    "country": "Brasil",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_422",
+    "number": 422,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Francia en Mundiales",
+    "country": "Francia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_423",
+    "number": 423,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de España en Mundiales",
+    "country": "España",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_424",
+    "number": 424,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Inglaterra en Mundiales",
+    "country": "Inglaterra",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_425",
+    "number": 425,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Alemania en Mundiales",
+    "country": "Alemania",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_426",
+    "number": 426,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Portugal en Mundiales",
+    "country": "Portugal",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_427",
+    "number": 427,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Países Bajos en Mundiales",
+    "country": "Países Bajos",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_428",
+    "number": 428,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Italia en Mundiales",
+    "country": "Italia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_429",
+    "number": 429,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Bélgica en Mundiales",
+    "country": "Bélgica",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_430",
+    "number": 430,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Uruguay en Mundiales",
+    "country": "Uruguay",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_431",
+    "number": 431,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Colombia en Mundiales",
+    "country": "Colombia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_432",
+    "number": 432,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de México en Mundiales",
+    "country": "México",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_433",
+    "number": 433,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Estados Unidos en Mundiales",
+    "country": "Estados Unidos",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_434",
+    "number": 434,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Marruecos en Mundiales",
+    "country": "Marruecos",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_435",
+    "number": 435,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Senegal en Mundiales",
+    "country": "Senegal",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_436",
+    "number": 436,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Japón en Mundiales",
+    "country": "Japón",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_437",
+    "number": 437,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Corea del Sur en Mundiales",
+    "country": "Corea del Sur",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_438",
+    "number": 438,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Australia en Mundiales",
+    "country": "Australia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_439",
+    "number": 439,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Arabia Saudita en Mundiales",
+    "country": "Arabia Saudita",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_440",
+    "number": 440,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Argentina en Mundiales",
+    "country": "Argentina",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_441",
+    "number": 441,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Brasil en Mundiales",
+    "country": "Brasil",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_442",
+    "number": 442,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Francia en Mundiales",
+    "country": "Francia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_443",
+    "number": 443,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de España en Mundiales",
+    "country": "España",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_444",
+    "number": 444,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Inglaterra en Mundiales",
+    "country": "Inglaterra",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_445",
+    "number": 445,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Alemania en Mundiales",
+    "country": "Alemania",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_446",
+    "number": 446,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Portugal en Mundiales",
+    "country": "Portugal",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_447",
+    "number": 447,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Países Bajos en Mundiales",
+    "country": "Países Bajos",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_448",
+    "number": 448,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Italia en Mundiales",
+    "country": "Italia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_449",
+    "number": 449,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Bélgica en Mundiales",
+    "country": "Bélgica",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_450",
+    "number": 450,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Uruguay en Mundiales",
+    "country": "Uruguay",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_451",
+    "number": 451,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Colombia en Mundiales",
+    "country": "Colombia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_452",
+    "number": 452,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de México en Mundiales",
+    "country": "México",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_453",
+    "number": 453,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Estados Unidos en Mundiales",
+    "country": "Estados Unidos",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_454",
+    "number": 454,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Marruecos en Mundiales",
+    "country": "Marruecos",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_455",
+    "number": 455,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Senegal en Mundiales",
+    "country": "Senegal",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_456",
+    "number": 456,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Japón en Mundiales",
+    "country": "Japón",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_457",
+    "number": 457,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Corea del Sur en Mundiales",
+    "country": "Corea del Sur",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_458",
+    "number": 458,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Australia en Mundiales",
+    "country": "Australia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_459",
+    "number": 459,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Arabia Saudita en Mundiales",
+    "country": "Arabia Saudita",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_460",
+    "number": 460,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Argentina en Mundiales",
+    "country": "Argentina",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_461",
+    "number": 461,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Brasil en Mundiales",
+    "country": "Brasil",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_462",
+    "number": 462,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Francia en Mundiales",
+    "country": "Francia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_463",
+    "number": 463,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de España en Mundiales",
+    "country": "España",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_464",
+    "number": 464,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Inglaterra en Mundiales",
+    "country": "Inglaterra",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_465",
+    "number": 465,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Alemania en Mundiales",
+    "country": "Alemania",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_466",
+    "number": 466,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Portugal en Mundiales",
+    "country": "Portugal",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_467",
+    "number": 467,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Países Bajos en Mundiales",
+    "country": "Países Bajos",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_468",
+    "number": 468,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Italia en Mundiales",
+    "country": "Italia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_469",
+    "number": 469,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Bélgica en Mundiales",
+    "country": "Bélgica",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_470",
+    "number": 470,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Uruguay en Mundiales",
+    "country": "Uruguay",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_471",
+    "number": 471,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Colombia en Mundiales",
+    "country": "Colombia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_472",
+    "number": 472,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de México en Mundiales",
+    "country": "México",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_473",
+    "number": 473,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Estados Unidos en Mundiales",
+    "country": "Estados Unidos",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_474",
+    "number": 474,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Marruecos en Mundiales",
+    "country": "Marruecos",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_475",
+    "number": 475,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Senegal en Mundiales",
+    "country": "Senegal",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_476",
+    "number": 476,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Japón en Mundiales",
+    "country": "Japón",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_477",
+    "number": 477,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Corea del Sur en Mundiales",
+    "country": "Corea del Sur",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_478",
+    "number": 478,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Australia en Mundiales",
+    "country": "Australia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_479",
+    "number": 479,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Arabia Saudita en Mundiales",
+    "country": "Arabia Saudita",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_480",
+    "number": 480,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Argentina en Mundiales",
+    "country": "Argentina",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_481",
+    "number": 481,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Brasil en Mundiales",
+    "country": "Brasil",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_482",
+    "number": 482,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Francia en Mundiales",
+    "country": "Francia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_483",
+    "number": 483,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de España en Mundiales",
+    "country": "España",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_484",
+    "number": 484,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Inglaterra en Mundiales",
+    "country": "Inglaterra",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_485",
+    "number": 485,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Alemania en Mundiales",
+    "country": "Alemania",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_486",
+    "number": 486,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Portugal en Mundiales",
+    "country": "Portugal",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_487",
+    "number": 487,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Países Bajos en Mundiales",
+    "country": "Países Bajos",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_488",
+    "number": 488,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Italia en Mundiales",
+    "country": "Italia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_489",
+    "number": 489,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Bélgica en Mundiales",
+    "country": "Bélgica",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_490",
+    "number": 490,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Uruguay en Mundiales",
+    "country": "Uruguay",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_491",
+    "number": 491,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Colombia en Mundiales",
+    "country": "Colombia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_492",
+    "number": 492,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de México en Mundiales",
+    "country": "México",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_493",
+    "number": 493,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Estados Unidos en Mundiales",
+    "country": "Estados Unidos",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_494",
+    "number": 494,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Marruecos en Mundiales",
+    "country": "Marruecos",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_495",
+    "number": 495,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Senegal en Mundiales",
+    "country": "Senegal",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_496",
+    "number": 496,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Japón en Mundiales",
+    "country": "Japón",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_497",
+    "number": 497,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Corea del Sur en Mundiales",
+    "country": "Corea del Sur",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_498",
+    "number": 498,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Australia en Mundiales",
+    "country": "Australia",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_499",
+    "number": 499,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Arabia Saudita en Mundiales",
+    "country": "Arabia Saudita",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  },
+  {
+    "_id": "card_500",
+    "number": 500,
+    "type": "ESTADISTICA",
+    "description": "Estadísticas históricas de Argentina en Mundiales",
+    "country": "Argentina",
+    "team": null,
+    "category": "COMUN",
+    "imageUrl": null
+  }
+]

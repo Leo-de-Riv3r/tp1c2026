@@ -1,0 +1,9 @@
+package com.tacs.tp1c2026.entities.dto.auction.input;
+
+/**
+ * Marker interface for auction condition DTOs.
+ */
+public interface AuctionConditionDTO {
+
+}
+
