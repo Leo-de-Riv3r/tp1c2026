@@ -56,7 +56,7 @@ public class ExchangeTests {
 
     registerRepeated(cardId, 1, ParticipationType.INTERCAMBIO, token);
 
-    mockMvc.perform(post("/exchanges/")
+    mockMvc.perform(post("/exchanges")
             .header("Authorization", "Bearer " + token)
             .contentType(MediaType.APPLICATION_JSON)
             .content(publishExchangeBody(cardId, 1)))
@@ -71,7 +71,7 @@ public class ExchangeTests {
 
     registerRepeated(cardPublicadaId, 1, ParticipationType.INTERCAMBIO, tokenUser1);
 
-    mockMvc.perform(post("/exchanges/")
+    mockMvc.perform(post("/exchanges")
             .header("Authorization", "Bearer " + tokenUser1)
             .contentType(MediaType.APPLICATION_JSON)
             .content(publishExchangeBody(cardPublicadaId, 1)))
@@ -100,7 +100,7 @@ public class ExchangeTests {
 
     registerRepeated(cardPublicadaId, 1, ParticipationType.INTERCAMBIO, tokenUser1);
 
-    mockMvc.perform(post("/exchanges/")
+    mockMvc.perform(post("/exchanges")
             .header("Authorization", "Bearer " + tokenUser1)
             .contentType(MediaType.APPLICATION_JSON)
             .content(publishExchangeBody(cardPublicadaId, 1)))

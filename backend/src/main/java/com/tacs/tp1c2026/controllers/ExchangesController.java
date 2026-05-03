@@ -13,7 +13,10 @@
  import jakarta.validation.Valid;
  import java.time.LocalDateTime;
  import java.util.Map;
+ import org.springframework.beans.factory.annotation.Autowired;
+ import org.springframework.http.HttpStatus;
  import org.springframework.http.ResponseEntity;
+ import org.springframework.web.bind.annotation.DeleteMapping;
  import org.springframework.web.bind.annotation.GetMapping;
  import org.springframework.web.bind.annotation.PathVariable;
  import org.springframework.web.bind.annotation.PostMapping;
@@ -27,11 +30,9 @@
  @RestController
  @RequestMapping("/exchanges")
  public class ExchangesController {
-   private final PublicationsService publicacionesService;
 
-   public ExchangesController(PublicationsService publicacionesService) {
-     this.publicacionesService = publicacionesService;
-   }
+   @Autowired
+   private PublicationsService publicationsService;
 
    /**
     * {@code POST /api/publicaciones/intercambios} &mdash; Publica una card repetida del usuario para intercambio.
@@ -39,11 +40,11 @@
     * @param userId      identificador del usuario que realiza la publicación
     * @return 200 OK con mensaje de confirmación
     */
-   @PostMapping("/")
+   @PostMapping
    public ResponseEntity<Map<String, Object>> publishExchange(
        @Valid @RequestBody NewExchangePublicationDto dto,
        @RequestAttribute("userId") String userId) {
-     String publicationId = publicacionesService.publishCardExchange(dto, userId);
+     String publicationId = publicationsService.publishCardExchange(dto, userId);
      Map<String, Object> body = Map.of(
          "timestamp", LocalDateTime.now(),
          "message", "Publicación de intercambio realizada con éxito",
@@ -57,21 +58,46 @@
     * Envía una propuesta de intercambio sobre una publicación existente.
     *
     * @param userId        identificador del usuario que propone el intercambio
-    * @param dto           lista de números de card ofrecidos como contraprestación
     * @return 200 OK con mensaje de confirmación
     */
+   @DeleteMapping("/{publicationId}")
+   public ResponseEntity<Void> cancelExchangePublication(
+       @PathVariable String publicationId,
+       @RequestAttribute("userId") String userId
+   ) {
+     publicationsService.cancelExchangePublication(publicationId, userId);
+     return ResponseEntity.noContent().build();
+   }
+
+   @DeleteMapping("/{publicationId}/proposals/{proposalId}")
+   public ResponseEntity<Void> deleteProposal(
+       @PathVariable String publicationId,
+       @PathVariable String proposalId,
+       @RequestAttribute("userId") String userId
+   ) {
+     publicationsService.deleteProposal(publicationId, proposalId, userId);
+     return ResponseEntity.noContent().build();
+   }
+
    @PostMapping("/{publicationId}/proposals")
    public ResponseEntity<Map<String, Object>> offerExchangeProposal(
        @PathVariable String publicationId,
        @RequestAttribute("userId") String userId,
-       @Valid @RequestBody NewExchangeProposalDto dto){
+       @Valid @RequestBody NewExchangeProposalDto dto) {
      dto.setPublicationId(publicationId);
-     publicacionesService.offerProposalExchange(userId, dto);
+     publicationsService.offerProposalExchange(userId, dto);
      Map<String, Object> body = Map.of(
          "timestamp", LocalDateTime.now(),
          "message", "Propuesta de intercambio enviada con éxito"
      );
      return ResponseEntity.ok().body(body);
+   }
+
+   @GetMapping("/{publicationID}")
+   public ResponseEntity<ExchangePublicationDto> getPublication(
+       @PathVariable String publicationID
+   ) {
+     return ResponseEntity.ok(publicationsService.getPublicationDto(publicationID));
    }
 
    @GetMapping("/{publicationId}/proposals")
@@ -81,7 +107,7 @@
        @RequestParam(defaultValue = "1") Integer page,
        @RequestParam(defaultValue = "10") Integer per_page
    ) {
-     PaginationDtoOutput<ExchangeProposalDto> result = publicacionesService.getReceivedProposalsByPublication(userId, publicationId, page, per_page);
+     PaginationDtoOutput<ExchangeProposalDto> result = publicationsService.getReceivedProposalsByPublication(userId, publicationId, page, per_page);
      return ResponseEntity.ok(result);
    }
 
@@ -92,7 +118,7 @@
        @RequestParam(defaultValue = "10") Integer per_page,
        @RequestParam(defaultValue = "PENDIENTE") ProposalState state
    ) {
-     PaginationDtoOutput<ExchangeProposalDto> result = publicacionesService.getOfferedProposals(userId, state, page, per_page);
+     PaginationDtoOutput<ExchangeProposalDto> result = publicationsService.getOfferedProposals(userId, state, page, per_page);
      return ResponseEntity.ok(result);
    }
 
@@ -103,7 +129,7 @@
        @RequestParam(defaultValue = "10") Integer per_page,
        @RequestParam(defaultValue = "PENDIENTE") ProposalState state
    ) {
-     PaginationDtoOutput<ExchangeProposalDto> result = publicacionesService.getReceivedProposals(userId, state, page, per_page);
+     PaginationDtoOutput<ExchangeProposalDto> result = publicationsService.getReceivedProposals(userId, state, page, per_page);
      return ResponseEntity.ok(result);
    }
 
@@ -123,7 +149,7 @@
    ){
      dto.setPublicationId(publicationId);
      dto.setProposalId(proposalId);
-     publicacionesService.reviewProposal(dto, userId);
+     publicationsService.reviewProposal(dto, userId);
 
      Map<String, Object> body = Map.of(
          "timestamp", LocalDateTime.now(),
@@ -133,7 +159,7 @@
      return ResponseEntity.ok().body(body);
    }
 
-   @GetMapping("/")
+   @GetMapping
    public ResponseEntity<PaginationDtoOutput<ExchangePublicationDto>> searchActivePublications(
        @RequestParam(defaultValue = "1") Integer page,
        @RequestParam(defaultValue = "10") Integer per_page,
@@ -143,7 +169,7 @@
        @RequestParam(required = false) CardCategory category
    ) {
      SearchPublicationsFilters filters = new SearchPublicationsFilters(name, country, team, category);
-     PaginationDtoOutput<ExchangePublicationDto> result = publicacionesService.searchPublications(filters, page, per_page);
+     PaginationDtoOutput<ExchangePublicationDto> result = publicationsService.searchPublications(filters, page, per_page);
      return ResponseEntity.ok(result);
    }
 
@@ -153,7 +179,7 @@
        @RequestParam(defaultValue = "1") Integer page,
        @RequestParam(defaultValue = "10") Integer per_page
    ) {
-     PaginationDtoOutput<ExchangePublicationDto> result = publicacionesService.getPublicationsCreatedByUser(userId, page, per_page);
+     PaginationDtoOutput<ExchangePublicationDto> result = publicationsService.getPublicationsCreatedByUser(userId, page, per_page);
      return ResponseEntity.ok(result);
    }
  }

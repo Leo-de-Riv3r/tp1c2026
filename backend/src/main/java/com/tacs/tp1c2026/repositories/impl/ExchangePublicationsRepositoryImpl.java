@@ -29,7 +29,7 @@ public class ExchangePublicationsRepositoryImpl implements ExchangePublicationsR
     // 1. Instanciamos una Query limpia
     Query query = new Query();
 
-    query.addCriteria(Criteria.where("state").is(PublicationState.ACTIVA));
+    query.addCriteria(Criteria.where("state").is(PublicationState.ACTIVE));
 
     if (filters.getName() != null && !filters.getName().isBlank()) {
       // "i" es para ignorar mayúsculas y minúsculas (Case Insensitive Regex)

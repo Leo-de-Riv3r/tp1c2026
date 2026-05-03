@@ -5,10 +5,8 @@ import com.tacs.tp1c2026.exceptions.PropuestaYaProcesadaException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -32,7 +30,7 @@ public class ExchangeProposal {
   @DocumentReference
   private Usuario receiver;
 
-  private ProposalState state = ProposalState.PENDIENTE;
+  private ProposalState state = ProposalState.PENDING;
 
   private LocalDateTime creationDate = LocalDateTime.now();
 
@@ -47,14 +45,14 @@ public class ExchangeProposal {
    * Rechaza esta propuesta.
    */
   public void reject() {
-    this.state = ProposalState.RECHAZADA;
+    this.state = ProposalState.REJECTED;
   }
 
   /**
    * Acepta esta propuesta.
    */
   public void accept() {
-    this.state = ProposalState.ACEPTADA;
+    this.state = ProposalState.ACCEPTED;
   }
 
   /**
@@ -63,7 +61,7 @@ public class ExchangeProposal {
    * @return true si está pendiente
    */
   public boolean isPending() {
-    return ProposalState.PENDIENTE.equals(this.state);
+    return ProposalState.PENDING.equals(this.state);
   }
 
   /**
@@ -74,6 +72,12 @@ public class ExchangeProposal {
   public void validatePending() throws PropuestaYaProcesadaException {
     if (!isPending()) {
       throw new PropuestaYaProcesadaException("La propuesta ya fue aceptada o rechazada");
+    }
+  }
+
+  public void validateOwner(String id) {
+    if (!this.exchangeUser.getId().equals(id)) {
+      throw new RuntimeException("No es el dueño de la propuesta");
     }
   }
 }

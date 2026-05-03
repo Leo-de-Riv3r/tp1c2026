@@ -1,5 +1,6 @@
 package com.tacs.tp1c2026.services;
 
+//import com.tacs.tp1c2026.async_events.ExchangePublishedEvent;
 import com.tacs.tp1c2026.entities.Card;
 import com.tacs.tp1c2026.entities.CardCollection;
 import com.tacs.tp1c2026.entities.ExchangeProposal;
@@ -32,11 +33,14 @@ import com.tacs.tp1c2026.repositories.ExchangePublicationsRepository;
 import com.tacs.tp1c2026.repositories.UsersRepository;
 import com.tacs.tp1c2026.services.mappers.IntercambioMapper;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -59,7 +63,8 @@ public class PublicationsService {
   private UsersService usersService;
   @Autowired
   private AlertService alertService;
-
+  //@Autowired
+  //private ApplicationEventPublisher eventPublisher;
   /**
    * Crea una publicación de intercambio para una card repetida del usuario.
    * Verifica que el usuario exista y que la card indicada esté en su colección de repetidas.
@@ -98,6 +103,7 @@ public class PublicationsService {
     ExchangePublication createdPublication = exchangePublicationsRepository.save(publication);
     item.addCompromisedQuantity(dto.getQuantity(), ParticipationType.INTERCAMBIO);
     usersService.saveUser(cardOwner);
+    //eventPublisher.publishEvent(new ExchangePublishedEvent(createdPublication.getId(), userId, createdPublication.getCard().getId()));
     return createdPublication.getId();
   }
 
@@ -199,14 +205,14 @@ public class PublicationsService {
     ExchangePublication exchangePublication = getById(dto.getPublicationId());
     exchangePublication.validateOwner(owner);
 
-    if(exchangePublication.getState() != PublicationState.ACTIVA) {
+    if(exchangePublication.getState() != PublicationState.ACTIVE) {
       throw new ConflictException("La publicacion no esta activa");
     }
 
     ExchangeProposal proposalToReview =  exchangePublication.getReceivedProposals().stream().
         filter(exchangeProposal -> exchangeProposal.getId().equals(dto.getProposalId())).
         findFirst().orElseThrow(() -> new NotFoundException("No se encontro la propuesta"));
-    if (proposalToReview.getState() != ProposalState.PENDIENTE) {
+    if (proposalToReview.getState() != ProposalState.PENDING) {
       throw new ConflictException("La propuesta ya fue revisada");
     }
     Usuario proposer = proposalToReview.getExchangeUser();
@@ -229,7 +235,7 @@ public class PublicationsService {
       usuariosAActualizar.put(owner.getId(), owner);
       Usuario put = usuariosAActualizar.put(proposer.getId(), proposer);
 
-      if (exchangePublication.getState() == PublicationState.FINALIZADA) {
+      if (exchangePublication.getState() == PublicationState.FINISHED) {
         List<ExchangeProposal> proposalsToReject = exchangePublication.getReceivedProposals().stream()
             .filter(p -> !p.getId().equals(proposalToReview.getId())).toList();
 
@@ -341,5 +347,60 @@ public class PublicationsService {
     Page<ExchangeProposal> pageResult = exchangeProposalsRepository.findByPublicationId(publicationId, pageable);
     List<ExchangeProposalDto> dtos = intercambioMapper.mapProposals(pageResult.getContent());
     return new PaginationDtoOutput<>(dtos, pageResult.getNumber() + 1, pageResult.getTotalPages());
+  }
+
+  public ExchangePublicationDto getPublicationDto(String publicationID) {
+    ExchangePublication exchangePublication = getById(publicationID);
+    return intercambioMapper.mapPublication(exchangePublication);
+  }
+
+  @Transactional
+  public void deleteProposal(String publicationId, String proposalId, String userId) {
+    Usuario owner = usersService.getUserById(userId);
+    ExchangePublication exchangePublication = getById(publicationId);
+    exchangePublication.deleteProposal(proposalId);
+    exchangePublicationsRepository.save(exchangePublication);
+    ExchangeProposal exchangeProposal = getProposalById(proposalId);
+    exchangeProposal.validateOwner(owner.getId());
+    //reset cards to proposer
+    List<String> cardsId = exchangeProposal.getCards().stream().map(Card::getId).toList();
+    exchangeProposal.getExchangeUser().restoreFiguritasFromProposal(cardsId, ParticipationType.INTERCAMBIO);
+    usersService.saveUser(exchangeProposal.getExchangeUser());
+    exchangeProposalsRepository.deleteById(proposalId);
+  }
+
+  @Transactional
+  public void cancelExchangePublication(String publicationId, String userId) {
+    Usuario owner = usersService.getUserById(userId);
+    ExchangePublication exchangePublication = getById(publicationId);
+
+    exchangePublication.validateOwner(owner);
+
+    Set<Usuario> usersToUpdate = new HashSet<>();
+
+    exchangePublication.getReceivedProposals().stream()
+        .filter(proposal -> proposal.getState() == ProposalState.PENDING)
+        .forEach(proposal -> {
+          proposal.reject();
+          List<String> cardsId = proposal.getCards().stream().map(Card::getId).toList();
+          Usuario proposer = proposal.getExchangeUser();
+          proposer.restoreFiguritasFromProposal(cardsId, ParticipationType.INTERCAMBIO);
+          usersToUpdate.add(proposer);
+        });
+
+    exchangePublication.cancel();
+    owner.restoreFiguritaFromProposal(exchangePublication.getCard().getId(), exchangePublication.getQuantity());
+
+    usersToUpdate.add(owner);
+
+    exchangePublicationsRepository.save(exchangePublication);
+    exchangeProposalsRepository.saveAll(exchangePublication.getReceivedProposals());
+
+    usersService.saveUsers(usersToUpdate.stream().toList());
+  }
+
+  public ExchangeProposal getProposalById(String proposalId) {
+    return exchangeProposalsRepository.findById(proposalId)
+        .orElseThrow(() -> new NotFoundException("No se encontro la propuesta"));
   }
 }

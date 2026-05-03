@@ -50,7 +50,6 @@ public class Usuario {
   @Builder.Default
   private List<String> suggestionsIds = new ArrayList<>();
   @Builder.Default
-  @DocumentReference
   private List<Alerta> alert = new ArrayList<>();
 
 //  @Builder.Default
@@ -181,5 +180,11 @@ public class Usuario {
 
   public void addAlert(Alerta alert) {
     this.alert.add(alert);
+  }
+
+  public void restoreFiguritaFromProposal(String cardId, Integer quantity) {
+    this.collection.stream()
+        .filter(item -> item.getCard().getId().equals(cardId))
+        .forEach(item -> item.reduceCompromisedQuantity(quantity, ParticipationType.INTERCAMBIO));
   }
 }

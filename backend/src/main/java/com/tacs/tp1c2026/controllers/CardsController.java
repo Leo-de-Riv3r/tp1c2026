@@ -14,11 +14,11 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/catalog")
-public class FiguritasController {
+public class CardsController {
 
     private final CardsService cardsService;
 
-    public FiguritasController(CardsService cardsService) {
+    public CardsController(CardsService cardsService) {
         this.cardsService = cardsService;
     }
 

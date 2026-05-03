@@ -152,6 +152,11 @@ public class AuctionsService {
     auctionRepository.save(auction);
   }
 
+  public AuctionDto getAuctionDto(String auctionId) {
+    Auction auction = getAuction(auctionId);
+    return auctionMapper.mapAuction(auction);
+  }
+
   public Auction getAuction(String auctionId) {
       return auctionRepository.findById(auctionId).orElseThrow(() -> new NotFoundException("No se encontro la subasta"));
   }

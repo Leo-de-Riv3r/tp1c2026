@@ -3,6 +3,7 @@ package com.tacs.tp1c2026.entities;
 import com.tacs.tp1c2026.entities.enums.CardCategory;
 import com.tacs.tp1c2026.entities.enums.ProposalState;
 import com.tacs.tp1c2026.entities.enums.PublicationState;
+import com.tacs.tp1c2026.exceptions.ConflictException;
 import com.tacs.tp1c2026.exceptions.CuposAgotadosException;
 import com.tacs.tp1c2026.exceptions.PropuestaNoCorrespondeException;
 import com.tacs.tp1c2026.exceptions.PropuestaYaProcesadaException;
@@ -16,7 +17,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -53,7 +53,7 @@ public class ExchangePublication {
   @Builder.Default
   private List<ExchangeProposal> acceptedProposals = new ArrayList<>();
   @Builder.Default
-  private PublicationState state = PublicationState.ACTIVA;
+  private PublicationState state = PublicationState.ACTIVE;
 
   @DocumentReference
   @Builder.Default
@@ -79,7 +79,7 @@ public class ExchangePublication {
    */
   public boolean tieneCuposDisponibles() {
     long propuestasPendientes = this.receivedProposals.stream()
-        .filter(p -> p.getState() == ProposalState.PENDIENTE)
+        .filter(p -> p.getState() == ProposalState.PENDING)
         .count();
     return propuestasPendientes < this.quantity;
   }
@@ -152,7 +152,7 @@ public class ExchangePublication {
 
     // Cerrar publicación si no hay más stock
     if (this.quantity == 0) {
-      this.state = PublicationState.FINALIZADA;
+      this.state = PublicationState.FINISHED;
     }
   }
 
@@ -169,4 +169,18 @@ public class ExchangePublication {
     this.feedbacks.add(feedback);
   }
 
+  public void deleteProposal(String proposalId) {
+    ExchangeProposal proposal = this.receivedProposals.stream()
+        .filter(p -> p.getId().equals(proposalId))
+        .findFirst()
+        .orElseThrow(() -> new RuntimeException("Propuesta no encontrada"));
+    if (!proposal.isPending()) {
+      throw new ConflictException("No se puede eliminar una propuesta procesada");
+    }
+    this.receivedProposals.removeIf(p -> p.getId().equals(proposalId));
+  }
+
+  public void cancel() {
+    this.state = PublicationState.CANCELLED;
+  }
 }
