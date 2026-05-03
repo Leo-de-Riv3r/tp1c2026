@@ -69,12 +69,12 @@
      @PostConstruct
      private Profile initializeVectorProfile() {
          assert properties != null;
-          int maxCards = properties.getTotalNumberOfStickers();
-          Map<Integer, Integer> initialValues = new LinkedHashMap<>();
+          int maxCards = properties.getTotalNumberOfCards();
+          Map<String, Integer> initialValues = new LinkedHashMap<>();
 
           for (int index = 0; index < maxCards; index++) {
               int randomValue = (int) Math.round(Math.random() * 2 - 1);
-              initialValues.put(index, randomValue);
+              initialValues.put(String.valueOf(index), randomValue);
          }
 
          return new Profile(initialValues);

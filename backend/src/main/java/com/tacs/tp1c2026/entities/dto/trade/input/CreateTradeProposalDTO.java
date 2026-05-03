@@ -7,6 +7,6 @@ import java.util.List;
  * Contains the list of sticker ids offered in the proposal.
  */
 public record CreateTradeProposalDTO(
-    List<Integer> stickerIds
+    List<String> cardIds
 ) {}
 

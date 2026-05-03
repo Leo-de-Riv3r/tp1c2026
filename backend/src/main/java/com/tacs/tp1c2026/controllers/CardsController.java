@@ -38,7 +38,7 @@ public class CardsController {
      * @return the card, or 404 if not found
      */
     @GetMapping("/catalog/{id}")
-    public ResponseEntity<Card> getCatalogById(@PathVariable Integer id) throws NotFoundException {
+    public ResponseEntity<Card> getCatalogById(@PathVariable String id) throws NotFoundException {
         return ResponseEntity.ok(cardService.getById(id));
     }
 

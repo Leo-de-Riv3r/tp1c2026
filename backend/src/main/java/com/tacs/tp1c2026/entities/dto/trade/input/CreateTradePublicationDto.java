@@ -5,7 +5,7 @@ package com.tacs.tp1c2026.entities.dto.trade.input;
  * Contains the sticker id and the amount available to trade.
  */
 public record CreateTradePublicationDto(
-    Integer stickerId,
+    String cardId,
     Integer amount
 ) {}
 

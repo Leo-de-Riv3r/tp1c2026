@@ -1,11 +1,11 @@
 package com.tacs.tp1c2026.entities.dto.alert.output;
 
-public abstract class AlertaDto {
+public abstract class AlertDto {
 
   private final Integer id;
   private final String type;
 
-  protected AlertaDto(Integer id, String type) {
+  protected AlertDto(Integer id, String type) {
     this.id = id;
     this.type = type;
   }

@@ -5,8 +5,11 @@ import com.tacs.tp1c2026.entities.card.Card;
 import com.tacs.tp1c2026.entities.enums.PublicationStatus;
 import com.tacs.tp1c2026.entities.exchange.embedded.Feedback;
 import com.tacs.tp1c2026.entities.user.User;
-import com.tacs.tp1c2026.exceptions.InsufficientStickerException;
-import com.tacs.tp1c2026.exceptions.MissingStickerException;
+import com.tacs.tp1c2026.exceptions.InsufficientCardException;
+import com.tacs.tp1c2026.exceptions.MissingCardException;
+import com.tacs.tp1c2026.exceptions.NoAvailableSlotsException;
+import com.tacs.tp1c2026.exceptions.OfferAlreadyProcessedException;
+import com.tacs.tp1c2026.exceptions.ProposalNotInPublicationException;
 import lombok.Getter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
@@ -69,11 +72,11 @@ public class TradePublication {
   /**
    * Valida si hay cupos disponibles para nuevas propuestas.
    *
-   * @throws CuposAgotadosException si no hay cupos disponibles
+   * @throws NoAvailableSlotsException si no hay cupos disponibles
    */
-  public void validateAvailableSlots() throws CuposAgotadosException {
+  public void validateAvailableSlots() throws NoAvailableSlotsException {
     if (!hasAvailableSlots()) {
-      throw new CuposAgotadosException("Ya no hay cupos para nuevas propuestas");
+      throw new NoAvailableSlotsException("Ya no hay cupos para nuevas propuestas");
     }
   }
 
@@ -82,11 +85,11 @@ public class TradePublication {
    * Valida que una propuesta corresponda a esta publicación.
    *
    * @param proposal propuesta a validar
-   * @throws PropuestaNoCorrespondeException si la propuesta no corresponde a esta publicación
+   * @throws ProposalNotInPublicationException si la propuesta no corresponde a esta publicación
    */
-  public void validateProposalBelongsToPublication(TradeProposal proposal) throws PropuestaNoCorrespondeException {
+  public void validateProposalBelongsToPublication(TradeProposal proposal) throws ProposalNotInPublicationException {
     if (this.proposals.contains(proposal)) {
-      throw new PropuestaNoCorrespondeException("La publicacion no corresponde a la propuesta");
+      throw new ProposalNotInPublicationException("La publicacion no corresponde a la propuesta");
     }
   }
 
@@ -95,12 +98,12 @@ public class TradePublication {
    * Valida que la propuesta corresponda a esta publicación y que esté pendiente.
    *
    * @param proposal propuesta a rechazar
-   * @throws PropuestaNoCorrespondeException si la propuesta no corresponde
-   * @throws UsuarioNoAutorizadoException si el usuario no es el dueño
-   * @throws PropuestaYaProcesadaException si la propuesta ya fue procesada
+   * @throws ProposalNotInPublicationException si la propuesta no corresponde
+   * @throws UnauthorizedException si el usuario no es el dueño
+   * @throws OfferAlreadyProcessedException si la propuesta ya fue procesada
    */
   public void rejectProposal(TradeProposal proposal)
-      throws PropuestaNoCorrespondeException, PropuestaYaProcesadaException {
+      throws ProposalNotInPublicationException, OfferAlreadyProcessedException {
     validateProposalBelongsToPublication(proposal);
     proposal.validatePending();
     proposal.reject();
@@ -111,12 +114,12 @@ public class TradePublication {
    * Reduce el stock, transfiere figuritas y rechaza las demás propuestas.
    *
    * @param proposal propuesta a aceptar
-   * @throws PropuestaNoCorrespondeException si la propuesta no corresponde
-   * @throws UsuarioNoAutorizadoException si el usuario no es el dueño
-   * @throws PropuestaYaProcesadaException si la propuesta ya fue procesada
+   * @throws ProposalNotInPublicationException si la propuesta no corresponde
+   * @throws UnauthorizedException si el usuario no es el dueño
+   * @throws OfferAlreadyProcessedException si la propuesta ya fue procesada
    */
   public void acceptProposal(TradeProposal proposal)
-      throws PropuestaNoCorrespondeException, PropuestaYaProcesadaException {
+      throws ProposalNotInPublicationException, OfferAlreadyProcessedException {
     validateProposalBelongsToPublication(proposal);
     proposal.validatePending();
     this.status = PublicationStatus.FINALIZED;

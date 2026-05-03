@@ -1,28 +1,28 @@
 package com.tacs.tp1c2026.entities.dto.alert.output;
 
-import com.tacs.tp1c2026.entities.enums.Categoria;
+import com.tacs.tp1c2026.entities.enums.Category;
 
-public class AlertaFiguritaFaltanteDto extends AlertaDto {
+public class AlertaFiguritaFaltanteDto extends AlertDto {
 
-  private final Integer fromUserId;
+  private final String fromUserId;
   private final String fromUserName;
-  private final Integer figuritaId;
+  private final String figuritaId;
   private final Integer figuritaNumero;
   private final String figuritaJugador;
   private final String figuritaSeleccion;
   private final String figuritaEquipo;
-  private final Categoria figuritaCategoria;
+  private final Category figuritaCategoria;
 
   public AlertaFiguritaFaltanteDto(
       Integer id,
-      Integer fromUserId,
+      String fromUserId,
       String fromUserName,
-      Integer figuritaId,
+      String figuritaId,
       Integer figuritaNumero,
       String figuritaJugador,
       String figuritaSeleccion,
       String figuritaEquipo,
-      Categoria figuritaCategoria) {
+      Category figuritaCategoria) {
     super(id, "FIGURITA_FALTANTE");
     this.fromUserId = fromUserId;
     this.fromUserName = fromUserName;
@@ -34,7 +34,7 @@ public class AlertaFiguritaFaltanteDto extends AlertaDto {
     this.figuritaCategoria = figuritaCategoria;
   }
 
-  public Integer getFromUserId() {
+  public String getFromUserId() {
     return fromUserId;
   }
 
@@ -42,7 +42,7 @@ public class AlertaFiguritaFaltanteDto extends AlertaDto {
     return fromUserName;
   }
 
-  public Integer getFiguritaId() {
+  public String getFiguritaId() {
     return figuritaId;
   }
 
@@ -62,7 +62,7 @@ public class AlertaFiguritaFaltanteDto extends AlertaDto {
     return figuritaEquipo;
   }
 
-  public Categoria getFiguritaCategoria() {
+  public Category getFiguritaCategoria() {
     return figuritaCategoria;
   }
 }

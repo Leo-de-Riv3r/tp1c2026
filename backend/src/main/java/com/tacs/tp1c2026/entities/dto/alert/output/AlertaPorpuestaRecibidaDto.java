@@ -2,9 +2,9 @@ package com.tacs.tp1c2026.entities.dto.alert.output;
 
 import java.util.List;
 
-public class AlertaPorpuestaRecibidaDto extends AlertaDto {
+public class AlertaPorpuestaRecibidaDto extends AlertDto {
 
-  private final Integer fromUserId;
+  private final String fromUserId;
   private final String fromUserName;
   private final Integer propuestaId;
   private final Integer publicacionId;
@@ -12,7 +12,7 @@ public class AlertaPorpuestaRecibidaDto extends AlertaDto {
 
   public AlertaPorpuestaRecibidaDto(
       Integer id,
-      Integer fromUserId,
+      String fromUserId,
       String fromUserName,
       Integer propuestaId,
       Integer publicacionId,
@@ -25,7 +25,7 @@ public class AlertaPorpuestaRecibidaDto extends AlertaDto {
     this.figuritaNumeros = figuritaNumeros;
   }
 
-  public Integer getFromUserId() {
+  public String getFromUserId() {
     return fromUserId;
   }
 

@@ -3,10 +3,10 @@ package com.tacs.tp1c2026.entities.auction.conditions;
 /**
  * Condition that requires a minimum number of stickers to adjudicate an auction to an offerer.
  */
-public class MinimalStickerCount extends AuctionCondition {
+public class MinimalCardCount extends AuctionCondition {
     private final Integer count;
 
-    public MinimalStickerCount(Integer count) {
+    public MinimalCardCount(Integer count) {
         this.count = count;
     }
 

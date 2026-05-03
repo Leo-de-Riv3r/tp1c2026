@@ -1,7 +1,9 @@
 package com.tacs.tp1c2026.entities.user.embedded;
 
 import com.tacs.tp1c2026.entities.alert.AlertVisitor;
-import com.tacs.tp1c2026.entities.dto.output.AlertaDto;
+import com.tacs.tp1c2026.entities.dto.alert.output.AlertDto;
+import com.tacs.tp1c2026.entities.auction.Auction;
+import com.tacs.tp1c2026.entities.card.Card;
 import lombok.Getter;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
@@ -17,21 +19,21 @@ public class AuctionClosingAlert extends Alert {
   private Auction auction;
 
   @DocumentReference
-  private Sticker sticker;
+  private Card card;
 
   private LocalDateTime closeDate;
 
   public AuctionClosingAlert(
       Auction auction,
-      Sticker sticker,
+      Card card,
       LocalDateTime closeDate) {
     this.auction = auction;
-    this.sticker = sticker;
+    this.card = card;
     this.closeDate = closeDate;
   }
 
   @Override
-  public AlertaDto visit(AlertVisitor visitor) {
+  public AlertDto visit(AlertVisitor visitor) {
     return visitor.visit(this);
   }
 

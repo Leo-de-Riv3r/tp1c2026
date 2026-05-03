@@ -1,23 +1,24 @@
 package com.tacs.tp1c2026.entities.user.embedded;
 
 import com.tacs.tp1c2026.entities.alert.AlertVisitor;
-import com.tacs.tp1c2026.entities.dto.output.AlertaDto;
+import com.tacs.tp1c2026.entities.card.Card;
+import com.tacs.tp1c2026.entities.dto.alert.output.AlertDto;
 import lombok.Getter;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
 
 @Getter
-public class MissingStickerAlert extends Alert {
+public class MissingCardAlert extends Alert {
 
     @DocumentReference
-    private Sticker sticker;
+    private Card card;
 
-    public MissingStickerAlert(Sticker sticker) {
-        this.sticker = sticker;
+    public MissingCardAlert(Card card) {
+        this.card = card;
     }
 
     @Override
-    public AlertaDto visit(AlertVisitor visitor) {
+    public AlertDto visit(AlertVisitor visitor) {
         return visitor.visit(this);
     }
 

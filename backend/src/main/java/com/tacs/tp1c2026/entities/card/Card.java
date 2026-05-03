@@ -19,7 +19,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "cards")
 public class Card {
     @Id
-    private Integer id;
+    private String id;
     private Integer number;
     private CardType type;
     private String player;

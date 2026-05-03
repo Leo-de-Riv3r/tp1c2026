@@ -13,7 +13,7 @@ public class ProfileProperties {
 
     private int profileGroupsToCheck = 1;
     private int maximumNumberOfGroupsUserCanBeIn = 2;
-    private int totalNumberOfStickers = 10000;
+    private int totalNumberOfCards = 10000;
     private int maximumNumberOfUsersToSuggest = 100;
 
 }

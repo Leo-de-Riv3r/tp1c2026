@@ -2,17 +2,17 @@ package com.tacs.tp1c2026.entities.dto.alert.output;
 
 import java.time.LocalDateTime;
 
-public class AlertaSubastaProximaDto extends AlertaDto {
+public class AlertaSubastaProximaDto extends AlertDto {
 
   private final Integer subastaId;
-  private final Integer figuritaId;
+  private final String figuritaId;
   private final Integer figuritaNumero;
   private final LocalDateTime fechaCierre;
 
   public AlertaSubastaProximaDto(
       Integer id,
       Integer subastaId,
-      Integer figuritaId,
+      String figuritaId,
       Integer figuritaNumero,
       LocalDateTime fechaCierre) {
     super(id, "SUBASTA_PROXIMA");
@@ -26,7 +26,7 @@ public class AlertaSubastaProximaDto extends AlertaDto {
     return subastaId;
   }
 
-  public Integer getFiguritaId() {
+  public String getFiguritaId() {
     return figuritaId;
   }
 

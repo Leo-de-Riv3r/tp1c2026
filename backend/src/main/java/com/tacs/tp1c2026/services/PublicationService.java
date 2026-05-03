@@ -6,12 +6,10 @@ import com.tacs.tp1c2026.entities.dto.trade.input.CreateTradePublicationDto;
 import com.tacs.tp1c2026.entities.exchange.TradeProposal;
 import com.tacs.tp1c2026.entities.exchange.TradePublication;
 import com.tacs.tp1c2026.entities.user.User;
+import com.tacs.tp1c2026.entities.user.embedded.CollectionCard;
 import com.tacs.tp1c2026.exceptions.*;
-import com.tacs.tp1c2026.repositories.CardRepository;
 import com.tacs.tp1c2026.repositories.UserRepository;
 import com.tacs.tp1c2026.repositories.PublicationRepository;
-import com.tacs.tp1c2026.services.UserService;
-import com.tacs.tp1c2026.services.CardService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,28 +31,35 @@ public class PublicationService {
         this.cardService = cardService;
     }
 
-    @Transactional
+    // @Transactional // TODO: rehabilitar cuando Mongo corra como replica set
     public void createPublication(String userId, CreateTradePublicationDto dto) throws UserNotFoundException, NotFoundException, InsufficientCardException, MissingCardException {
         User user = this.userService.getById(userId);
-        Card card = this.cardService.getById(dto.stickerId());
-        user.createPublication(card, dto.amount());
-        userRepository.save(user);
+        Card card = this.cardService.getById(dto.cardId());
+        CollectionCard item = user.findCollectionItem(card.getId())
+            .orElseThrow(() -> new MissingCardException("User does not have card " + card.getId()));
+        item.decrement(dto.amount());
+        TradePublication publication = new TradePublication(user, card, dto.amount());
+        this.publicationRepository.save(publication);
+        this.userRepository.save(user);
     }
 
-    @Transactional
+    // @Transactional // TODO: rehabilitar cuando Mongo corra como replica set
     public void createTradeProposalForPublication(String ownerId, Integer publicationId, String userId, CreateTradeProposalDTO dto) throws UserNotFoundException, NotFoundException, InsufficientCardException, MissingCardException {
         User proposer = this.userService.getById(userId);
         List<Card> cards = new ArrayList<>();
-        for (Integer i : dto.stickerIds()) {
-            Card byId = this.cardService.getById(i);
-            cards.add(byId);
+        for (String cardId : dto.cardIds()) {
+            cards.add(this.cardService.getById(cardId));
         }
-        User owner = this.userService.getById(ownerId);
+        for (Card c : cards) {
+            CollectionCard item = proposer.findCollectionItem(c.getId())
+                .orElseThrow(() -> new MissingCardException("User does not have card " + c.getId()));
+            item.decrement(1);
+        }
         TradePublication publication = this.findPublication(publicationId);
-        TradeProposal proposal = owner.createTradeProposal(publication, proposer, cards);
+        TradeProposal proposal = new TradeProposal(cards, proposer);
         publication.addProposal(proposal);
         this.publicationRepository.save(publication);
-        this.userRepository.save(owner);
+        this.userRepository.save(proposer);
     }
 
     private TradePublication findPublication(Integer publicationId) throws NotFoundException {

@@ -1,7 +1,10 @@
 package com.tacs.tp1c2026.entities.user.embedded;
 
 import com.tacs.tp1c2026.entities.alert.AlertVisitor;
-import com.tacs.tp1c2026.entities.dto.output.AlertaDto;
+import com.tacs.tp1c2026.entities.card.Card;
+import com.tacs.tp1c2026.entities.dto.alert.output.AlertDto;
+import com.tacs.tp1c2026.entities.exchange.TradeProposal;
+import com.tacs.tp1c2026.entities.exchange.TradePublication;
 import lombok.Getter;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
@@ -20,10 +23,10 @@ public class ProposalReceivedAlert extends Alert {
   private TradePublication publication;
 
   @DocumentReference
-  private List<Sticker> stickerNumbers;
+  private List<Card> cardNumbers;
 
   @Override
-  public AlertaDto visit(AlertVisitor visitor) {
+  public AlertDto visit(AlertVisitor visitor) {
     return visitor.visit(this);
   }
 }

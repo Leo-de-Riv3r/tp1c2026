@@ -6,7 +6,7 @@ import java.util.List;
  * DTO for creating an auction.
  */
 public record CreateAuctionDTO(
-    Integer stickerId,
+    String cardId,
     Integer auctionDurationHours,
     List<AuctionConditionDTO> conditions
 ) {}

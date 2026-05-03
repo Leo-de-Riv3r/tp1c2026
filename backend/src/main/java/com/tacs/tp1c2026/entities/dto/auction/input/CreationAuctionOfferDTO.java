@@ -9,6 +9,6 @@ public record CreationAuctionOfferDTO(
     Integer auctionId,
     List<Item> items
 ) {
-    public static record Item(Integer stickerId, Integer amount) {}
+    public static record Item(String cardId, Integer amount) {}
 }
 

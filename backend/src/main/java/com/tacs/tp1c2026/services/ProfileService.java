@@ -26,7 +26,7 @@ public class ProfileService {
         this.properties = properties;
     }
 
-    @Transactional
+    // @Transactional // TODO: rehabilitar cuando Mongo corra como replica set
     public void updateSuggestionsForUsers() {
 
         List<ProfileGroup> groups = this.profileGroupRepository.findAll();
@@ -59,7 +59,7 @@ public class ProfileService {
 
     }
 
-    @Transactional
+    // @Transactional // TODO: rehabilitar cuando Mongo corra como replica set
     public void updateProfileGroups(User user){
         List<ProfileGroup> pfg = this.profileGroupRepository.findAll();
 

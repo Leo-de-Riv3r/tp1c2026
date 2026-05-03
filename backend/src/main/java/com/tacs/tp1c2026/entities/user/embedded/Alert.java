@@ -1,6 +1,7 @@
 package com.tacs.tp1c2026.entities.user.embedded;
 
 import com.tacs.tp1c2026.entities.alert.AlertVisitor;
+import com.tacs.tp1c2026.entities.dto.alert.output.AlertDto;
 import lombok.Getter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -18,6 +19,6 @@ public abstract class Alert {
     @Getter
     protected LocalDateTime creationDate = LocalDateTime.now();
 
-    public abstract AlertDTO visit(AlertVisitor visitor);
+    public abstract AlertDto visit(AlertVisitor visitor);
 
 }

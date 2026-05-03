@@ -35,24 +35,26 @@ public class CardService {
         return cardRepository.findAll();
     }
 
-    @Transactional
+    // @Transactional // TODO: rehabilitar cuando Mongo corra como replica set
     public void publishCard(String userId, PublishCardDTO dto){
         User user = this.userRepository.findOrThrow(userId);
-        Card card = this.cardRepository.findOrThrow(dto.stickerId());
-        user.addCardToCollection(card);
+        Card card = this.cardRepository.findOrThrow(dto.cardId());
+        user.addToCollection(com.tacs.tp1c2026.entities.user.embedded.CollectionCard.fromCatalog(card));
+        this.userRepository.save(user);
     }
 
-    @Transactional
+    // @Transactional // TODO: rehabilitar cuando Mongo corra como replica set
     public void indicateMissingCard(String userId, IndicateMissingCardDTO dto){
         User user = this.userRepository.findOrThrow(userId);
-        Card card = this.cardRepository.findOrThrow(dto.stickerId());
-        user.addMissingCard(card);
+        Card card = this.cardRepository.findOrThrow(dto.cardId());
+        user.addToMissingCards(com.tacs.tp1c2026.entities.user.embedded.MissingCard.fromCatalog(card));
+        this.userRepository.save(user);
     }
 
-    @Transactional
+    // @Transactional // TODO: rehabilitar cuando Mongo corra como replica set
     public CardDTO searchForCard(CardSearchParamsDTO dto) throws NotFoundException {
         if (dto.number() != null) {
-            Card card = this.cardRepository.findById(dto.number()).orElseThrow(() -> new NotFoundException("Card not found"));
+            Card card = this.cardRepository.findByNumber(dto.number()).orElseThrow(() -> new NotFoundException("Card not found"));
             return CardMapper.toDto(card);
         }
         return this.cardRepository.findAll().stream()
@@ -62,8 +64,8 @@ public class CardService {
                 .orElseThrow(() -> new NotFoundException("Card not found with given parameters"));
     }
 
-    @Transactional
-    public Card getById(Integer cardId) throws NotFoundException {
+    // @Transactional // TODO: rehabilitar cuando Mongo corra como replica set
+    public Card getById(String cardId) throws NotFoundException {
         return this.cardRepository.findById(cardId).orElseThrow(() -> new NotFoundException("Card not found"));
     }
 
