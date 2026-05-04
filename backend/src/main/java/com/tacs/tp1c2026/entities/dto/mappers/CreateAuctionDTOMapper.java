@@ -3,9 +3,13 @@ package com.tacs.tp1c2026.entities.dto.mappers;
 
 import com.tacs.tp1c2026.entities.auction.conditions.AuctionCondition;
 import com.tacs.tp1c2026.entities.auction.conditions.MinimalCardCount;
-import com.tacs.tp1c2026.entities.dto.auction.input.AuctionConditionDTO;
+import com.tacs.tp1c2026.entities.auction.conditions.MinimalCategory;
+import com.tacs.tp1c2026.entities.auction.conditions.MinimalExchanges;
+import com.tacs.tp1c2026.entities.auction.conditions.MinimalReputation;
+import com.tacs.tp1c2026.entities.dto.auction.input.AuctionConditionDto;
 import com.tacs.tp1c2026.entities.dto.auction.input.MinimalCardCountDTO;
 
+import com.tacs.tp1c2026.exceptions.BadInputException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -14,13 +18,22 @@ import java.util.stream.Collectors;
  */
 public class CreateAuctionDTOMapper {
 
-    public static List<AuctionCondition> toDomainConditions(List<AuctionConditionDTO> dtos) {
+    public static List<AuctionCondition> toDomainConditions(List<AuctionConditionDto> dtos) {
         if (dtos == null) return List.of();
         return dtos.stream().map(dto -> {
-            if (dto instanceof MinimalCardCountDTO(Integer count)) {
-                return new MinimalCardCount(count);
+            if (dto.getFilterName().equals("MIN_CATEGORY")) {
+                return new MinimalCategory(dto.getValue());
             }
-            throw new IllegalArgumentException("Unknown AuctionConditionDTO type: " + dto.getClass());
+            if (dto.getFilterName().equals("MIN_CARD_COUNT")) {
+                return new MinimalCardCount(dto.getQuantity());
+            }
+            if(dto.getFilterName().equals("MIN_REPUTATION")) {
+                return new MinimalReputation(dto.getQuantity());
+            }
+            if(dto.getFilterName().equals("MIN_EXCHANGES")) {
+              return new MinimalExchanges(dto.getQuantity());
+            }
+            throw new BadInputException("Invalid filter name: " + dto.getFilterName());
         }).collect(Collectors.toList());
     }
 }

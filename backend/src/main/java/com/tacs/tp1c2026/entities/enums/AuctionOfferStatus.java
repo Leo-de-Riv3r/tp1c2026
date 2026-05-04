@@ -2,5 +2,5 @@ package com.tacs.tp1c2026.entities.enums;
 
 // Estado de una oferta realizada en una subasta.
 public enum AuctionOfferStatus {
-    PENDING, ACCEPTED, REJECTED
+    PENDING, ACCEPTED, CANCELLED, REJECTED
 }

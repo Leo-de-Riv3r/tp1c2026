@@ -128,4 +128,6 @@ public class UserService {
         user.removeFromMissingCards(cardId);
         userRepository.save(user);
     }
+
+
 }

@@ -1,5 +1,6 @@
 package com.tacs.tp1c2026.entities.dto.common.input;
 
+import com.tacs.tp1c2026.entities.enums.CardType;
 import com.tacs.tp1c2026.entities.enums.Category;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,4 +16,5 @@ public class SearchPublicationsFilters {
   private String country;
   private String team;
   private Category category;
+  private CardType cardType;
 }
