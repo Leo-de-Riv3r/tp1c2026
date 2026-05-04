@@ -2,13 +2,16 @@ package com.tacs.tp1c2026.entities.auction;
 
 import com.tacs.tp1c2026.entities.auction.conditions.AuctionCondition;
 import com.tacs.tp1c2026.entities.card.Card;
+import com.tacs.tp1c2026.entities.enums.AuctionOfferStatus;
 import com.tacs.tp1c2026.entities.enums.AuctionStatus;
+import com.tacs.tp1c2026.entities.enums.CardType;
 import com.tacs.tp1c2026.entities.enums.Category;
 import com.tacs.tp1c2026.entities.user.User;
 import com.tacs.tp1c2026.exceptions.AuctionClosedException;
 import com.tacs.tp1c2026.exceptions.OfferAlreadyProcessedException;
 import com.tacs.tp1c2026.exceptions.OfferAlreadyRejectedException;
 import com.tacs.tp1c2026.exceptions.OfferNotFoundException;
+import com.tacs.tp1c2026.exceptions.UnprocessableException;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
@@ -33,6 +36,7 @@ public class Auction {
   private String cardCountry;
   private String cardTeam;
   private Category cardCategory;
+  private CardType cardType;
 
   @Setter
   @DocumentReference
@@ -62,13 +66,24 @@ public class Auction {
     this.cardCountry = card.getCountry();
     this.cardTeam = card.getTeam();
     this.cardCategory = card.getCategory();
+    this.cardType = card.getType();
     this.creationDate = LocalDateTime.now();
     this.closeDate = this.creationDate.plusHours(auctionDurationHours);
     this.conditions = new ArrayList<>(conditions == null ? List.of() : conditions);
   }
 
   public void addOffer(AuctionOffer auctionOffer) {
+    checkConditions(auctionOffer);
     this.offers.add(auctionOffer);
+  }
+
+  public boolean checkConditions(AuctionOffer auctionOffer) {
+    for (AuctionCondition condition : conditions) {
+      if (!condition.canOffer(auctionOffer.getBidder(), auctionOffer)) {
+        throw new UnprocessableException("No cumples las condiciones minimas para ofertar");
+      }
+    }
+    return true;
   }
 
   public void rejectOffer(AuctionOffer offer) throws OfferNotFoundException, OfferAlreadyRejectedException {
@@ -92,10 +107,7 @@ public class Auction {
     if (!offer.isPending()) {
       throw new OfferAlreadyProcessedException("The offer has already been accepted or rejected");
     }
-    if (!offers.contains(offer)) {
-      throw new OfferNotFoundException("The offer does not correspond to this auction");
-    }
-
+    findOfferById(offer.getId());
     offer.accept();
     this.status = AuctionStatus.AWARDED;
     this.setBestOffer(offer);
@@ -129,5 +141,24 @@ public class Auction {
 
   public boolean isExpired() {
     return this.closeDate != null && this.closeDate.isBefore(LocalDateTime.now());
+  }
+
+  public void validateOwner(User user) {
+    if (!this.publisherUser.getId().equals(user.getId())) {
+      throw new UnprocessableException("El usuario no es el dueño de la subasta");
+    }
+  }
+
+  public AuctionOffer findOfferById(String offerId) {
+    return this.offers.stream()
+        .filter(offer -> offer.getId().equals(offerId))
+        .findFirst().orElseThrow(() -> new UnprocessableException("Oferta no encontrada"));
+  }
+
+  public void changeBestOffer(AuctionOffer offer) {
+    if (offer.getStatus().equals(AuctionOfferStatus.REJECTED)) {
+      throw new UnprocessableException("No se puede establecer una oferta rechazada como mejor oferta");
+    }
+    this.setBestOffer(offer);
   }
 }

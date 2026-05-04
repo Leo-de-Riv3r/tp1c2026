@@ -7,6 +7,7 @@ import com.tacs.tp1c2026.entities.dto.auction.input.CreationAuctionOfferDTO;
 import com.tacs.tp1c2026.entities.dto.auction.output.AuctionDto;
 import com.tacs.tp1c2026.entities.dto.common.input.SearchPublicationsFilters;
 import com.tacs.tp1c2026.entities.dto.common.output.PaginationDtoOutput;
+import com.tacs.tp1c2026.entities.enums.CardType;
 import com.tacs.tp1c2026.entities.enums.Category;
 import com.tacs.tp1c2026.exceptions.AuctionClosedException;
 import com.tacs.tp1c2026.exceptions.ForbiddenException;
@@ -63,15 +64,12 @@ public class AuctionsController {
       @RequestParam(required = false) String name,
       @RequestParam(required = false) String country,
       @RequestParam(required = false) String team,
-      @RequestParam(required = false) Category category
+      @RequestParam(required = false) Category category,
+      @RequestParam(required = false) CardType cardType
   ) {
-    SearchPublicationsFilters filters = new SearchPublicationsFilters(name, country, team, category);
-    Page<Auction> result = auctionService.searchActiveAuctions(page, per_page, filters);
-    return ResponseEntity.ok(new PaginationDtoOutput<>(
-        auctionMapper.mapAuctions(result.getContent()),
-        result.getNumber() + 1,
-        result.getTotalPages()
-    ));
+    SearchPublicationsFilters filters = new SearchPublicationsFilters(name, country, team, category, cardType);
+    PaginationDtoOutput<AuctionDto> result = auctionService.searchActiveAuctions(page, per_page, filters);
+    return ResponseEntity.ok(result);
   }
 
   /**
@@ -142,4 +140,38 @@ public class AuctionsController {
     auctionService.cancelAuction(userId, dto);
     return ResponseEntity.noContent().build();
   }
+
+  /**
+   * Cancela una oferta del usuario.
+   */
+  @DeleteMapping("/{auctionId}/offers/{offerId}")
+  public ResponseEntity<Void> cancelAuctionOffer(
+      @PathVariable String auctionId,
+      @PathVariable String offerId,
+      @RequestAttribute("userId") String userId
+  ) {
+    auctionService.cancelOffer(offerId, userId, auctionId);
+    return ResponseEntity.noContent().build();
+  }
+
+  @PutMapping("/{auctionId}/offers/{offerId}/best")
+  public ResponseEntity<Void> setOfferAsBest(
+      @PathVariable String auctionId,
+      @PathVariable String offerId,
+      @RequestAttribute("userId") String userId
+  ) {
+    auctionService.setAuctionOfferAsBest(auctionId, offerId, userId);
+    return ResponseEntity.noContent().build();
+  }
+
+  @PutMapping("/{auctionId}/offers/{offerId}/reject")
+  public ResponseEntity<Void> rejectOffer(
+      @PathVariable String auctionId,
+      @PathVariable String offerId,
+      @RequestAttribute("userId") String userId
+  ) {
+    auctionService.rejectAuctionOffer(auctionId, offerId, userId);
+    return ResponseEntity.noContent().build();
+  }
+
 }

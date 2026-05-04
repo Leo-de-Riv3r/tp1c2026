@@ -15,7 +15,6 @@ import java.util.UUID;
 
 @Getter
 public class AuctionOffer {
-
   @Id
   private String id = UUID.randomUUID().toString();
 
@@ -44,5 +43,14 @@ public class AuctionOffer {
 
   public void reject() {
     this.status = AuctionOfferStatus.REJECTED;
+  }
+
+  public void validateCreator(String userId) {
+    if (!this.bidder.getId().equals(userId))
+      throw new IllegalArgumentException("El usuario no es el dueño de la oferta");
+  }
+
+  public void cancel() {
+    this.status = AuctionOfferStatus.CANCELLED;
   }
 }

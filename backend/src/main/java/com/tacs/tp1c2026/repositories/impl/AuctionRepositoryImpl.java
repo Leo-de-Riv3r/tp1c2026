@@ -43,6 +43,10 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
       query.addCriteria(Criteria.where("cardCategory").is(filters.getCategory()));
     }
 
+    if(filters.getCardType() != null) {
+      query.addCriteria(Criteria.where("cardType").is(filters.getCardType()));
+    }
+
     query.with(pageable);
 
     List<Auction> results = mongoTemplate.find(query, Auction.class);
