@@ -72,9 +72,9 @@ public class FiltroDeAutenticacionJWT extends OncePerRequestFilter {
 
 //   Define rutas públicas que no requieren autenticación JWT.
   private boolean isPublicEndpoint(String path) {
-    return path.startsWith("/api/auth/")
-        || path.startsWith("/h2-console/")
-        || path.startsWith("/actuator/");
+    return path.startsWith("/api/auth")
+        || path.startsWith("/h2-console")
+        || path.startsWith("/actuator");
   }
 }
 

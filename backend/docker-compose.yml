@@ -1,23 +1,75 @@
+
 services:
-  app:
-    build: .
+  mongo:
+    image: mongo:7
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - tacs-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+#  mongo-seed:
+#    image: mongo:7
+#    depends_on:
+#      mongo:
+#        condition: service_healthy
+#    volumes:
+#      - ./seed:/seed:ro
+#    networks:
+#      - tacs-network
+#    command: >
+#      mongosh "mongodb://mongo:27017/tacs_db" --file /seed/seed.js
+#    restart: "no"
+
+  backend:
+    build:
+      context: .
     ports:
       - "8080:8080"
-    env_file:
-      - .env
+    depends_on:
+      mongo:
+        condition: service_healthy
+      mongo-seed:
+        condition: service_completed_successfully
     environment:
-      - JWT_SECRET=${JWT_SECRET}
-      - JWT_EXPIRATION=${JWT_EXPIRATION}
-      - SPRING_DATA_MONGODB_URI=${SPRING_DATA_MONGODB_URI}
-  mongo:
-    image: mongo:latest
+      SPRING_DATA_MONGODB_URI: mongodb://mongo:27017/tacs_db
+      MONGO_DATABASE: tacs_db
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION}
+    networks:
+      - tacs-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    image: ghcr.io/salometredici/tacs-2026-c1-fe:latest
     ports:
-      - "27017:27017"
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=123456
-    volumes:
-      - mongo_data:/data/db # Guarda los datos en el disco duro de tu PC
+      - "80:80"
+    networks:
+      - tacs-network
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+networks:
+  tacs-network:
+    driver: bridge
 
 volumes:
   mongo_data:
