@@ -40,6 +40,8 @@ services:
     environment:
       SPRING_DATA_MONGODB_URI: mongodb://mongo:27017/tacs_db
       MONGO_DATABASE: tacs_db
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION}
     networks:
       - tacs-network
     healthcheck:
