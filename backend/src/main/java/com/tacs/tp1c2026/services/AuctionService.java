@@ -11,6 +11,7 @@ import com.tacs.tp1c2026.entities.dto.auction.input.CreateAuctionDTO;
 import com.tacs.tp1c2026.entities.dto.auction.input.CreationAuctionOfferDTO;
 import com.tacs.tp1c2026.entities.dto.common.input.SearchPublicationsFilters;
 import com.tacs.tp1c2026.entities.dto.mappers.CreateAuctionDTOMapper;
+import com.tacs.tp1c2026.entities.enums.AuctionStatus;
 import com.tacs.tp1c2026.entities.user.User;
 import com.tacs.tp1c2026.entities.user.embedded.CollectionCard;
 import com.tacs.tp1c2026.exceptions.*;
@@ -23,6 +24,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -159,5 +161,111 @@ public class AuctionService {
 
     public Auction getAuctionById(String id) throws NotFoundException {
         return this.auctionRepository.findById(id).orElseThrow(() -> new NotFoundException("Auction not found"));
+    }
+
+    /**
+     * Cierra una subasta cuya `closeDate` ya pasó. Si tiene mejor oferta, la adjudica
+     * y transfiere las cards entre subastante y postor ganador. Si no tiene ofertas,
+     * cancela la subasta y libera la unidad comprometida del subastante.
+     *
+     * Pensado para ser llamado por un job programado, pero se puede invocar a mano.
+     */
+    // @Transactional // TODO: rehabilitar cuando Mongo corra como replica set
+    public void closeExpiredAuction(String auctionId) throws NotFoundException, AuctionClosedException, OfferAlreadyProcessedException, OfferNotFoundException {
+        Auction auction = getAuctionById(auctionId);
+        if (auction.getStatus() != AuctionStatus.ACTIVE) {
+            throw new ConflictException("La subasta ya está cerrada");
+        }
+
+        AuctionOffer best = auction.getBestOffer();
+        User publisher = auction.getPublisherUser();
+        Card publishedCard = auction.getCard();
+
+        if (best != null) {
+            User winner = best.getBidder();
+            auction.acceptOffer(best);
+
+            // Publisher cede la card publicada → winner la recibe
+            transferCard(publisher, winner, publishedCard, 1);
+
+            // Winner cede las cards ofrecidas → publisher las recibe
+            for (AuctionItem oi : best.getOfferedItems()) {
+                transferCard(winner, publisher, oi.getCard(), oi.getAmount());
+            }
+
+            // Las demás ofertas quedaron rejected por acceptOffer; libera sus compromises
+            for (AuctionOffer offer : auction.getOffers()) {
+                if (offer == best) continue;
+                User bidder = offer.getBidder();
+                for (AuctionItem oi : offer.getOfferedItems()) {
+                    bidder.findCollectionItem(oi.getCard().getId()).ifPresent(item -> item.release(oi.getAmount()));
+                }
+                userRepository.save(bidder);
+            }
+
+            userRepository.save(winner);
+            userRepository.save(publisher);
+        } else {
+            // Sin ofertas: cancela y libera la unidad comprometida
+            auction.cancel();
+            publisher.findCollectionItem(publishedCard.getId()).ifPresent(item -> item.release(1));
+            userRepository.save(publisher);
+        }
+
+        auctionRepository.save(auction);
+    }
+
+    /**
+     * Cierra todas las subastas activas cuya fecha de cierre ya pasó. Devuelve cuántas se cerraron.
+     */
+    public int closeAllExpiredAuctions() {
+        List<Auction> active = auctionRepository.findByStatus(AuctionStatus.ACTIVE);
+        int closed = 0;
+        for (Auction a : active) {
+            if (!a.isExpired()) continue;
+            try {
+                closeExpiredAuction(a.getId());
+                closed++;
+            } catch (Exception ignored) {
+                // Si falla una, seguimos con las demás
+            }
+        }
+        return closed;
+    }
+
+    /**
+     * Transfiere {@code amount} unidades de {@code card} desde {@code from} hacia {@code to}.
+     * En `from` libera el compromise y decrementa quantity. En `to` incrementa quantity
+     * (creando el subdocumento si no existía).
+     */
+    private void transferCard(User from, User to, Card card, int amount) {
+        from.findCollectionItem(card.getId()).ifPresent(item -> {
+            item.release(amount);
+            try {
+                item.decrement(amount);
+            } catch (InsufficientCardException ignored) {
+                // No debería pasar — el compromise garantiza disponibilidad
+            }
+        });
+
+        to.findCollectionItem(card.getId()).ifPresentOrElse(
+            existing -> existing.increment(amount),
+            () -> to.addToCollection(buildCollectionCard(card, amount))
+        );
+    }
+
+    private CollectionCard buildCollectionCard(Card card, int amount) {
+        return CollectionCard.builder()
+            .cardId(card.getId())
+            .number(card.getNumber())
+            .description(card.getDescription())
+            .country(card.getCountry())
+            .team(card.getTeam())
+            .category(card.getCategory() == null ? null : card.getCategory().getValue())
+            .quantity(amount)
+            .compromisedCount(0)
+            .adquisitionDate(LocalDate.now())
+            .adquisitionOrigin("AUCTION")
+            .build();
     }
 }
