@@ -1,6 +1,6 @@
 package com.tacs.tp1c2026.controllers;
 
-import com.tacs.tp1c2026.entities.Card;
+import com.tacs.tp1c2026.entities.card.Card;
 import com.tacs.tp1c2026.services.CardsService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

@@ -1,7 +1,6 @@
 package com.tacs.tp1c2026.repositories;
 
-import com.tacs.tp1c2026.entities.ExchangePublication;
-import com.tacs.tp1c2026.entities.enums.PublicationState;
+import com.tacs.tp1c2026.entities.exchange.ExchangePublication;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;

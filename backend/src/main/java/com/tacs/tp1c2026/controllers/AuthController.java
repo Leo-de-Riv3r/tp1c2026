@@ -1,9 +1,9 @@
 package com.tacs.tp1c2026.controllers;
 
-import com.tacs.tp1c2026.entities.dto.input.LoginDTO;
-import com.tacs.tp1c2026.entities.dto.input.RegisterDTO;
-import com.tacs.tp1c2026.entities.dto.output.LoginResponseDto;
-import com.tacs.tp1c2026.entities.dto.output.UserDto;
+import com.tacs.tp1c2026.entities.dto.input.user.LoginDTO;
+import com.tacs.tp1c2026.entities.dto.input.user.RegisterDTO;
+import com.tacs.tp1c2026.entities.dto.output.user.LoginResponseDto;
+import com.tacs.tp1c2026.entities.dto.output.user.UserDto;
 import com.tacs.tp1c2026.services.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/auth")
 public class AuthController {
 
     private final AuthService authService;

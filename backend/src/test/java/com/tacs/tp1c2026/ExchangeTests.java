@@ -5,16 +5,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.jayway.jsonpath.JsonPath;
-import com.tacs.tp1c2026.entities.dto.input.NewExchangeProposalDto;
-import com.tacs.tp1c2026.entities.dto.input.ReviewProposalDto;
+import com.tacs.tp1c2026.entities.dto.input.exchanges.NewExchangeProposalDto;
+import com.tacs.tp1c2026.entities.dto.input.exchanges.ReviewProposalDto;
 import com.tacs.tp1c2026.entities.enums.ParticipationType;
 import com.tacs.tp1c2026.entities.enums.ReviewAction;
 import com.tacs.tp1c2026.repositories.CardsRepository;
 import com.tacs.tp1c2026.repositories.ExchangeProposalsRepository;
 import com.tacs.tp1c2026.repositories.ExchangePublicationsRepository;
 import com.tacs.tp1c2026.repositories.UsersRepository;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

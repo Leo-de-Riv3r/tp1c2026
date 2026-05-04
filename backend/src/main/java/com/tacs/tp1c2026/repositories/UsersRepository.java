@@ -1,18 +1,17 @@
 package com.tacs.tp1c2026.repositories;
 
-import com.tacs.tp1c2026.entities.Usuario;
+import com.tacs.tp1c2026.entities.user.User;
 import java.util.List;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.Optional;
 import java.util.stream.Stream;
-import org.springframework.data.mongodb.repository.Query;
 
-public interface UsersRepository extends MongoRepository<Usuario, String> {
+public interface UsersRepository extends MongoRepository<User, String> {
 
-    Optional<Usuario> findByEmail(String email);
+    Optional<User> findByEmail(String email);
     boolean existsByEmail(String email);
-    Stream<Usuario> findAllBy();
+    Stream<User> findAllBy();
 
-  List<Usuario> findByIdNotAndMissingCardsId(String publisherId, String cardId);
+  List<User> findByIdNotAndMissingCardsId(String publisherId, String cardId);
 
 }

@@ -1,7 +1,8 @@
 package com.tacs.tp1c2026.entities.dto.output;
 
-import com.tacs.tp1c2026.entities.dto.input.MissingCardDto;
-import com.tacs.tp1c2026.entities.dto.input.RegisterRepeatedCardDto;
+import com.tacs.tp1c2026.entities.dto.input.user.MissingCardDto;
+import com.tacs.tp1c2026.entities.dto.input.user.RegisterRepeatedCardDto;
+import com.tacs.tp1c2026.entities.dto.output.user.UsuarioBasicoDto;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;

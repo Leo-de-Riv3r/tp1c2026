@@ -1,16 +1,16 @@
 
 package com.tacs.tp1c2026.services;
 
-import com.tacs.tp1c2026.entities.Auction;
-import com.tacs.tp1c2026.entities.Card;
-import com.tacs.tp1c2026.entities.CardCollection;
-import com.tacs.tp1c2026.entities.AuctionOffer;
-import com.tacs.tp1c2026.entities.Usuario;
-import com.tacs.tp1c2026.entities.dto.input.CancelAuctionDto;
-import com.tacs.tp1c2026.entities.dto.input.NewAuctionDto;
-import com.tacs.tp1c2026.entities.dto.input.NewAuctionOfferDto;
+import com.tacs.tp1c2026.entities.auction.Auction;
+import com.tacs.tp1c2026.entities.card.Card;
+import com.tacs.tp1c2026.entities.user.CardCollection;
+import com.tacs.tp1c2026.entities.auction.AuctionOffer;
+import com.tacs.tp1c2026.entities.user.User;
+import com.tacs.tp1c2026.entities.dto.input.auction.CancelAuctionDto;
+import com.tacs.tp1c2026.entities.dto.input.auction.NewAuctionDto;
+import com.tacs.tp1c2026.entities.dto.input.auction.NewAuctionOfferDto;
 import com.tacs.tp1c2026.entities.dto.input.SearchPublicationsFilters;
-import com.tacs.tp1c2026.entities.dto.output.AuctionDto;
+import com.tacs.tp1c2026.entities.dto.output.auction.AuctionDto;
 import com.tacs.tp1c2026.entities.dto.output.PaginationDtoOutput;
 import com.tacs.tp1c2026.entities.dto.output.SubastaDto;
 import com.tacs.tp1c2026.entities.enums.AuctionState;
@@ -61,9 +61,9 @@ public class AuctionsService {
    */
   @Transactional
   public String createAuction(String userId, NewAuctionDto sub) {
-    Usuario usuario = usuariosService.getUserById(userId);
+    User user = usuariosService.getUserById(userId);
 
-    CardCollection registeredCard = usuario.getRepetidaByNumero(sub.getNumFiguritaPublicada());
+    CardCollection registeredCard = user.getRepetidaByNumero(sub.getNumFiguritaPublicada());
 
     registeredCard.publishForAuction();
 
@@ -72,7 +72,7 @@ public class AuctionsService {
 
     Auction newAuction = Auction.builder()
         .card(registeredCard.getCard())
-        .publisherUser(usuario)
+        .publisherUser(user)
         .finishDate(endDate)
         .minCardsRequired(sub.getMinCardsRequired())
         .cardNumber(registeredCard.getCard().getNumber())
@@ -81,7 +81,7 @@ public class AuctionsService {
         .cardCountry(registeredCard.getCard().getCountry())
         .cardCategory(registeredCard.getCard().getCategory())
         .build();
-    usuariosService.saveUser(usuario);
+    usuariosService.saveUser(user);
     return auctionRepository.save(newAuction).getId();
   }
 
@@ -101,7 +101,7 @@ public class AuctionsService {
    */
   @Transactional
   public void offerProposalAuction(String userId, NewAuctionOfferDto newOffer){
-    Usuario bidder = usuariosService.getUserById(userId);
+    User bidder = usuariosService.getUserById(userId);
     Auction auction = this.getAuction(newOffer.getAuctionId());
 
     if (auction.getPublisherUser().getId().equals(bidder.getId())) {
@@ -112,11 +112,11 @@ public class AuctionsService {
       throw new ConflictException("La subasta ya venció");
     }
     AuctionOffer previousBestOffer = auction.getMejorOferta();
-    Usuario previousAuctionWinner = previousBestOffer != null ? previousBestOffer.getBidderUser() : null;
+    User previousAuctionWinner = previousBestOffer != null ? previousBestOffer.getBidderUser() : null;
 
     List<Card> offeredCards = new ArrayList<>();
     newOffer.getCardsIds().forEach(cardId-> {
-          CardCollection repeatedCard = bidder.getRepetidaById(cardId);
+          CardCollection repeatedCard = bidder.getRepeatedCardById(cardId);
 
           offeredCards.add(repeatedCard.getCard());
         }
@@ -132,15 +132,15 @@ public class AuctionsService {
 
     if (auction.getMejorOferta().getId().equals(ofertaSubasta.getId())) {
 
-      Map<String, Usuario> usuariosAActualizar = new HashMap<>();
+      Map<String, User> usuariosAActualizar = new HashMap<>();
       for (String cardId : newOffer.getCardsIds()) {
-        bidder.getRepetidaById(cardId).publishForAuction();
+        bidder.getRepeatedCardById(cardId).publishForAuction();
       }
       usuariosAActualizar.put(bidder.getId(), bidder);
 
       if (previousAuctionWinner != null) {
         usuariosAActualizar.putIfAbsent(previousAuctionWinner.getId(), previousAuctionWinner);
-        Usuario userUnico = usuariosAActualizar.get(previousAuctionWinner.getId());
+        User userUnico = usuariosAActualizar.get(previousAuctionWinner.getId());
 
         userUnico.restoreFiguritasFromAuction(previousBestOffer.getOfferedCards());
       }
@@ -163,10 +163,10 @@ public class AuctionsService {
 
   @Transactional
   public void cancelAuction(String userId, CancelAuctionDto cancelAuctionDto) {
-    Usuario usuario = usuariosService.getUserById(userId);
+    User user = usuariosService.getUserById(userId);
     Auction auction = getAuction(cancelAuctionDto.getAuctionId());
-    if (!auction.getPublisherUser().getId().equals(usuario.getId())) {
-      throw new ForbiddenException("El usuario no es el dueño de la subasta");
+    if (!auction.getPublisherUser().getId().equals(user.getId())) {
+      throw new ForbiddenException("El user no es el dueño de la subasta");
     }
 
     if (auction.isExpired()) {
@@ -176,11 +176,11 @@ public class AuctionsService {
 
     auction.cancel();
     auctionRepository.save(auction);
-    usuario.restoreFiguritasFromAuction(List.of(auction.getCard()));
-    usuariosService.saveUser(usuario);
+    user.restoreFiguritasFromAuction(List.of(auction.getCard()));
+    usuariosService.saveUser(user);
     AuctionOffer bestOffer = auction.getMejorOferta();
     if(bestOffer != null) {
-      Usuario bestOfferUser = bestOffer.getBidderUser();
+      User bestOfferUser = bestOffer.getBidderUser();
       bestOfferUser.restoreFiguritasFromAuction(bestOffer.getOfferedCards());
       usuariosService.saveUser(bestOfferUser);
     }
@@ -195,16 +195,16 @@ public class AuctionsService {
     }
     auction.finish();
     if (auction.getMejorOferta() != null) {
-      Usuario bidder = auction.getMejorOferta().getBidderUser();
+      User bidder = auction.getMejorOferta().getBidderUser();
 
       List<Card> cardsFromAuction = auction.getMejorOferta().getOfferedCards();
       bidder.removeFromCollectionForAuctionAndReceive(cardsFromAuction, List.of(auction.getCard()));
       usuariosService.saveUser(bidder);
-      Usuario auctionPublisher = auction.getPublisherUser();
+      User auctionPublisher = auction.getPublisherUser();
       auctionPublisher.removeFromCollectionForAuctionAndReceive(List.of(auction.getCard()), cardsFromAuction);
       usuariosService.saveUser(auctionPublisher);
     } else {
-      Usuario auctionPublisher = auction.getPublisherUser();
+      User auctionPublisher = auction.getPublisherUser();
       auctionPublisher.restoreFiguritasFromAuction(List.of(auction.getCard()));
       usuariosService.saveUser(auctionPublisher);
     }
@@ -245,12 +245,12 @@ public class AuctionsService {
 
   @Transactional
   public void addInterestedUser(String subastaId, String userId) {
-    Usuario usuario = usuariosService.getUserById(userId);
+    User user = usuariosService.getUserById(userId);
 
     Auction auction = auctionRepository.findById(subastaId)
         .orElseThrow(() -> new NotFoundException("Subasta no encontrada con id: " + subastaId));
 
-    auction.addInterested(usuario);
+    auction.addInterested(user);
     auctionRepository.save(auction);
   }
 }

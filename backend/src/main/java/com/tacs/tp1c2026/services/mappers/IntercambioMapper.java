@@ -1,9 +1,9 @@
 package com.tacs.tp1c2026.services.mappers;
 
-import com.tacs.tp1c2026.entities.ExchangeProposal;
-import com.tacs.tp1c2026.entities.ExchangePublication;
-import com.tacs.tp1c2026.entities.dto.output.ExchangePublicationDto;
-import com.tacs.tp1c2026.entities.dto.output.ExchangeProposalDto;
+import com.tacs.tp1c2026.entities.exchange.ExchangeProposal;
+import com.tacs.tp1c2026.entities.exchange.ExchangePublication;
+import com.tacs.tp1c2026.entities.dto.output.exchanges.ExchangePublicationDto;
+import com.tacs.tp1c2026.entities.dto.output.exchanges.ExchangeProposalDto;
 import java.util.List;
 import org.springframework.stereotype.Component;
 

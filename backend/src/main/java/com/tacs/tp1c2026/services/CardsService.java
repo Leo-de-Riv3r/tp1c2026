@@ -1,6 +1,6 @@
 package com.tacs.tp1c2026.services;
 
-import com.tacs.tp1c2026.entities.Card;
+import com.tacs.tp1c2026.entities.card.Card;
 import com.tacs.tp1c2026.exceptions.NotFoundException;
 import com.tacs.tp1c2026.repositories.CardsRepository;
 import org.springframework.stereotype.Service;

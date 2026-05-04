@@ -1,11 +1,11 @@
  package com.tacs.tp1c2026.controllers;
 
- import com.tacs.tp1c2026.entities.dto.input.NewExchangeProposalDto;
- import com.tacs.tp1c2026.entities.dto.input.NewExchangePublicationDto;
- import com.tacs.tp1c2026.entities.dto.input.ReviewProposalDto;
+ import com.tacs.tp1c2026.entities.dto.input.exchanges.NewExchangeProposalDto;
+ import com.tacs.tp1c2026.entities.dto.input.exchanges.NewExchangePublicationDto;
+ import com.tacs.tp1c2026.entities.dto.input.exchanges.ReviewProposalDto;
  import com.tacs.tp1c2026.entities.dto.input.SearchPublicationsFilters;
- import com.tacs.tp1c2026.entities.dto.output.ExchangeProposalDto;
- import com.tacs.tp1c2026.entities.dto.output.ExchangePublicationDto;
+ import com.tacs.tp1c2026.entities.dto.output.exchanges.ExchangeProposalDto;
+ import com.tacs.tp1c2026.entities.dto.output.exchanges.ExchangePublicationDto;
  import com.tacs.tp1c2026.entities.dto.output.PaginationDtoOutput;
  import com.tacs.tp1c2026.entities.enums.CardCategory;
  import com.tacs.tp1c2026.entities.enums.ProposalState;
@@ -14,7 +14,6 @@
  import java.time.LocalDateTime;
  import java.util.Map;
  import org.springframework.beans.factory.annotation.Autowired;
- import org.springframework.http.HttpStatus;
  import org.springframework.http.ResponseEntity;
  import org.springframework.web.bind.annotation.DeleteMapping;
  import org.springframework.web.bind.annotation.GetMapping;

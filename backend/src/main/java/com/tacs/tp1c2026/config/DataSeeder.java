@@ -1,6 +1,6 @@
 package com.tacs.tp1c2026.config;
 
-import com.tacs.tp1c2026.entities.Card;
+import com.tacs.tp1c2026.entities.card.Card;
 import com.tacs.tp1c2026.entities.enums.CardCategory;
 import com.tacs.tp1c2026.repositories.CardsRepository;
 import java.io.InputStream;

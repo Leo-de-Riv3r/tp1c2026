@@ -1,10 +1,10 @@
 package com.tacs.tp1c2026.controllers;
 
-import com.tacs.tp1c2026.entities.dto.input.MissingCardDto;
-import com.tacs.tp1c2026.entities.dto.input.RegisterRepeatedCardDto;
+import com.tacs.tp1c2026.entities.dto.input.user.MissingCardDto;
+import com.tacs.tp1c2026.entities.dto.input.user.RegisterRepeatedCardDto;
 import com.tacs.tp1c2026.entities.dto.output.CardDto;
 import com.tacs.tp1c2026.entities.dto.output.PaginationDtoOutput;
-import com.tacs.tp1c2026.entities.dto.output.RepeatedCardDto;
+import com.tacs.tp1c2026.entities.dto.output.user.RepeatedCardDto;
 import com.tacs.tp1c2026.services.CollectionService;
 import jakarta.validation.Valid;
 import java.time.LocalDateTime;

@@ -1,7 +1,7 @@
 //package com.tacs.tp1c2026.controllers;
 //
-//import com.tacs.tp1c2026.entities.Usuario;
-//import com.tacs.tp1c2026.entities.CardCollection;
+//import com.tacs.tp1c2026.entities.user.User;
+//import com.tacs.tp1c2026.entities.user.CardCollection;
 //import com.tacs.tp1c2026.entities.dto.input.usuario.*;
 //import com.tacs.tp1c2026.services.UsersService;
 //import org.springframework.http.ResponseEntity;
@@ -21,12 +21,12 @@
 //
 //    // Todos los users - para la view del admin - ver si se usa o despues descartar
 //    @GetMapping
-//    public ResponseEntity<List<Usuario>> getAll() {
+//    public ResponseEntity<List<User>> getAll() {
 //        return ResponseEntity.ok(usuariosService.listarUsuarios());
 //    }
 //
 //    @GetMapping("/{id}")
-//    public ResponseEntity<Usuario> getById(@PathVariable Integer id) {
+//    public ResponseEntity<User> getById(@PathVariable Integer id) {
 //        return ResponseEntity.ok(usuariosService.obtenerUsuario(id));
 //    }
 //

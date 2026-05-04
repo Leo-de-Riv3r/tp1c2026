@@ -1,16 +1,16 @@
  package com.tacs.tp1c2026.services;
 
+ import com.tacs.tp1c2026.entities.alert.alertTypes.AlertSubastaProxima;
+ import com.tacs.tp1c2026.entities.user.User;
  import com.tacs.tp1c2026.repositories.AuctionRepository;
  import java.time.LocalDateTime;
  import java.util.List;
 
  import com.tacs.tp1c2026.entities.dto.output.AlertaDto;
- import com.tacs.tp1c2026.entities.AlertaPropuestaRecibida;
- import com.tacs.tp1c2026.entities.AlertaSubastaProxima;
- import com.tacs.tp1c2026.entities.AlertaVisitor;
- import com.tacs.tp1c2026.entities.ExchangeProposal;
- import com.tacs.tp1c2026.entities.Auction;
- import com.tacs.tp1c2026.entities.Usuario;
+ import com.tacs.tp1c2026.entities.alert.alertTypes.AlertPropuestaRecibida;
+ import com.tacs.tp1c2026.entities.alert.AlertaVisitor;
+ import com.tacs.tp1c2026.entities.exchange.ExchangeProposal;
+ import com.tacs.tp1c2026.entities.auction.Auction;
  import com.tacs.tp1c2026.exceptions.UserNotFoundException;
  import com.tacs.tp1c2026.properties.AlertProperties;
  import com.tacs.tp1c2026.repositories.UsersRepository;
@@ -38,12 +38,12 @@
 //      * @param usuario           usuario que posee la card disponible
 //      * @param figuritaColeccion card de la colección que origina la notificación
 //      */
-//     public void notificarUsuariosDeFigurita(Usuario usuario, CardCollection figuritaColeccion) {
+//     public void notificarUsuariosDeFigurita(User usuario, CardCollection figuritaColeccion) {
 //
-//         List<Usuario> usuariosFaltantes = figuritaColeccion.getCard().getUsuariosFaltantes();
-//         for (Usuario u : usuariosFaltantes) {
+//         List<User> usuariosFaltantes = figuritaColeccion.getCard().getUsuariosFaltantes();
+//         for (User u : usuariosFaltantes) {
 //             if (!u.getId().equals(usuario.getId())) {
-//                 u.agregarAlerta(new AlertaFiguritaFaltante(usuario, figuritaColeccion.getCard()));
+//                 u.agregarAlerta(new AlertFiguritaFaltante(usuario, figuritaColeccion.getCard()));
 //             }
 //         }
 //
@@ -55,8 +55,8 @@
       * @param proposal propuesta de intercambio recibida
       */
      public void notificarPropuestaRecibida(ExchangeProposal proposal) {
-         Usuario receptor = proposal.getPublication().getPublisherUser();
-         receptor.addAlert(new AlertaPropuestaRecibida(proposal));
+         User receptor = proposal.getPublication().getPublisherUser();
+         receptor.addAlert(new AlertPropuestaRecibida(proposal));
          usuariosRepository.save(receptor);
      }
 
@@ -75,7 +75,7 @@
 
          for (Auction subasta : subastasProximas) {
              subasta.getUsuariosInteresados().forEach(usuario -> {
-                 usuario.addAlert(new AlertaSubastaProxima(subasta.getId(), subasta.getCard(), subasta.getFinishDate()));
+                 usuario.addAlert(new AlertSubastaProxima(subasta.getId(), subasta.getCard(), subasta.getFinishDate()));
              });
          }
      }
@@ -89,10 +89,10 @@
       */
      @Transactional(readOnly = true)
      public List<AlertaDto> obtenerAlertasUsuario(String userId) {
-         Usuario usuario = usuariosRepository.findById(userId)
-             .orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
+         User user = usuariosRepository.findById(userId)
+             .orElseThrow(() -> new UserNotFoundException("No se encontro el user"));
 
-         return usuario.getAlert() == null ? List.of() : usuario.getAlert().stream()
+         return user.getAlert() == null ? List.of() : user.getAlert().stream()
              .map(alerta -> alerta.visit(alertaVisitor))
              .toList();
      }

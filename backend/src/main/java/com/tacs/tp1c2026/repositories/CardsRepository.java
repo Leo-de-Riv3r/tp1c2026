@@ -1,6 +1,6 @@
 package com.tacs.tp1c2026.repositories;
 
-import com.tacs.tp1c2026.entities.Card;
+import com.tacs.tp1c2026.entities.card.Card;
 import java.util.Optional;
 import org.springframework.data.mongodb.repository.MongoRepository;
 

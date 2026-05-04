@@ -1,7 +1,7 @@
 /*
 package com.tacs.tp1c2026.entities.ReglasStrategies;
 
-import com.tacs.tp1c2026.entities.AuctionOffer;
+import com.tacs.tp1c2026.entities.auction.AuctionOffer;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;

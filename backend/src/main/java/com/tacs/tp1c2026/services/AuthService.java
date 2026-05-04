@@ -1,10 +1,10 @@
 package com.tacs.tp1c2026.services;
 
-import com.tacs.tp1c2026.entities.Usuario;
-import com.tacs.tp1c2026.entities.dto.input.LoginDTO;
-import com.tacs.tp1c2026.entities.dto.input.RegisterDTO;
-import com.tacs.tp1c2026.entities.dto.output.LoginResponseDto;
-import com.tacs.tp1c2026.entities.dto.output.UserDto;
+import com.tacs.tp1c2026.entities.user.User;
+import com.tacs.tp1c2026.entities.dto.input.user.LoginDTO;
+import com.tacs.tp1c2026.entities.dto.input.user.RegisterDTO;
+import com.tacs.tp1c2026.entities.dto.output.user.LoginResponseDto;
+import com.tacs.tp1c2026.entities.dto.output.user.UserDto;
 import com.tacs.tp1c2026.exceptions.BadInputException;
 import com.tacs.tp1c2026.exceptions.ConflictException;
 import com.tacs.tp1c2026.exceptions.UnauthorizedException;
@@ -55,15 +55,15 @@ public class AuthService {
 	  throw new ConflictException("El email ya se encuentra registrado");
 	}
 
-	Usuario nuevoUsuario = new Usuario();
-	nuevoUsuario.setName(registerDTO.getName().trim());
-	nuevoUsuario.setEmail(email);
-	nuevoUsuario.setAvatarId(registerDTO.getAvatarId());
-	nuevoUsuario.setPasswordHash(passwordEncoder.encode(registerDTO.getPassword()));
-	nuevoUsuario.setCreationDate(LocalDateTime.now());
+	User nuevoUser = new User();
+	nuevoUser.setName(registerDTO.getName().trim());
+	nuevoUser.setEmail(email);
+	nuevoUser.setAvatarId(registerDTO.getAvatarId());
+	nuevoUser.setPasswordHash(passwordEncoder.encode(registerDTO.getPassword()));
+	nuevoUser.setCreationDate(LocalDateTime.now());
 
-	Usuario usuarioCreado = usersRepository.save(nuevoUsuario);
-	return mapUser(usuarioCreado);
+	User userCreado = usersRepository.save(nuevoUser);
+	return mapUser(userCreado);
   }
 
   public LoginResponseDto login(LoginDTO loginDTO) {
@@ -73,18 +73,18 @@ public class AuthService {
 
 	String email = loginDTO.getEmail().trim().toLowerCase();
 
-	Usuario usuario = usersRepository.findByEmail(email)
+	User user = usersRepository.findByEmail(email)
 		.orElseThrow(() -> new UnauthorizedException("Credenciales invalidas"));
 
 
-	if (usuario.getPasswordHash() == null || !passwordEncoder.matches(loginDTO.getPassword(), usuario.getPasswordHash())) {
+	if (user.getPasswordHash() == null || !passwordEncoder.matches(loginDTO.getPassword(), user.getPasswordHash())) {
 	  throw new UnauthorizedException("Credenciales invalidas");
 	}
 
-	usuario.setLastLogin(LocalDateTime.now());
-	usersRepository.save(usuario);
+	user.setLastLogin(LocalDateTime.now());
+	usersRepository.save(user);
 
-	return buildResponse(usuario);
+	return buildResponse(user);
   }
 
   public LoginResponseDto adminLogin(LoginDTO loginDTO) {
@@ -109,10 +109,10 @@ public class AuthService {
 	return response;
   }
 
-  private LoginResponseDto buildResponse(Usuario usuario) {
+  private LoginResponseDto buildResponse(User user) {
 	LoginResponseDto response = new LoginResponseDto();
-	response.setToken(generarJwtToken(usuario.getId(), usuario.getEmail(), "USER"));
-	response.setUser(mapUser(usuario));
+	response.setToken(generarJwtToken(user.getId(), user.getEmail(), "USER"));
+	response.setUser(mapUser(user));
 	return response;
   }
 
@@ -128,7 +128,7 @@ public class AuthService {
 	return admin;
   }
 
-  private UserDto mapUser(Usuario usuario) {
+  private UserDto mapUser(User usuario) {
 	  UserDto user = new UserDto();
 	user.setId(usuario.getId());
 	user.setName(usuario.getName());

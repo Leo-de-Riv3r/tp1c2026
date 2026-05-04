@@ -1,21 +1,21 @@
 package com.tacs.tp1c2026.services;
 
 //import com.tacs.tp1c2026.async_events.ExchangePublishedEvent;
-import com.tacs.tp1c2026.entities.Card;
-import com.tacs.tp1c2026.entities.CardCollection;
-import com.tacs.tp1c2026.entities.ExchangeProposal;
-import com.tacs.tp1c2026.entities.ExchangePublication;
-import com.tacs.tp1c2026.entities.Feedback;
-import com.tacs.tp1c2026.entities.Usuario;
-import com.tacs.tp1c2026.entities.dto.input.NewExchangeProposalDto;
-import com.tacs.tp1c2026.entities.dto.input.NewFeedbackDto;
-import com.tacs.tp1c2026.entities.dto.input.NewExchangePublicationDto;
-import com.tacs.tp1c2026.entities.dto.input.ReviewProposalDto;
+import com.tacs.tp1c2026.entities.card.Card;
+import com.tacs.tp1c2026.entities.user.CardCollection;
+import com.tacs.tp1c2026.entities.exchange.ExchangeProposal;
+import com.tacs.tp1c2026.entities.exchange.ExchangePublication;
+import com.tacs.tp1c2026.entities.exchange.Feedback;
+import com.tacs.tp1c2026.entities.user.User;
+import com.tacs.tp1c2026.entities.dto.input.exchanges.NewExchangeProposalDto;
+import com.tacs.tp1c2026.entities.dto.input.exchanges.NewFeedbackDto;
+import com.tacs.tp1c2026.entities.dto.input.exchanges.NewExchangePublicationDto;
+import com.tacs.tp1c2026.entities.dto.input.exchanges.ReviewProposalDto;
 import com.tacs.tp1c2026.entities.dto.input.SearchPublicationsFilters;
-import com.tacs.tp1c2026.entities.dto.output.ExchangePublicationDto;
+import com.tacs.tp1c2026.entities.dto.output.exchanges.ExchangePublicationDto;
 import com.tacs.tp1c2026.entities.dto.output.PaginacionDto;
 import com.tacs.tp1c2026.entities.dto.output.PaginationDtoOutput;
-import com.tacs.tp1c2026.entities.dto.output.ExchangeProposalDto;
+import com.tacs.tp1c2026.entities.dto.output.exchanges.ExchangeProposalDto;
 
 import com.tacs.tp1c2026.entities.dto.output.PublicacionDto;
 import com.tacs.tp1c2026.entities.enums.ProposalState;
@@ -40,7 +40,6 @@ import java.util.Optional;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -75,7 +74,7 @@ public class PublicationsService {
    */
   @Transactional
   public String publishCardExchange(NewExchangePublicationDto dto, String userId) {
-    Usuario cardOwner = usersService.getUserById(userId);
+    User cardOwner = usersService.getUserById(userId);
     //verificar que el cardOwner tiene la card en su coleccion
     Optional<CardCollection> itemUser = cardOwner.getCollection().stream().filter(
         f -> f.getCard().getId().equals(dto.getCardId())).findFirst();
@@ -120,7 +119,7 @@ public class PublicationsService {
    */
   @Transactional
   public ExchangeProposal offerProposalExchange(String userId, NewExchangeProposalDto dto) {
-    Usuario offererUser = usersService.getUserById(userId);
+    User offererUser = usersService.getUserById(userId);
 
     ExchangePublication publication = getById(dto.getPublicationId());
 
@@ -153,7 +152,7 @@ public class PublicationsService {
    * @throws UserNotFoundException si el usuario no existe
    */
   public PaginationDtoOutput<ExchangeProposalDto> getReceivedProposals(String userId, ProposalState state, Integer page, Integer per_page) {
-    Usuario publisherUser = usersService.getUserById(userId);
+    User publisherUser = usersService.getUserById(userId);
 
     Pageable pageable = this.buildPageable(
         page,
@@ -171,7 +170,7 @@ public class PublicationsService {
 
 
   public PaginationDtoOutput<ExchangeProposalDto> getOfferedProposals(String userId, ProposalState state, Integer page, Integer per_page) {
-    Usuario userToSearch = usersService.getUserById(userId);
+    User userToSearch = usersService.getUserById(userId);
 
     Pageable pageable = this.buildPageable(
         page,
@@ -201,7 +200,7 @@ public class PublicationsService {
    */
   @Transactional
   public void reviewProposal(ReviewProposalDto dto, String userId) {
-    Usuario owner = usersService.getUserById(userId);
+    User owner = usersService.getUserById(userId);
     ExchangePublication exchangePublication = getById(dto.getPublicationId());
     exchangePublication.validateOwner(owner);
 
@@ -215,7 +214,7 @@ public class PublicationsService {
     if (proposalToReview.getState() != ProposalState.PENDING) {
       throw new ConflictException("La propuesta ya fue revisada");
     }
-    Usuario proposer = proposalToReview.getExchangeUser();
+    User proposer = proposalToReview.getExchangeUser();
 
     if (dto.getAction() == ReviewAction.REJECT){
       proposalToReview.reject();
@@ -231,9 +230,9 @@ public class PublicationsService {
       owner.removeFromCollectionForExchangeAndReceive(List.of(exchangePublication.getCard()), proposalToReview.getCards());
       proposer.removeFromCollectionForExchangeAndReceive(proposalToReview.getCards(), List.of(exchangePublication.getCard()));
 
-      Map<String, Usuario> usuariosAActualizar = new HashMap<>();
+      Map<String, User> usuariosAActualizar = new HashMap<>();
       usuariosAActualizar.put(owner.getId(), owner);
-      Usuario put = usuariosAActualizar.put(proposer.getId(), proposer);
+      User put = usuariosAActualizar.put(proposer.getId(), proposer);
 
       if (exchangePublication.getState() == PublicationState.FINISHED) {
         List<ExchangeProposal> proposalsToReject = exchangePublication.getReceivedProposals().stream()
@@ -241,9 +240,9 @@ public class PublicationsService {
 
         proposalsToReject.forEach(proposal -> {
           proposal.reject();
-          Usuario user = proposal.getExchangeUser();
+          User user = proposal.getExchangeUser();
           usuariosAActualizar.putIfAbsent(user.getId(), user);
-          Usuario userUnico = usuariosAActualizar.get(user.getId());
+          User userUnico = usuariosAActualizar.get(user.getId());
           userUnico.restoreFiguritasFromProposal(
               proposal.getCards().stream().map(Card::getId).toList(),
               ParticipationType.INTERCAMBIO
@@ -259,7 +258,7 @@ public class PublicationsService {
   }
 
   public void publishFeedback(String userId, NewFeedbackDto dto) {
-    Usuario publisherUser = usersService.getUserById(userId);
+    User publisherUser = usersService.getUserById(userId);
     ExchangePublication publication = getById(dto.getPublicationId());
 
     List<ExchangeProposal> acceptedProposals = publication.getAcceptedProposals().stream().filter(propuesta -> propuesta.getExchangeUser().getId().equals(userId)).toList();
@@ -322,7 +321,7 @@ public class PublicationsService {
   }
 
   public PaginationDtoOutput<ExchangePublicationDto> getPublicationsCreatedByUser(String userId, Integer page, Integer perPage) {
-    Usuario userToSearch = usersService.getUserById(userId);
+    User userToSearch = usersService.getUserById(userId);
     Pageable pageable = this.buildPageable(
         page,
         perPage,
@@ -336,7 +335,7 @@ public class PublicationsService {
   }
 
   public PaginationDtoOutput<ExchangeProposalDto> getReceivedProposalsByPublication(String userId, String publicationId, Integer page, Integer perPage) {
-    Usuario userToSearch = usersService.getUserById(userId);
+    User userToSearch = usersService.getUserById(userId);
     Pageable pageable = this.buildPageable(
         page,
         perPage,
@@ -356,7 +355,7 @@ public class PublicationsService {
 
   @Transactional
   public void deleteProposal(String publicationId, String proposalId, String userId) {
-    Usuario owner = usersService.getUserById(userId);
+    User owner = usersService.getUserById(userId);
     ExchangePublication exchangePublication = getById(publicationId);
     exchangePublication.deleteProposal(proposalId);
     exchangePublicationsRepository.save(exchangePublication);
@@ -371,19 +370,19 @@ public class PublicationsService {
 
   @Transactional
   public void cancelExchangePublication(String publicationId, String userId) {
-    Usuario owner = usersService.getUserById(userId);
+    User owner = usersService.getUserById(userId);
     ExchangePublication exchangePublication = getById(publicationId);
 
     exchangePublication.validateOwner(owner);
 
-    Set<Usuario> usersToUpdate = new HashSet<>();
+    Set<User> usersToUpdate = new HashSet<>();
 
     exchangePublication.getReceivedProposals().stream()
         .filter(proposal -> proposal.getState() == ProposalState.PENDING)
         .forEach(proposal -> {
           proposal.reject();
           List<String> cardsId = proposal.getCards().stream().map(Card::getId).toList();
-          Usuario proposer = proposal.getExchangeUser();
+          User proposer = proposal.getExchangeUser();
           proposer.restoreFiguritasFromProposal(cardsId, ParticipationType.INTERCAMBIO);
           usersToUpdate.add(proposer);
         });

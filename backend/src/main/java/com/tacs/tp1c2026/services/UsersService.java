@@ -1,9 +1,6 @@
 package com.tacs.tp1c2026.services;
 
-import com.tacs.tp1c2026.entities.*;
-import com.tacs.tp1c2026.entities.dto.output.*;
-import com.tacs.tp1c2026.entities.enums.AuctionState;
-import com.tacs.tp1c2026.exceptions.BadInputException;
+import com.tacs.tp1c2026.entities.user.User;
 import com.tacs.tp1c2026.exceptions.UserNotFoundException;
 import com.tacs.tp1c2026.repositories.AuctionRepository;
 import com.tacs.tp1c2026.repositories.ExchangeProposalsRepository;
@@ -29,8 +26,8 @@ public class UsersService {
   @Autowired
 	  private IntercambioMapper intercambioMapper;
 
-//	public Usuario createUsuario(String nombre) {
-//		Usuario usuario = new Usuario();
+//	public User createUsuario(String nombre) {
+//		User usuario = new User();
 //		usuario.set(nombre);
 //		usuario.setFechaAlta(java.time.LocalDateTime.now());
 //		return usersRepository.save(usuario);
@@ -58,20 +55,24 @@ public class UsersService {
 		  usersRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
 	  }
 
-    public Usuario getUserById(String userId){
+    public User getUserById(String userId){
       return usersRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("No se encontro el usuario"));
     }
 
   /**
    *
-   * @param usuario servira tanto para guardar uno nuevo como para actualizar
+   * @param user servira tanto para guardar uno nuevo como para actualizar
    */
-  public void saveUser(Usuario usuario) {
-      usersRepository.save(usuario);
+  public void saveUser(User user) {
+      usersRepository.save(user);
     }
 
-  public void saveUsers(List<Usuario> usersToModify) {
+  public void saveUsers(List<User> usersToModify) {
     usersRepository.saveAll(usersToModify);
+  }
+
+  public List<User> getAll() {
+    return usersRepository.findAll();
   }
 }
 

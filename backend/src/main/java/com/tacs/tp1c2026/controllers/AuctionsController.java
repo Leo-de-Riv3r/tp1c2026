@@ -1,9 +1,9 @@
  package com.tacs.tp1c2026.controllers;
 
- import com.tacs.tp1c2026.entities.dto.input.NewAuctionDto;
- import com.tacs.tp1c2026.entities.dto.input.NewAuctionOfferDto;
+ import com.tacs.tp1c2026.entities.dto.input.auction.NewAuctionDto;
+ import com.tacs.tp1c2026.entities.dto.input.auction.NewAuctionOfferDto;
  import com.tacs.tp1c2026.entities.dto.input.SearchPublicationsFilters;
- import com.tacs.tp1c2026.entities.dto.output.AuctionDto;
+ import com.tacs.tp1c2026.entities.dto.output.auction.AuctionDto;
  import com.tacs.tp1c2026.entities.dto.output.PaginationDtoOutput;
  import com.tacs.tp1c2026.entities.enums.CardCategory;
  import com.tacs.tp1c2026.services.AuctionsService;

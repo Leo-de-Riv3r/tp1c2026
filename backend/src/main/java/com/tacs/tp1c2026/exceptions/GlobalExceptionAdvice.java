@@ -1,9 +1,12 @@
 package com.tacs.tp1c2026.exceptions;
 
+import com.tacs.tp1c2026.entities.dto.common.ApiError;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -16,15 +19,22 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionAdvice {
 
   @ExceptionHandler(CustomException.class)
-  public ResponseEntity<Map<String, Object>> handleCustomException(CustomException ex) {
+  public ResponseEntity<ApiError> handleCustomException(CustomException ex) {
+    return ResponseEntity
+        .status(ex.getHttpStatus())
+        .body(ApiError.of(
+            ex.getHttpStatus().value(),
+            ex.getHttpStatus().getReasonPhrase(),
+            ex.getMessage()
+        ));
+  }
 
-    Map<String, Object> body = Map.of(
-        "timestamp", LocalDateTime.now(),
-        "message", ex.getMessage()
-    );
-
-    // Usas .status() y .body() para construir la respuesta
-    return ResponseEntity.status(ex.getHttpStatus()).body(body);
+  @ExceptionHandler(Exception.class)
+  public ResponseEntity<ApiError> handleUnexpectedError(Exception ex) {
+    log.error("Unexpected error: {}", ex.getMessage(), ex);
+    return ResponseEntity
+        .internalServerError()
+        .body(ApiError.of(500, "Internal Server Error", "An unexpected error occurred"));
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -41,15 +51,5 @@ public class GlobalExceptionAdvice {
 
     // Devolvemos un JSON limpio con código 400
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errores);
-  }
-
-  @ExceptionHandler(Exception.class)
-  public ResponseEntity<Map<String, Object>> handleUnexpectedError(Exception ex) {
-    log.error("Error inesperado: {}", ex.getMessage(), ex);
-    Map<String, Object> body = Map.of(
-        "timestamp", LocalDateTime.now(),
-        "message", "Error inesperado"
-    );
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
   }
 }

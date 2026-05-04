@@ -1,6 +1,6 @@
 package com.tacs.tp1c2026.repositories.impl;
 
-import com.tacs.tp1c2026.entities.Auction;
+import com.tacs.tp1c2026.entities.auction.Auction;
 import com.tacs.tp1c2026.entities.dto.input.SearchPublicationsFilters;
 import com.tacs.tp1c2026.entities.enums.AuctionState;
 import com.tacs.tp1c2026.repositories.AuctionRepositoryCustom;

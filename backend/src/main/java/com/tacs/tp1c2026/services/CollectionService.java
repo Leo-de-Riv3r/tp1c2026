@@ -1,14 +1,14 @@
 package com.tacs.tp1c2026.services;
 
-import com.tacs.tp1c2026.entities.Card;
-import com.tacs.tp1c2026.entities.CardCollection;
-import com.tacs.tp1c2026.entities.Usuario;
-import com.tacs.tp1c2026.entities.dto.input.MissingCardDto;
-import com.tacs.tp1c2026.entities.dto.input.MoveCardsRequestDto;
-import com.tacs.tp1c2026.entities.dto.input.RegisterRepeatedCardDto;
+import com.tacs.tp1c2026.entities.card.Card;
+import com.tacs.tp1c2026.entities.user.CardCollection;
+import com.tacs.tp1c2026.entities.user.User;
+import com.tacs.tp1c2026.entities.dto.input.user.MissingCardDto;
+import com.tacs.tp1c2026.entities.dto.input.user.MoveCardsRequestDto;
+import com.tacs.tp1c2026.entities.dto.input.user.RegisterRepeatedCardDto;
 import com.tacs.tp1c2026.entities.dto.output.CardDto;
 import com.tacs.tp1c2026.entities.dto.output.PaginationDtoOutput;
-import com.tacs.tp1c2026.entities.dto.output.RepeatedCardDto;
+import com.tacs.tp1c2026.entities.dto.output.user.RepeatedCardDto;
 import com.tacs.tp1c2026.entities.enums.ParticipationType;
 import com.tacs.tp1c2026.exceptions.ConflictException;
 import java.util.List;
@@ -24,17 +24,17 @@ public class CollectionService {
   private CardsService cardsService;
 
   public void addMissing(MissingCardDto dto, String userId) {
-    Usuario user = usersService.getUserById(userId);
+    User user = usersService.getUserById(userId);
     Card card = cardsService.getById(dto.getCardId());
     if (user.getMissingCards().contains(card)) {
       throw new ConflictException("Ya tienes la figurita marcada como faltante");
     }
-    user.agregarFaltantes(card);
+    user.addMissing(card);
     usersService.saveUser(user);
   }
 
   public void registerRepeated(RegisterRepeatedCardDto dto, String userId) {
-    Usuario user = usersService.getUserById(userId);
+    User user = usersService.getUserById(userId);
 
     Optional<CardCollection> existingCard = user.getCollection().stream()
         .filter(item -> item.getCard().getId().equals(dto.getCardId()))
@@ -64,30 +64,30 @@ public class CollectionService {
   }
 
   public void removeFromMissing(String userId, String cardId) {
-    Usuario user = usersService.getUserById(userId);
+    User user = usersService.getUserById(userId);
     Card card = cardsService.getById(cardId);
     user.getMissingCards().removeIf(c -> c.getId().equals(cardId));
     usersService.saveUser(user);
   }
 
   public void removeFromRepeated(String userId, String cardId){
-    Usuario user = usersService.getUserById(userId);
-    CardCollection item = user.getRepetidaById(cardId);
+    User user = usersService.getUserById(userId);
+    CardCollection item = user.getRepeatedCardById(cardId);
     user.getCollection().removeIf(c -> c.getCard().getId().equals(cardId) && c.canBeDeleted());
     usersService.saveUser(user);
   }
 
   public void moveCards(String userId, MoveCardsRequestDto dto) {
-    Usuario cardsOwer = usersService.getUserById(userId);
+    User cardsOwer = usersService.getUserById(userId);
 
-    CardCollection repeatedCard = cardsOwer.getRepetidaById(dto.getCardId());
+    CardCollection repeatedCard = cardsOwer.getRepeatedCardById(dto.getCardId());
     repeatedCard.moveCards(dto.getQuantity(), dto.getNewParticipationType());
 
     usersService.saveUser(cardsOwer);
   }
 
   public PaginationDtoOutput<CardDto> getMissingCards(String userId, int page, int size) {
-    Usuario user = usersService.getUserById(userId);
+    User user = usersService.getUserById(userId);
 
     Integer pageRequested = (page - 1) < 0 ? 0 : page - 1;
     Integer pageSizeRequested = size > 10 ? (size < 30 ? size : 30) : 10;
@@ -121,7 +121,7 @@ public class CollectionService {
   }
 
   public PaginationDtoOutput<RepeatedCardDto> getRepeatedCards(String userId, Integer page, Integer per_page) {
-    Usuario user = usersService.getUserById(userId);
+    User user = usersService.getUserById(userId);
 
     Integer pageRequested = (page - 1) < 0 ? 0 : page - 1;
     Integer pageSizeRequested = per_page > 10 ? (per_page < 30 ? per_page : 30) : 10;

@@ -1,7 +1,7 @@
 /*package com.tacs.tp1c2026.entities.dto.output;
 
-import com.tacs.tp1c2026.entities.Card;
-import com.tacs.tp1c2026.entities.CardCollection;
+import com.tacs.tp1c2026.entities.card.Card;
+import com.tacs.tp1c2026.entities.user.CardCollection;
 import jakarta.persistence.Column;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;

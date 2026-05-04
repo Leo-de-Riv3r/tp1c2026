@@ -1,8 +1,8 @@
 package com.tacs.tp1c2026.services.mappers;
 
-import com.tacs.tp1c2026.entities.AuctionOffer;
-import com.tacs.tp1c2026.entities.Auction;
-import com.tacs.tp1c2026.entities.dto.output.OfertaSubastaDto;
+import com.tacs.tp1c2026.entities.auction.AuctionOffer;
+import com.tacs.tp1c2026.entities.auction.Auction;
+import com.tacs.tp1c2026.entities.dto.output.auction.AuctionOfferDto;
 import com.tacs.tp1c2026.entities.dto.output.SubastaDto;
 import org.springframework.stereotype.Component;
 
@@ -34,9 +34,9 @@ public class SubastaMapper {
    * Convierte una {@link AuctionOffer} a su representación DTO.
    *
    * @param ofertaSubasta entidad de oferta de subasta
-   * @return {@link OfertaSubastaDto} con el estado, figuritas ofrecidas y referencias asociadas
+   * @return {@link AuctionOfferDto} con el estado, figuritas ofrecidas y referencias asociadas
    */
-//  public OfertaSubastaDto mapOfertaSubasta(AuctionOffer ofertaSubasta) {
+//  public AuctionOfferDto mapOfertaSubasta(AuctionOffer ofertaSubasta) {
 //    List<ItemOfertaSubasta> items = ofertaSubasta.getItemsOfrecidos() == null ? List.of() : ofertaSubasta.getItemsOfrecidos();
 //
 //    Integer cantidadTotal = items.stream()
@@ -52,17 +52,17 @@ public class SubastaMapper {
 //        .filter(Objects::nonNull)
 //        .toList();
 //
-//    List<OfertaSubastaDto.ItemOfertaDetalleDto> itemsDetalle = items.stream()
+//    List<AuctionOfferDto.ItemOfertaDetalleDto> itemsDetalle = items.stream()
 //        .filter(Objects::nonNull)
 //        .filter(i -> i.getCard() != null)
-//        .map(i -> new OfertaSubastaDto.ItemOfertaDetalleDto(
+//        .map(i -> new AuctionOfferDto.ItemOfertaDetalleDto(
 //            i.getCard().getId(),
 //            i.getCard().getNumber(),
 //            i.getCantidad()
 //        ))
 //        .toList();
 //
-//    return new OfertaSubastaDto(
+//    return new AuctionOfferDto(
 //        ofertaSubasta.getId(),
 //        ofertaSubasta.getAuction(),
 //        ofertaSubasta.getUsuarioPostor() != null ? ofertaSubasta.getUsuarioPostor().getId() : ofertaSubasta.getUsuarioPostorId(),

@@ -1,6 +1,6 @@
 package com.tacs.tp1c2026;
 
-import com.tacs.tp1c2026.entities.Usuario;
+import com.tacs.tp1c2026.entities.user.User;
 import com.tacs.tp1c2026.repositories.UsersRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,7 +39,7 @@ public class UsuariosMongoTests {
     void setUp() {
         usersRepository.deleteAll();
         userId = usersRepository.save(
-            Usuario.builder()
+            User.builder()
                 .name("Test User")
                 .email("test@test.com")
                 .build()

@@ -1,8 +1,8 @@
 package com.tacs.tp1c2026.services.mappers;
 
-import com.tacs.tp1c2026.entities.Auction;
-import com.tacs.tp1c2026.entities.dto.output.AuctionDto;
-import com.tacs.tp1c2026.entities.dto.output.BestOfferDto;
+import com.tacs.tp1c2026.entities.auction.Auction;
+import com.tacs.tp1c2026.entities.dto.output.auction.AuctionDto;
+import com.tacs.tp1c2026.entities.dto.output.auction.BestOfferDto;
 import com.tacs.tp1c2026.entities.dto.output.CardDto;
 import java.util.List;
 import org.springframework.stereotype.Component;

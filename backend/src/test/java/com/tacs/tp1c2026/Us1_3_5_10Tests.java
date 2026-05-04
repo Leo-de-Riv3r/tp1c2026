@@ -6,11 +6,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content; // <-- ESTE ES EL CORRECTO
 
-import com.tacs.tp1c2026.entities.CardCollection;
-import com.tacs.tp1c2026.entities.Usuario;
-import com.tacs.tp1c2026.entities.dto.input.MissingCardDto;
-import com.tacs.tp1c2026.entities.dto.input.RegisterRepeatedCardDto;
-import com.tacs.tp1c2026.entities.dto.input.NewExchangeProposalDto;
+import com.tacs.tp1c2026.entities.user.CardCollection;
+import com.tacs.tp1c2026.entities.user.User;
+import com.tacs.tp1c2026.entities.dto.input.user.MissingCardDto;
+import com.tacs.tp1c2026.entities.dto.input.user.RegisterRepeatedCardDto;
+import com.tacs.tp1c2026.entities.dto.input.exchanges.NewExchangeProposalDto;
 import com.tacs.tp1c2026.entities.enums.CardCategory;
 import com.tacs.tp1c2026.entities.enums.ParticipationType;
 import com.tacs.tp1c2026.repositories.ExchangeProposalsRepository;
@@ -51,10 +51,10 @@ public class Us1_3_5_10Tests {
   @BeforeEach
   void setUp() {
     usuariosRepository.deleteAll();
-    Usuario usuario1 = new Usuario();
+    User usuario1 = new User();
     usuario1.setName("user1");
 
-    Usuario usuario2 = new Usuario();
+    User usuario2 = new User();
     usuario2.setName("user2");
 
     idUser1 = usuariosRepository.save(usuario1).getId();
@@ -84,7 +84,7 @@ public class Us1_3_5_10Tests {
         .andExpect(content().string("Card repetida agregada"));
 
     // Verificación extra: ¿Realmente se guardó en la DB?
-    Usuario usuarioPostTest = usuariosRepository.findById(idUser1).get();
+    User usuarioPostTest = usuariosRepository.findById(idUser1).get();
     assertEquals(1, usuarioPostTest.getRepetidas().size());
   }
 
@@ -107,7 +107,7 @@ public class Us1_3_5_10Tests {
             .andExpect(status().isOk());
 
     //verificacion de bd
-    Usuario usuarioPostTest = usuariosRepository.findById(idUser1).get();
+    User usuarioPostTest = usuariosRepository.findById(idUser1).get();
     assertEquals(1, usuarioPostTest.getFaltantes().size());
   }
 
@@ -149,7 +149,7 @@ public class Us1_3_5_10Tests {
         .content(objectMapper.writeValueAsString(dtoPropuesta)))
         .andExpect(status().isOk());
     //verificar card coleccion
-    Usuario user2 = usuariosRepository.findById(2)
+    User user2 = usuariosRepository.findById(2)
         .orElseThrow(() -> new RuntimeException("No se encontro el usuario"));
     CardCollection figuUsuario = user2.getRepetidas().get(0);
     assertEquals(1, figuUsuario.getCantidadOfertada());
@@ -160,7 +160,7 @@ public class Us1_3_5_10Tests {
         .andExpect(status().isOk());
 
     //verificar que el usuario ya no tiene card
-    Usuario user2B = usuariosRepository.findById(idUser2)
+    User user2B = usuariosRepository.findById(idUser2)
         .orElseThrow(() -> new RuntimeException("No se encontro el usuario"));
     CardCollection figuOfrecidaUsuario = user2B.getRepetidas().get(0);
     assertEquals(0, figuOfrecidaUsuario.getCantidadLibre());

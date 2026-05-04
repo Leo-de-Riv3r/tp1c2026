@@ -1,7 +1,7 @@
 package com.tacs.tp1c2026.repositories.impl;
 
 
-import com.tacs.tp1c2026.entities.ExchangePublication;
+import com.tacs.tp1c2026.entities.exchange.ExchangePublication;
 import com.tacs.tp1c2026.entities.dto.input.SearchPublicationsFilters;
 import com.tacs.tp1c2026.entities.enums.PublicationState;
 import com.tacs.tp1c2026.repositories.ExchangePublicationsRepositoryCustom;
