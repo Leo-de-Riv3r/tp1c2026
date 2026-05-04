@@ -10,7 +10,7 @@ import org.springframework.data.mongodb.core.mapping.DocumentReference;
 public class AuctionItem {
 
   @Id
-  private Integer id;
+  private String id;
 
   @DocumentReference
   private Card card;

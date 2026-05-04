@@ -1,11 +1,13 @@
-
 package com.tacs.tp1c2026.repositories;
 
 
 import com.tacs.tp1c2026.entities.user.User;
 
+import java.util.Optional;
+
 public interface UserRepository extends Repository<User, String> {
 
+  Optional<User> findByEmail(String email);
 
-
+  boolean existsByEmail(String email);
 }

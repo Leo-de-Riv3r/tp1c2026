@@ -6,16 +6,16 @@ public class AlertaPorpuestaRecibidaDto extends AlertDto {
 
   private final String fromUserId;
   private final String fromUserName;
-  private final Integer propuestaId;
-  private final Integer publicacionId;
+  private final String propuestaId;
+  private final String publicacionId;
   private final List<Integer> figuritaNumeros;
 
   public AlertaPorpuestaRecibidaDto(
       Integer id,
       String fromUserId,
       String fromUserName,
-      Integer propuestaId,
-      Integer publicacionId,
+      String propuestaId,
+      String publicacionId,
       List<Integer> figuritaNumeros) {
     super(id, "PROPUESTA_RECIBIDA");
     this.fromUserId = fromUserId;
@@ -33,11 +33,11 @@ public class AlertaPorpuestaRecibidaDto extends AlertDto {
     return fromUserName;
   }
 
-  public Integer getPropuestaId() {
+  public String getPropuestaId() {
     return propuestaId;
   }
 
-  public Integer getPublicacionId() {
+  public String getPublicacionId() {
     return publicacionId;
   }
 

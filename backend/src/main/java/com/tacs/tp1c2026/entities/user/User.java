@@ -9,6 +9,7 @@ import com.tacs.tp1c2026.exceptions.InsufficientCardException;
 import com.tacs.tp1c2026.exceptions.MissingCardException;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -28,15 +29,20 @@ public class User {
     private String id;
 
     @Getter
+    @Setter
     private String name;
 
     @Getter
+    @Setter
     @Indexed(unique = true)
     private String email;
 
+    @Getter
+    @Setter
     private String passwordHash;
 
     @Getter
+    @Setter
     private String avatarId;
 
     @Getter
@@ -45,6 +51,8 @@ public class User {
     @Getter
     private Integer exchangesCount = 0;
 
+    @Getter
+    @Setter
     private LocalDateTime lastLogin;
 
     @Getter
