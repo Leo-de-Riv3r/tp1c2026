@@ -2,56 +2,66 @@ package com.tacs.tp1c2026.entities.exchange;
 
 
 import com.tacs.tp1c2026.entities.card.Card;
+import com.tacs.tp1c2026.entities.enums.Category;
 import com.tacs.tp1c2026.entities.enums.PublicationStatus;
 import com.tacs.tp1c2026.entities.exchange.embedded.Feedback;
 import com.tacs.tp1c2026.entities.user.User;
-import com.tacs.tp1c2026.exceptions.InsufficientCardException;
-import com.tacs.tp1c2026.exceptions.MissingCardException;
+import com.tacs.tp1c2026.exceptions.ConflictException;
 import com.tacs.tp1c2026.exceptions.NoAvailableSlotsException;
 import com.tacs.tp1c2026.exceptions.OfferAlreadyProcessedException;
 import com.tacs.tp1c2026.exceptions.ProposalNotInPublicationException;
+import com.tacs.tp1c2026.exceptions.UnauthorizedException;
 import lombok.Getter;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.TypeAlias;
+import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
-
+@Document(collection = "publications")
+@TypeAlias("publication")
+@Getter
 public class TradePublication {
 
   @Id
-  @Getter
-  private Integer id;
+  private String id;
 
   @DocumentReference
-  private final User user;
+  private User publisherUser;
 
   @DocumentReference
-  private final Card card;
+  private Card card;
 
-  @Getter
-  private final Integer amountTraded;
+  private Integer cardNumber;
+  private String cardDescription;
+  private String cardCountry;
+  private String cardTeam;
+  private Category cardCategory;
 
-  private final LocalDateTime createdAt = LocalDateTime.now();
+  private Integer quantity;
+
+  private final LocalDateTime creationDate = LocalDateTime.now();
 
   private PublicationStatus status = PublicationStatus.ACTIVE;
 
   private final List<TradeProposal> proposals = new ArrayList<>();
 
-  private Feedback feedback;
+  private final List<Feedback> feedbacks = new ArrayList<>();
 
-  public TradePublication(
-          User user,
-          Card card,
-          Integer amountTraded
-  ) {
-    this.user = user;
+  public TradePublication(User publisherUser, Card card, Integer quantity) {
+    this.publisherUser = publisherUser;
     this.card = card;
-    this.amountTraded = amountTraded;
+    this.cardNumber = card.getNumber();
+    this.cardDescription = card.getDescription();
+    this.cardCountry = card.getCountry();
+    this.cardTeam = card.getTeam();
+    this.cardCategory = card.getCategory();
+    this.quantity = quantity;
   }
-
 
   /**
    * Verifica si hay cupos disponibles para nuevas propuestas.
@@ -62,10 +72,10 @@ public class TradePublication {
     long pendingProposals = this.proposals.stream()
         .filter(TradeProposal::isPending)
         .count();
-    return pendingProposals < amountTraded;
+    return pendingProposals < this.quantity;
   }
 
-  public boolean isActive(){
+  public boolean isActive() {
     return this.status == PublicationStatus.ACTIVE;
   }
 
@@ -80,27 +90,29 @@ public class TradePublication {
     }
   }
 
+  /**
+   * Valida que el usuario sea el dueño de la publicación.
+   *
+   * @param user usuario a validar
+   * @throws UnauthorizedException si el usuario no es el dueño
+   */
+  public void validateOwner(User user) throws UnauthorizedException {
+    if (!Objects.equals(this.publisherUser.getId(), user.getId())) {
+      throw new UnauthorizedException("El usuario no es el dueño de la publicación");
+    }
+  }
 
   /**
    * Valida que una propuesta corresponda a esta publicación.
-   *
-   * @param proposal propuesta a validar
-   * @throws ProposalNotInPublicationException si la propuesta no corresponde a esta publicación
    */
   public void validateProposalBelongsToPublication(TradeProposal proposal) throws ProposalNotInPublicationException {
-    if (this.proposals.contains(proposal)) {
-      throw new ProposalNotInPublicationException("La publicacion no corresponde a la propuesta");
+    if (!Objects.equals(proposal.getPublication().getId(), this.id)) {
+      throw new ProposalNotInPublicationException("La propuesta no corresponde a esta publicación");
     }
   }
 
   /**
    * Rechaza una propuesta de esta publicación.
-   * Valida que la propuesta corresponda a esta publicación y que esté pendiente.
-   *
-   * @param proposal propuesta a rechazar
-   * @throws ProposalNotInPublicationException si la propuesta no corresponde
-   * @throws UnauthorizedException si el usuario no es el dueño
-   * @throws OfferAlreadyProcessedException si la propuesta ya fue procesada
    */
   public void rejectProposal(TradeProposal proposal)
       throws ProposalNotInPublicationException, OfferAlreadyProcessedException {
@@ -110,40 +122,50 @@ public class TradePublication {
   }
 
   /**
-   * Acepta una propuesta de esta publicación y ejecuta el intercambio.
-   * Reduce el stock, transfiere figuritas y rechaza las demás propuestas.
-   *
-   * @param proposal propuesta a aceptar
-   * @throws ProposalNotInPublicationException si la propuesta no corresponde
-   * @throws UnauthorizedException si el usuario no es el dueño
-   * @throws OfferAlreadyProcessedException si la propuesta ya fue procesada
+   * Acepta una propuesta de esta publicación. Decrementa el cupo y, si llega a 0,
+   * cierra la publicación.
    */
   public void acceptProposal(TradeProposal proposal)
       throws ProposalNotInPublicationException, OfferAlreadyProcessedException {
     validateProposalBelongsToPublication(proposal);
     proposal.validatePending();
-    this.status = PublicationStatus.FINALIZED;
-    this.proposals.stream()
-        .filter(otherProposal -> !otherProposal.equals(proposal))
-        .filter(TradeProposal::isPending)
-        .forEach(TradeProposal::reject);
+    proposal.accept();
+    this.quantity--;
+    if (this.quantity == 0) {
+      this.status = PublicationStatus.FINALIZED;
+      this.proposals.stream()
+          .filter(TradeProposal::isPending)
+          .forEach(TradeProposal::reject);
+    }
   }
 
-  /**
-   * Agrega una propuesta a esta publicación.
-   *
-   * @param proposal propuesta a agregar
-   */
   public void addProposal(TradeProposal proposal) {
     this.proposals.add(proposal);
   }
 
-  public void addFeedback(Feedback feedback){
-    this.feedback = feedback;
+  public void removeProposal(String proposalId) {
+    TradeProposal proposal = this.proposals.stream()
+        .filter(p -> Objects.equals(p.getId(), proposalId))
+        .findFirst()
+        .orElseThrow(() -> new ProposalNotInPublicationException("Propuesta no encontrada"));
+    if (!proposal.isPending()) {
+      throw new ConflictException("No se puede eliminar una propuesta procesada");
+    }
+    this.proposals.removeIf(p -> Objects.equals(p.getId(), proposalId));
+  }
+
+  public void addFeedback(Feedback feedback) {
+    this.feedbacks.add(feedback);
+  }
+
+  public void cancel() {
+    this.status = PublicationStatus.CANCELLED;
+    this.proposals.stream()
+        .filter(TradeProposal::isPending)
+        .forEach(TradeProposal::cancel);
   }
 
   public boolean notCancelled() {
     return this.status != PublicationStatus.CANCELLED;
   }
-
 }

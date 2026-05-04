@@ -7,6 +7,25 @@ services:
       - mongo_data:/data/db
     networks:
       - tacs-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+  mongo-seed:
+    image: mongo:7
+    depends_on:
+      mongo:
+        condition: service_healthy
+    volumes:
+      - ./seed:/seed:ro
+    networks:
+      - tacs-network
+    command: >
+      mongosh "mongodb://mongo:27017/tacs_db" --file /seed/seed.js
+    restart: "no"
 
   backend:
     build:
@@ -14,7 +33,10 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - mongo
+      mongo:
+        condition: service_healthy
+      mongo-seed:
+        condition: service_completed_successfully
     environment:
       SPRING_DATA_MONGODB_URI: mongodb://mongo:27017/tacs_db
       MONGO_DATABASE: tacs_db
@@ -28,10 +50,7 @@ services:
       start_period: 40s
 
   frontend:
-    build:
-      context: ../../tacs-2026-c1-FE
-      args:
-        VITE_API_BASE_URL: http://localhost:8080
+    image: ghcr.io/salometredici/tacs-2026-c1-fe:latest
     ports:
       - "80:80"
     networks:

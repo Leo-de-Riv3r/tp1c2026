@@ -63,4 +63,28 @@ public class CollectionCard {
     public int getAvailable() {
         return this.quantity - this.compromisedCount;
     }
+
+    /**
+     * Reserva (compromete) {@code amount} unidades para una operación activa
+     * (publicación, subasta o propuesta). No modifica {@code quantity}: solo
+     * incrementa {@code compromisedCount}, dejando indisponibles esas unidades
+     * hasta que la operación se acepte o se cancele.
+     */
+    public void commit(int amount) throws InsufficientCardException {
+        if (amount <= 0) throw new IllegalArgumentException("amount must be positive");
+        int available = this.quantity - this.compromisedCount;
+        if (available < amount) {
+            throw new InsufficientCardException("Insufficient cards: requested " + amount + ", available " + available);
+        }
+        this.compromisedCount += amount;
+    }
+
+    /**
+     * Libera unidades comprometidas — se llama cuando una operación se cancela
+     * o se rechaza, sin que la transferencia haya ocurrido.
+     */
+    public void release(int amount) {
+        if (amount <= 0) throw new IllegalArgumentException("amount must be positive");
+        this.compromisedCount = Math.max(0, this.compromisedCount - amount);
+    }
 }

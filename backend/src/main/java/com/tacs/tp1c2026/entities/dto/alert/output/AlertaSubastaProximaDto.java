@@ -4,14 +4,14 @@ import java.time.LocalDateTime;
 
 public class AlertaSubastaProximaDto extends AlertDto {
 
-  private final Integer subastaId;
+  private final String subastaId;
   private final String figuritaId;
   private final Integer figuritaNumero;
   private final LocalDateTime fechaCierre;
 
   public AlertaSubastaProximaDto(
       Integer id,
-      Integer subastaId,
+      String subastaId,
       String figuritaId,
       Integer figuritaNumero,
       LocalDateTime fechaCierre) {
@@ -22,7 +22,7 @@ public class AlertaSubastaProximaDto extends AlertDto {
     this.fechaCierre = fechaCierre;
   }
 
-  public Integer getSubastaId() {
+  public String getSubastaId() {
     return subastaId;
   }
 

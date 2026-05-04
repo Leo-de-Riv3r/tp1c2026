@@ -3,17 +3,21 @@ package com.tacs.tp1c2026.entities.auction;
 
 import com.tacs.tp1c2026.entities.enums.AuctionOfferStatus;
 import com.tacs.tp1c2026.entities.user.User;
+import lombok.Getter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 
+@Getter
 public class AuctionOffer {
 
   @Id
-  private Integer id;
+  private String id = UUID.randomUUID().toString();
 
   @DocumentReference
   private final User bidder;
@@ -21,6 +25,8 @@ public class AuctionOffer {
   private List<AuctionItem> offeredItems = new ArrayList<>();
 
   private AuctionOfferStatus status = AuctionOfferStatus.PENDING;
+
+  private final LocalDateTime bidDate = LocalDateTime.now();
 
 
   public AuctionOffer(User bidder, List<AuctionItem> items) {
@@ -40,5 +46,3 @@ public class AuctionOffer {
     this.status = AuctionOfferStatus.REJECTED;
   }
 }
-
-
