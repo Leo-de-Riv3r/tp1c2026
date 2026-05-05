@@ -10,6 +10,7 @@ import com.tacs.tp1c2026.entities.dto.auction.input.AuctionConditionDto;
 import com.tacs.tp1c2026.entities.dto.auction.input.CreateAuctionDTO;
 
 import com.tacs.tp1c2026.entities.enums.Category;
+import com.tacs.tp1c2026.repositories.AuctionRepository;
 import com.tacs.tp1c2026.repositories.CardRepository;
 import com.tacs.tp1c2026.repositories.UserRepository;
 import java.io.IOException;
@@ -22,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -29,6 +31,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 public class AuctionTests {
   @Autowired
   private MockMvc mockMvc;
@@ -37,12 +40,14 @@ public class AuctionTests {
   private CardRepository cardRepository;
   @Autowired
   private UserRepository userRepository;
-
+  @Autowired
+  private AuctionRepository auctionRepository;
 
   @BeforeEach
   void setup() throws IOException {
     userRepository.deleteAll();
     cardRepository.deleteAll();
+    auctionRepository.deleteAll();
     try (InputStream inputStream = getClass().getResourceAsStream("/catalog.json")) {
       List<Card> cards = objectMapper.readValue(inputStream, new TypeReference<List<Card>>() {});
       cardRepository.saveAll(cards);
