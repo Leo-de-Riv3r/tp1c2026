@@ -9,6 +9,7 @@ import com.tacs.tp1c2026.entities.card.Card;
 import com.tacs.tp1c2026.entities.dto.auction.input.AuctionConditionDto;
 import com.tacs.tp1c2026.entities.dto.auction.input.CreateAuctionDTO;
 
+import com.tacs.tp1c2026.entities.enums.Category;
 import com.tacs.tp1c2026.repositories.CardRepository;
 import com.tacs.tp1c2026.repositories.UserRepository;
 import java.io.IOException;
@@ -57,8 +58,21 @@ public class AuctionTests {
     //pongo id de user aleatorio porque lo extrae del token
     registerRepeatedCard(cardId, token, "1");
 
-    //create auction
+    AuctionConditionDto condicion1 = AuctionConditionDto.builder()
+        .filterName("MIN_CARD_COUNT")
+        .quantity(2)
+        .build();
 
+    AuctionConditionDto condicion2 = AuctionConditionDto.builder()
+        .filterName("MIN_EXCHANGES")
+        .quantity(5)
+        .build();
+    String auctionBody = createAuctionBody(cardId, 10, List.of(condicion1, condicion2));
+    mockMvc.perform(post("/api/auctions")
+        .contentType(MediaType.APPLICATION_JSON)
+        .header("Authorization", "Bearer " + token)
+        .content(auctionBody))
+        .andExpect(status().is2xxSuccessful());
   }
 
   private void registerRepeatedCard(String cardId, String token, String userID) throws Exception {
