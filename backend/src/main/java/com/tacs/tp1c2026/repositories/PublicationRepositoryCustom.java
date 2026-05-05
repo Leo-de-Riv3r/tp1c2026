@@ -7,4 +7,6 @@ import org.springframework.data.domain.Pageable;
 
 public interface PublicationRepositoryCustom {
   Page<TradePublication> searchWithFilters(SearchPublicationsFilters filters, Pageable pageable);
+
+  Page<TradePublication> findByPublisherUserId(String userId, Pageable pageable);
 }
