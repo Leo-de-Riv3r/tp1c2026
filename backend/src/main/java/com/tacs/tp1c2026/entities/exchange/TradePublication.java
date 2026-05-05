@@ -4,7 +4,6 @@ package com.tacs.tp1c2026.entities.exchange;
 import com.tacs.tp1c2026.entities.card.Card;
 import com.tacs.tp1c2026.entities.enums.Category;
 import com.tacs.tp1c2026.entities.enums.PublicationStatus;
-import com.tacs.tp1c2026.entities.exchange.embedded.Feedback;
 import com.tacs.tp1c2026.entities.user.User;
 import com.tacs.tp1c2026.exceptions.ConflictException;
 import com.tacs.tp1c2026.exceptions.NoAvailableSlotsException;
@@ -42,7 +41,11 @@ public class TradePublication {
   private String cardTeam;
   private Category cardCategory;
 
-  private Integer quantity;
+  /** Cantidad ofrecida al publicar. Inmutable post-creación. */
+  private Integer initialCount;
+
+  /** Cantidad disponible. Decrementa cuando se acepta una proposal por su requestedCount. */
+  private Integer remainingCount;
 
   private final LocalDateTime creationDate = LocalDateTime.now();
 
@@ -50,7 +53,7 @@ public class TradePublication {
 
   private final List<TradeProposal> proposals = new ArrayList<>();
 
-  private final List<Feedback> feedbacks = new ArrayList<>();
+  protected TradePublication() {}
 
   public TradePublication(User publisherUser, Card card, Integer quantity) {
     this.publisherUser = publisherUser;
@@ -60,19 +63,20 @@ public class TradePublication {
     this.cardCountry = card.getCountry();
     this.cardTeam = card.getTeam();
     this.cardCategory = card.getCategory();
-    this.quantity = quantity;
+    this.initialCount = quantity;
+    this.remainingCount = quantity;
   }
 
   /**
-   * Verifica si hay cupos disponibles para nuevas propuestas.
-   *
-   * @return true si hay cupos disponibles
+   * Verifica si hay cupos disponibles para nuevas propuestas, considerando las pendientes
+   * (que ya tienen reservado su requestedCount frente a remainingCount).
    */
   public boolean hasAvailableSlots() {
-    long pendingProposals = this.proposals.stream()
+    int pendingRequested = this.proposals.stream()
         .filter(TradeProposal::isPending)
-        .count();
-    return pendingProposals < this.quantity;
+        .mapToInt(TradeProposal::getRequestedCount)
+        .sum();
+    return pendingRequested < this.remainingCount;
   }
 
   public boolean isActive() {
@@ -122,21 +126,36 @@ public class TradePublication {
   }
 
   /**
-   * Acepta una propuesta de esta publicación. Decrementa el cupo y, si llega a 0,
-   * cierra la publicación.
+   * Acepta una propuesta de esta publicación. Decrementa {@code remainingCount} por
+   * {@code proposal.requestedCount}. Si llega a 0, finaliza la publicación y marca como
+   * {@code CANCELLED} las pendientes restantes (el service libera su {@code compromisedCount}).
    */
   public void acceptProposal(TradeProposal proposal)
       throws ProposalNotInPublicationException, OfferAlreadyProcessedException {
     validateProposalBelongsToPublication(proposal);
     proposal.validatePending();
+    int requested = proposal.getRequestedCount();
+    if (requested > this.remainingCount) {
+      throw new ConflictException("La propuesta pide " + requested + " pero quedan " + this.remainingCount);
+    }
     proposal.accept();
-    this.quantity--;
-    if (this.quantity == 0) {
+    this.remainingCount -= requested;
+    if (this.remainingCount == 0) {
       this.status = PublicationStatus.FINALIZED;
       this.proposals.stream()
           .filter(TradeProposal::isPending)
-          .forEach(TradeProposal::reject);
+          .forEach(TradeProposal::cancel);
     }
+  }
+
+  /**
+   * Devuelve las propuestas que el service tiene que liberar (release de compromisedCount)
+   * después de un cierre por cascada (auto-finalización o cancelación manual).
+   */
+  public List<TradeProposal> getCancelledPendingsForRelease() {
+    return this.proposals.stream()
+        .filter(p -> p.getStatus() == com.tacs.tp1c2026.entities.enums.TradeProposalStatus.CANCELLED)
+        .toList();
   }
 
   public void addProposal(TradeProposal proposal) {
@@ -152,10 +171,6 @@ public class TradePublication {
       throw new ConflictException("No se puede eliminar una propuesta procesada");
     }
     this.proposals.removeIf(p -> Objects.equals(p.getId(), proposalId));
-  }
-
-  public void addFeedback(Feedback feedback) {
-    this.feedbacks.add(feedback);
   }
 
   public void cancel() {

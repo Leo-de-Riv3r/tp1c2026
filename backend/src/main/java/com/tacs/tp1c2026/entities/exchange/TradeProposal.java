@@ -36,13 +36,20 @@ public class TradeProposal {
   @DocumentReference
   private final List<Card> cards;
 
+  /**
+   * Cantidad de unidades del card publicado que pide el bidder.
+   * Tiene que cumplir 1 ≤ requestedCount ≤ publication.remainingCount al momento de crearse.
+   */
+  private Integer requestedCount;
+
   private TradeProposalStatus status = TradeProposalStatus.PENDING;
 
   private final LocalDateTime creationDate = LocalDateTime.now();
 
-  public TradeProposal(TradePublication publication, List<Card> cards, User proposerUser, User receiver) {
+  public TradeProposal(TradePublication publication, List<Card> cards, Integer requestedCount, User proposerUser, User receiver) {
     this.publication = publication;
     this.cards = new ArrayList<>(cards);
+    this.requestedCount = requestedCount;
     this.proposerUser = proposerUser;
     this.receiver = receiver;
   }

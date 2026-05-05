@@ -18,7 +18,8 @@ public class TradeMapper {
   public TradePublicationDto mapPublication(TradePublication publication) {
     return new TradePublicationDto(
         publication.getId(),
-        publication.getQuantity(),
+        publication.getInitialCount(),
+        publication.getRemainingCount(),
         publication.getCardNumber(),
         publication.getStatus(),
         publication.getCardDescription(),
@@ -40,6 +41,7 @@ public class TradeMapper {
         proposal.getId(),
         proposal.getPublication() != null ? proposal.getPublication().getId() : null,
         cardIds,
+        proposal.getRequestedCount(),
         proposal.getProposerUser() != null ? proposal.getProposerUser().getId() : null,
         proposal.getStatus(),
         proposal.getCreationDate()
