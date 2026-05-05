@@ -4,6 +4,7 @@ import com.tacs.tp1c2026.entities.dto.common.input.SearchPublicationsFilters;
 import com.tacs.tp1c2026.entities.enums.PublicationStatus;
 import com.tacs.tp1c2026.entities.exchange.TradePublication;
 import com.tacs.tp1c2026.repositories.PublicationRepositoryCustom;
+import org.bson.types.ObjectId;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -47,6 +48,21 @@ public class PublicationRepositoryImpl implements PublicationRepositoryCustom {
 
     List<TradePublication> results = mongoTemplate.find(query, TradePublication.class);
 
+    return PageableExecutionUtils.getPage(
+        results,
+        pageable,
+        () -> mongoTemplate.count(Query.of(query).limit(-1).skip(-1), TradePublication.class)
+    );
+  }
+
+  @Override
+  public Page<TradePublication> findByPublisherUserId(String userId, Pageable pageable) {
+    // `publisherUser` está persistido como ObjectId (User._id es ObjectId en Mongo
+    // aunque el @Id Java sea String). Match directo contra ObjectId; usamos `in`
+    // con String + ObjectId por si en algún flujo se persistiera como String.
+    Query query = new Query(Criteria.where("publisherUser").in(userId, new ObjectId(userId)));
+    query.with(pageable);
+    List<TradePublication> results = mongoTemplate.find(query, TradePublication.class);
     return PageableExecutionUtils.getPage(
         results,
         pageable,

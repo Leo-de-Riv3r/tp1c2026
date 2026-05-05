@@ -338,8 +338,8 @@ public class AuctionService {
             .category(card.getCategory() == null ? null : card.getCategory().getValue())
             .quantity(amount)
             .compromisedCount(0)
-            .adquisitionDate(LocalDate.now())
-            .adquisitionOrigin("AUCTION")
+            .acquisitionDate(LocalDate.now())
+            .acquisitionOrigin("AUCTION")
             .build();
     }
 

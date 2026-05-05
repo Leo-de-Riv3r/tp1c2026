@@ -117,4 +117,17 @@ public class UsersController {
             .status(HttpStatus.CREATED)
             .body(userService.addMissingCard(id, request.cardId()));
     }
+
+    /**
+     * Removes a card from the user's missing list.
+     * @param id the user's ID
+     * @param cardId the card ID to remove
+     */
+    @DeleteMapping("/{id}/missing-cards/{cardId}")
+    public ResponseEntity<Void> removeMissingCard(
+            @PathVariable String id,
+            @PathVariable String cardId) throws NotFoundException, UserNotFoundException {
+        userService.removeFromMissingCards(id, cardId);
+        return ResponseEntity.noContent().build();
+    }
 }

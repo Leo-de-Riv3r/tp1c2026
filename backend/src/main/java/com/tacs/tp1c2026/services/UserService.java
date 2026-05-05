@@ -4,6 +4,7 @@ import com.tacs.tp1c2026.entities.card.Card;
 import com.tacs.tp1c2026.entities.user.User;
 import com.tacs.tp1c2026.entities.user.embedded.CollectionCard;
 import com.tacs.tp1c2026.entities.user.embedded.MissingCard;
+import com.tacs.tp1c2026.exceptions.ConflictException;
 import com.tacs.tp1c2026.exceptions.InsufficientCardException;
 import com.tacs.tp1c2026.exceptions.MissingCardException;
 import com.tacs.tp1c2026.exceptions.NotFoundException;
@@ -110,6 +111,9 @@ public class UserService {
     public MissingCard addMissingCard(String userId, String cardId) throws NotFoundException, UserNotFoundException {
         Card card = cardService.getById(cardId);
         User user = getById(userId);
+        if (user.hasInCollection(cardId)) {
+            throw new ConflictException("La figurita " + cardId + " ya está en la colección del usuario");
+        }
         MissingCard mc = MissingCard.fromCatalog(card);
         user.addToMissingCards(mc);
         userRepository.save(user);

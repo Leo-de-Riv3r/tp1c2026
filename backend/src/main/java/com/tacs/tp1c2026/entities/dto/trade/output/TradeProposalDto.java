@@ -9,6 +9,7 @@ public record TradeProposalDto(
     String id,
     String publicationId,
     List<String> cardIds,
+    Integer requestedCount,
     String proposerUserId,
     TradeProposalStatus status,
     LocalDateTime creationDate

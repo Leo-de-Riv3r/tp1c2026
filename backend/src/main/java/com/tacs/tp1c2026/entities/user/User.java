@@ -49,7 +49,7 @@ public class User {
     private Double rating = null;
 
     @Getter
-    private Integer exchangesCount = 0;
+    private Integer exchangesAmount = 0;
 
     @Getter
     @Setter
@@ -76,6 +76,10 @@ public class User {
         return this.collection.stream().filter(c -> c.isOf(cardId)).findFirst();
     }
 
+    public void incrementExchangesAmount() {
+        this.exchangesAmount = (this.exchangesAmount == null ? 0 : this.exchangesAmount) + 1;
+    }
+
     public boolean hasInCollection(String cardId) {
         return this.collection.stream().anyMatch(c -> c.isOf(cardId));
     }
@@ -89,6 +93,9 @@ public class User {
                     this.vectorProfile.addRepeatedCard(newCard.getCardId());
                 }
             );
+        // Invariante: una figurita no puede estar en collection y missingCards a la vez.
+        // Idempotente: no hace nada si la card no estaba como faltante.
+        removeFromMissingCards(newCard.getCardId());
     }
 
     public void removeFromCollection(String cardId, int amount) throws MissingCardException, InsufficientCardException {

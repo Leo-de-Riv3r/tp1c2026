@@ -21,7 +21,7 @@ public record UserDto(
                 user.getName(),
                 user.getEmail(),
                 user.getRating(),
-                user.getExchangesCount(),
+                user.getExchangesAmount(),
                 user.getAvatarId(),
                 user.getCreationDate().toString()
         );

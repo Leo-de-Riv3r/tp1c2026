@@ -24,8 +24,8 @@ public class CollectionCard {
     private Integer quantity;
     @Builder.Default
     private Integer compromisedCount = 0;
-    private LocalDate adquisitionDate;
-    private String adquisitionOrigin;
+    private LocalDate acquisitionDate;
+    private String acquisitionOrigin;
 
     public static CollectionCard fromCatalog(Card card) {
         return CollectionCard.builder()
@@ -37,8 +37,8 @@ public class CollectionCard {
             .category(card.getCategory() == null ? null : card.getCategory().getValue())
             .quantity(1)
             .compromisedCount(0)
-            .adquisitionDate(LocalDate.now())
-            .adquisitionOrigin("MANUAL")
+            .acquisitionDate(LocalDate.now())
+            .acquisitionOrigin("MANUAL")
             .build();
     }
 

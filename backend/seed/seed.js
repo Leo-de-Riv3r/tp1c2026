@@ -40,33 +40,114 @@ const existingUsers = db.users.countDocuments();
 if (existingUsers > 0) {
   print(`⚠️  Ya existen ${existingUsers} usuarios. Saltando.`);
 } else {
-  // password "test123" hasheada con BCrypt (rounds=10)
+  // password "1234" hasheada con BCrypt (rounds=10)
   // En producción la app lo hashea — este hash es solo para seed local
+  // Pre-cargamos algunas cards en la colección y faltantes para que el usuario
+  // pueda probar publicar / "ya la conseguí" sin tener que poblar a mano.
+  const seedCard = (id) => db.cards.findOne({ _id: id });
+  const toCollection = (id, quantity) => {
+    const c = seedCard(id);
+    return c && {
+      cardId: c._id, number: c.number, description: c.description,
+      country: c.country, team: c.team,
+      category: c.category, quantity, compromisedCount: 0,
+      acquisitionDate: new Date(), acquisitionOrigin: "SEED"
+    };
+  };
+  const toMissing = (id) => {
+    const c = seedCard(id);
+    return c && {
+      cardId: c._id, number: c.number, description: c.description,
+      country: c.country, team: c.team,
+      category: c.category, addedAt: new Date()
+    };
+  };
+
+  const PASSWORD_HASH = "$2a$10$pHxMkuWMhtarNaCbjmQ7z.YrAVSkitQ0Y/EHyWsJeP/kIeG34osgS";
+
   db.users.insertOne({
     _id: ObjectId("69e54c037de7f7e868da90f5"),
     name: "Test User",
     email: "user@test.com",
-    passwordHash: "$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy",
+    passwordHash: PASSWORD_HASH,
     avatarId: "avatar_1",
     rating: null,
-    exchangesCount: 0,
+    exchangesAmount: 0,
     lastLogin: null,
     creationDate: new Date(),
-    collection: [],
+    collection: [
+      toCollection("card_001", 3),
+      toCollection("card_005", 2),
+      toCollection("card_010", 1)
+    ].filter(Boolean),
+    missingCards: [
+      toMissing("card_002"),
+      toMissing("card_007")
+    ].filter(Boolean),
+    suggestionsIds: []
+  });
+
+  // Segundo usuario con dos publicaciones activas. Las cards publicadas quedan
+  // comprometidas (compromisedCount = quantity publicada).
+  const PUBLISHER_ID = ObjectId("69e54c037de7f7e868da90f6");
+  db.users.insertOne({
+    _id: PUBLISHER_ID,
+    name: "Publisher User",
+    email: "publisher@test.com",
+    passwordHash: PASSWORD_HASH,
+    avatarId: "avatar_2",
+    rating: 4.5,
+    exchangesAmount: 0,
+    lastLogin: null,
+    creationDate: new Date(),
+    collection: [
+      { ...toCollection("card_003", 2), compromisedCount: 2 },
+      { ...toCollection("card_004", 3), compromisedCount: 1 },
+      toCollection("card_006", 1)
+    ].filter(Boolean),
     missingCards: [],
     suggestionsIds: []
   });
+
+  const toPublication = (cardId, initial, remaining) => {
+    const c = seedCard(cardId);
+    return c && {
+      _id: new ObjectId(),
+      publisherUser: PUBLISHER_ID,
+      card: c._id,
+      cardNumber: c.number,
+      cardDescription: c.description,
+      cardCountry: c.country,
+      cardTeam: c.team,
+      cardCategory: c.category,
+      initialCount: initial,
+      remainingCount: remaining,
+      creationDate: new Date(),
+      status: "ACTIVE",
+      proposals: [],
+      _class: "publication"
+    };
+  };
+  const pubs = [
+    toPublication("card_003", 2, 2),  // 2 disponibles
+    toPublication("card_004", 3, 1)   // ya cedió 2 vía aceptaciones; queda 1 (compromised=1)
+  ].filter(Boolean);
+  if (pubs.length) db.publications.insertMany(pubs);
 
   db.users.createIndex({ email: 1 }, { unique: true, name: "idx_email" });
   db.users.createIndex({ "collection.cardId": 1 }, { name: "idx_collection_cardId" });
   db.users.createIndex({ "missingCards.cardId": 1 }, { name: "idx_missing_cardId" });
   db.users.createIndex({ rating: 1 }, { name: "idx_rating" });
+  db.publications.createIndex({ publisherUser: 1 }, { name: "idx_pub_publisher" });
+  db.publications.createIndex({ status: 1 }, { name: "idx_pub_status" });
 
-  print("✅  Usuario de prueba creado: user@test.com / test123");
-  print("✅  Índices de usuarios creados");
+  print("✅  Usuarios de prueba creados: user@test.com, publisher@test.com");
+  print("✅  Publicaciones de Publisher User creadas");
+  print("✅  Índices creados");
 }
 
 // ── Resumen ───────────────────────────────────────────────────
 print("\n📊  Estado de la base:");
-print(`    cards:    ${db.cards.countDocuments()}`);
-print(`    users:    ${db.users.countDocuments()}`);
+print(`    cards:        ${db.cards.countDocuments()}`);
+print(`    users:        ${db.users.countDocuments()}`);
+print(`    publications: ${db.publications.countDocuments()}`);
