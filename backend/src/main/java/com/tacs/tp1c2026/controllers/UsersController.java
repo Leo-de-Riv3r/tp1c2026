@@ -69,8 +69,9 @@ public class UsersController {
     @PostMapping("/{id}/collection")
     public ResponseEntity<CollectionCard> addToCollection(
             @PathVariable String id,
+            @RequestAttribute("userId") String userId,
             @Valid @RequestBody AddToCollectionRequest request) throws MissingCardException, NotFoundException, UserNotFoundException {
-        CollectionCardResult result = userService.addCardToUserCollection(id, request.cardId());
+        CollectionCardResult result = userService.addCardToUserCollection(userId, request.cardId());
         return ResponseEntity
             .status(result.created() ? HttpStatus.CREATED : HttpStatus.OK)
             .body(result.card());
