@@ -12,6 +12,6 @@ public class MinimalExchanges extends AuctionCondition{
 
   @Override
   public boolean canOffer(User user, AuctionOffer offer) {
-    return user.getExchangesCount() >= quantity;
+    return user.getExchangesAmount() >= quantity;
   }
 }
