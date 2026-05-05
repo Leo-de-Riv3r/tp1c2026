@@ -7,6 +7,7 @@ import com.tacs.tp1c2026.entities.dto.trade.input.CreateTradeProposalDTO;
 import com.tacs.tp1c2026.entities.dto.trade.input.CreateTradePublicationDto;
 import com.tacs.tp1c2026.entities.dto.trade.input.ReviewProposalDto;
 import com.tacs.tp1c2026.entities.dto.trade.output.TradePublicationDto;
+import com.tacs.tp1c2026.entities.enums.CardType;
 import com.tacs.tp1c2026.entities.enums.Category;
 import com.tacs.tp1c2026.entities.exchange.TradePublication;
 import com.tacs.tp1c2026.exceptions.*;
@@ -59,9 +60,10 @@ public class ExchangesController {
       @RequestParam(required = false) String name,
       @RequestParam(required = false) String country,
       @RequestParam(required = false) String team,
-      @RequestParam(required = false) Category category
+      @RequestParam(required = false) Category category,
+      @RequestParam(required = false) CardType cardType
   ) {
-    SearchPublicationsFilters filters = new SearchPublicationsFilters(name, country, team, category);
+    SearchPublicationsFilters filters = new SearchPublicationsFilters(name, country, team, category, cardType);
     Page<TradePublication> result = publicationService.searchActivePublications(page, per_page, filters);
     return ResponseEntity.ok(new PaginationDtoOutput<>(
         tradeMapper.mapPublications(result.getContent()),
