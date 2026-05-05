@@ -1,13 +1,11 @@
 package com.tacs.tp1c2026.entities.dto.mappers;
 
 import com.tacs.tp1c2026.entities.auction.Auction;
-import com.tacs.tp1c2026.entities.card.Card;
+import com.tacs.tp1c2026.entities.auction.AuctionOffer;
 import com.tacs.tp1c2026.entities.dto.auction.output.AuctionDto;
+import com.tacs.tp1c2026.entities.dto.auction.output.AuctionOfferDto;
 import com.tacs.tp1c2026.entities.dto.auction.output.BestOfferDto;
 import com.tacs.tp1c2026.entities.dto.card.output.CardDTO;
-import com.tacs.tp1c2026.entities.enums.AuctionStatus;
-import com.tacs.tp1c2026.entities.enums.Category;
-import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.stereotype.Component;
 
@@ -31,6 +29,10 @@ public class AuctionMapper {
       bestOfferDto.setCards(offeredCards);
     }
 
+    List<AuctionOfferDto> offerDtos = auction.getOffers() == null
+        ? List.of()
+        : auction.getOffers().stream().map(o -> mapOffer(auction.getId(), o)).toList();
+
     return new AuctionDto(
         auction.getId(),
         auction.getCardNumber(),
@@ -40,10 +42,32 @@ public class AuctionMapper {
         auction.getCardCategory(),
         auction.getCloseDate(),
         auction.getStatus(),
-        bestOfferDto
+        bestOfferDto,
+        auction.getPublisherUser() != null ? auction.getPublisherUser().getId() : null,
+        auction.getPublisherName(),
+        auction.getPublisherAvatarId(),
+        offerDtos
     );
+  }
 
-
+  private AuctionOfferDto mapOffer(String auctionId, AuctionOffer offer) {
+    List<AuctionOfferDto.ItemDetailDto> items = offer.getOfferedItems() == null
+        ? List.of()
+        : offer.getOfferedItems().stream()
+            .map(it -> new AuctionOfferDto.ItemDetailDto(
+                it.getCard() != null ? it.getCard().getId() : null,
+                it.getCard() != null ? it.getCard().getNumber() : null,
+                it.getAmount()))
+            .toList();
+    return new AuctionOfferDto(
+        offer.getId(),
+        auctionId,
+        offer.getBidder() != null ? offer.getBidder().getId() : null,
+        offer.getBidder() != null ? offer.getBidder().getName() : null,
+        items,
+        offer.getStatus(),
+        offer.getBidDate()
+    );
   }
 
   public List<AuctionDto> mapAuctions(List<Auction> auctions) {

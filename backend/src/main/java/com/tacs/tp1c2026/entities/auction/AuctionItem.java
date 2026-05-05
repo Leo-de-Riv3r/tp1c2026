@@ -17,6 +17,8 @@ public class AuctionItem {
 
   private Integer amount;
 
+  protected AuctionItem() {}
+
   public AuctionItem(Card card, Integer amount) {
     this.card = card;
     this.amount = amount;

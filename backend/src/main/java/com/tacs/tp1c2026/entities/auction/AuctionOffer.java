@@ -19,14 +19,15 @@ public class AuctionOffer {
   private String id = UUID.randomUUID().toString();
 
   @DocumentReference
-  private final User bidder;
+  private User bidder;
 
   private List<AuctionItem> offeredItems = new ArrayList<>();
 
   private AuctionOfferStatus status = AuctionOfferStatus.PENDING;
 
-  private final LocalDateTime bidDate = LocalDateTime.now();
+  private LocalDateTime bidDate = LocalDateTime.now();
 
+  protected AuctionOffer() {}
 
   public AuctionOffer(User bidder, List<AuctionItem> items) {
     this.bidder = bidder;

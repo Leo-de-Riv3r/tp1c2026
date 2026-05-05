@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @AllArgsConstructor
@@ -19,4 +20,10 @@ public class AuctionDto {
   private LocalDateTime closeDate;
   private AuctionStatus status;
   private BestOfferDto bestOffer;
+  // Publisher (denormalizado en la entidad)
+  private String publisherUserId;
+  private String publisherName;
+  private String publisherAvatarId;
+  // Lista completa de ofertas en la subasta
+  private List<AuctionOfferDto> offers;
 }

@@ -12,5 +12,8 @@ public record TradePublicationDto(
     String cardDescription,
     String cardCountry,
     String cardTeam,
-    Category cardCategory
+    Category cardCategory,
+    String publisherUserId,
+    String publisherName,
+    String publisherAvatarId
 ) {}

@@ -5,6 +5,7 @@ import com.tacs.tp1c2026.entities.dto.auction.input.CancelAuctionDto;
 import com.tacs.tp1c2026.entities.dto.auction.input.CreateAuctionDTO;
 import com.tacs.tp1c2026.entities.dto.auction.input.CreationAuctionOfferDTO;
 import com.tacs.tp1c2026.entities.dto.auction.output.AuctionDto;
+import com.tacs.tp1c2026.entities.dto.auction.output.UserBidDto;
 import com.tacs.tp1c2026.entities.dto.common.input.SearchPublicationsFilters;
 import com.tacs.tp1c2026.entities.dto.common.output.PaginationDtoOutput;
 import com.tacs.tp1c2026.entities.dto.mappers.AuctionMapper;
@@ -87,6 +88,16 @@ public class AuctionsController {
         result.getNumber() + 1,
         result.getTotalPages()
     ));
+  }
+
+  /**
+   * Lista plana de las ofertas hechas por el usuario actual (vista "Mis Ofertas").
+   */
+  @GetMapping("/myOffers")
+  public ResponseEntity<java.util.List<UserBidDto>> getMyOffers(
+      @RequestAttribute("userId") String userId
+  ) {
+    return ResponseEntity.ok(auctionService.getMyOffers(userId));
   }
 
   /**
