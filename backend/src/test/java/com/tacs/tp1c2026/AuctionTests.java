@@ -3,28 +3,58 @@ package com.tacs.tp1c2026;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.jayway.jsonpath.JsonPath;
+import com.tacs.tp1c2026.entities.card.Card;
 import com.tacs.tp1c2026.entities.dto.auction.input.AuctionConditionDto;
 import com.tacs.tp1c2026.entities.dto.auction.input.CreateAuctionDTO;
 
+import com.tacs.tp1c2026.entities.enums.Category;
+import com.tacs.tp1c2026.repositories.AuctionRepository;
+import com.tacs.tp1c2026.repositories.CardRepository;
+import com.tacs.tp1c2026.repositories.UserRepository;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import tools.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 public class AuctionTests {
   @Autowired
   private MockMvc mockMvc;
+  private final ObjectMapper objectMapper = new ObjectMapper();
   @Autowired
-  private ObjectMapper objectMapper;
+  private CardRepository cardRepository;
+  @Autowired
+  private UserRepository userRepository;
+  @Autowired
+  private AuctionRepository auctionRepository;
+
+  @BeforeEach
+  void setup() throws IOException {
+    userRepository.deleteAll();
+    cardRepository.deleteAll();
+    auctionRepository.deleteAll();
+    try (InputStream inputStream = getClass().getResourceAsStream("/catalog.json")) {
+      List<Card> cards = objectMapper.readValue(inputStream, new TypeReference<List<Card>>() {});
+      cardRepository.saveAll(cards);
+      System.out.println("✅ Base de datos de prueba inicializada con " + cards.size() + " cartas.");
+    }
+  }
+
   @Test
   void publishCardForAuction() throws Exception {
     registrarUsuario("testUser", "test@java.com", "password123", "avatar1");
@@ -33,8 +63,21 @@ public class AuctionTests {
     //pongo id de user aleatorio porque lo extrae del token
     registerRepeatedCard(cardId, token, "1");
 
-    //create auction
+    AuctionConditionDto condicion1 = AuctionConditionDto.builder()
+        .filterName("MIN_CARD_COUNT")
+        .quantity(2)
+        .build();
 
+    AuctionConditionDto condicion2 = AuctionConditionDto.builder()
+        .filterName("MIN_EXCHANGES")
+        .quantity(5)
+        .build();
+    String auctionBody = createAuctionBody(cardId, 10, List.of(condicion1, condicion2));
+    mockMvc.perform(post("/api/auctions")
+        .contentType(MediaType.APPLICATION_JSON)
+        .header("Authorization", "Bearer " + token)
+        .content(auctionBody))
+        .andExpect(status().is2xxSuccessful());
   }
 
   private void registerRepeatedCard(String cardId, String token, String userID) throws Exception {
@@ -91,7 +134,7 @@ public class AuctionTests {
         """.formatted(email, password);
   }
 
-  private String createAuctionBody(String cardId, Integer auctionDurationHours, List<AuctionConditionDto> conditions){
+  private String createAuctionBody(String cardId, Integer auctionDurationHours, List<AuctionConditionDto> conditions) throws JsonProcessingException {
     CreateAuctionDTO dto = new CreateAuctionDTO();
     dto.setCardId(cardId);
     dto.setAuctionDurationHours(auctionDurationHours);
