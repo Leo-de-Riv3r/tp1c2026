@@ -2,11 +2,14 @@ package com.tacs.tp1c2026.services;
 
 import com.tacs.tp1c2026.entities.card.Card;
 import com.tacs.tp1c2026.entities.dto.trade.input.CreateTradeProposalDTO;
+import com.tacs.tp1c2026.entities.enums.PublicationStatus;
+import com.tacs.tp1c2026.entities.enums.TradeProposalStatus;
 import com.tacs.tp1c2026.entities.exchange.TradeProposal;
 import com.tacs.tp1c2026.entities.exchange.TradePublication;
 import com.tacs.tp1c2026.entities.user.User;
 import com.tacs.tp1c2026.entities.user.embedded.CollectionCard;
 import com.tacs.tp1c2026.exceptions.*;
+import com.tacs.tp1c2026.repositories.ProposalRepository;
 import com.tacs.tp1c2026.repositories.PublicationRepository;
 import com.tacs.tp1c2026.repositories.UserRepository;
 import org.springframework.stereotype.Service;
@@ -20,6 +23,7 @@ public class ProposalService {
 
     private final UserRepository userRepository;
     private final PublicationRepository publicationRepository;
+    private final ProposalRepository proposalRepository;
     private final UserService userService;
     private final CardService cardService;
     private final PublicationService publicationService;
@@ -27,12 +31,14 @@ public class ProposalService {
 
     public ProposalService(UserRepository userRepository,
                            PublicationRepository publicationRepository,
+                           ProposalRepository proposalRepository,
                            UserService userService,
                            CardService cardService,
                            PublicationService publicationService,
                            ExchangeService exchangeService) {
         this.userRepository = userRepository;
         this.publicationRepository = publicationRepository;
+        this.proposalRepository = proposalRepository;
         this.userService = userService;
         this.cardService = cardService;
         this.publicationService = publicationService;
@@ -58,7 +64,16 @@ public class ProposalService {
         if (requested > publication.getRemainingCount()) {
             throw new ConflictException("La propuesta pide " + requested + " pero quedan " + publication.getRemainingCount());
         }
-        publication.validateAvailableSlots();
+
+        // Cupos: la suma de requestedCount de las pendientes no puede igualar/superar remainingCount.
+        int pendingRequested = proposalRepository
+            .findByPublicationIdAndStatus(publication.getId(), TradeProposalStatus.PENDING)
+            .stream()
+            .mapToInt(TradeProposal::getRequestedCount)
+            .sum();
+        if (pendingRequested >= publication.getRemainingCount()) {
+            throw new NoAvailableSlotsException("Ya no hay cupos para nuevas propuestas");
+        }
 
         User proposer = userService.getById(userId);
         User publisher = publication.getPublisherUser();
@@ -80,21 +95,39 @@ public class ProposalService {
         }
 
         TradeProposal proposal = new TradeProposal(publication, cards, requested, proposer, publisher);
-        publication.addProposal(proposal);
-        publicationRepository.save(publication);
+        TradeProposal saved = proposalRepository.save(proposal);  // autogenera id
         userRepository.save(proposer);
-        return proposal;
+        return saved;
+    }
+
+    public TradeProposal findProposal(String proposalId) throws NotFoundException {
+        return proposalRepository.findById(proposalId)
+            .orElseThrow(() -> new NotFoundException("Proposal not found: " + proposalId));
     }
 
     /**
-     * Encuentra una propuesta por id, navegando desde la publicación que la contiene.
+     * Lista propuestas relacionadas con un usuario.
+     *
+     * @param userId id del usuario participante
+     * @param role   "proposer" → propuestas hechas por el usuario;
+     *               "publisher" / "receiver" → propuestas recibidas (sobre publicaciones del usuario)
+     * @param status filtro opcional por estado
      */
-    public TradeProposal findProposal(String proposalId) throws NotFoundException {
-        return publicationRepository.findAll().stream()
-            .flatMap(p -> p.getProposals().stream())
-            .filter(p -> Objects.equals(p.getId(), proposalId))
-            .findFirst()
-            .orElseThrow(() -> new NotFoundException("Proposal not found: " + proposalId));
+    public List<TradeProposal> searchProposals(String userId, String role, TradeProposalStatus status) {
+        List<TradeProposal> base;
+        if ("publisher".equalsIgnoreCase(role) || "receiver".equalsIgnoreCase(role)) {
+            base = proposalRepository.findByReceiverId(userId);
+        } else {
+            base = proposalRepository.findByProposerUserId(userId);
+        }
+        if (status != null) {
+            return base.stream().filter(p -> p.getStatus() == status).toList();
+        }
+        return base;
+    }
+
+    public List<TradeProposal> findByPublicationId(String publicationId) {
+        return proposalRepository.findByPublicationId(publicationId);
     }
 
     /**
@@ -114,11 +147,12 @@ public class ProposalService {
         TradeProposal proposal = findProposal(proposalId);
         TradePublication publication = publicationService.findPublication(proposal.getPublication().getId());
         publication.validateOwner(reviewer);
-
-        // La entidad valida que requestedCount <= remainingCount, decrementa por M y maneja cascada.
-        publication.acceptProposal(proposal);
+        proposal.validatePending();
 
         int requested = proposal.getRequestedCount();
+        publication.decrementRemaining(requested);
+        proposal.accept();
+
         User publisher = publication.getPublisherUser();
         User proposer = proposal.getProposerUser();
         Card publishedCard = publication.getCard();
@@ -163,20 +197,16 @@ public class ProposalService {
 
         exchangeService.createFromAcceptedProposal(proposal.getId(), publisher, proposer, publishedCard, offeredCards);
 
-        // Cascada: si la publi quedó FINALIZADA, las pendientes restantes ya fueron marcadas
-        // como CANCELLED por la entity. Liberar su compromisedCount + persistir.
-        for (TradeProposal cancelled : publication.getCancelledPendingsForRelease()) {
-            if (Objects.equals(cancelled.getId(), proposal.getId())) continue;
-            User otherProposer = cancelled.getProposerUser();
-            for (Card c : cancelled.getCards()) {
-                otherProposer.findCollectionItem(c.getId()).ifPresent(item -> item.release(1));
-            }
-            userRepository.save(otherProposer);
-        }
-
+        proposalRepository.save(proposal);
         userRepository.save(proposer);
         userRepository.save(publisher);
         publicationRepository.save(publication);
+
+        // Cascada: si la publi quedó FINALIZADA, cancelar pendientes restantes y liberar
+        // su compromisedCount.
+        if (publication.getStatus() == PublicationStatus.FINALIZED) {
+            cancelPendingProposalsAndRelease(publication.getId(), proposal.getId());
+        }
     }
 
     /**
@@ -189,13 +219,14 @@ public class ProposalService {
         TradeProposal proposal = findProposal(proposalId);
         TradePublication publication = publicationService.findPublication(proposal.getPublication().getId());
         publication.validateOwner(reviewer);
+        proposal.validatePending();
 
-        publication.rejectProposal(proposal);
+        proposal.reject();
         for (Card c : proposal.getCards()) {
             proposal.getProposerUser().findCollectionItem(c.getId()).ifPresent(item -> item.release(1));
         }
+        proposalRepository.save(proposal);
         userRepository.save(proposal.getProposerUser());
-        publicationRepository.save(publication);
     }
 
     /**
@@ -213,8 +244,27 @@ public class ProposalService {
         for (Card c : proposal.getCards()) {
             proposal.getProposerUser().findCollectionItem(c.getId()).ifPresent(item -> item.release(1));
         }
-        TradePublication publication = publicationService.findPublication(proposal.getPublication().getId());
+        proposalRepository.save(proposal);
         userRepository.save(proposal.getProposerUser());
-        publicationRepository.save(publication);
+    }
+
+    /**
+     * Cancela todas las pendientes de una publicación (excluyendo opcionalmente una) y libera
+     * el compromisedCount de cada proponente. Usado por el accept en cascada (FINALIZED) y por
+     * el cancel manual de la publicación.
+     */
+    public void cancelPendingProposalsAndRelease(String publicationId, String exceptProposalId) {
+        List<TradeProposal> pendings = proposalRepository
+            .findByPublicationIdAndStatus(publicationId, TradeProposalStatus.PENDING);
+        for (TradeProposal p : pendings) {
+            if (exceptProposalId != null && Objects.equals(p.getId(), exceptProposalId)) continue;
+            p.cancel();
+            User otherProposer = p.getProposerUser();
+            for (Card c : p.getCards()) {
+                otherProposer.findCollectionItem(c.getId()).ifPresent(item -> item.release(1));
+            }
+            proposalRepository.save(p);
+            userRepository.save(otherProposer);
+        }
     }
 }

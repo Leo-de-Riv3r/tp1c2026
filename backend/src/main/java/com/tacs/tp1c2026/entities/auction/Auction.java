@@ -42,6 +42,10 @@ public class Auction {
   @DocumentReference
   private User publisherUser;
 
+  // Snapshot del publisher (denormalizado) — evita join al leer
+  private String publisherName;
+  private String publisherAvatarId;
+
   private final LocalDateTime creationDate;
 
   private LocalDateTime closeDate;
@@ -58,8 +62,15 @@ public class Auction {
   @DocumentReference
   private final List<User> interestedUsers = new ArrayList<>();
 
+  protected Auction() {
+    // No-arg constructor para que Spring Data Mongo pueda hidratar via field reflection.
+    this.creationDate = null;
+  }
+
   public Auction(User user, Card card, Integer auctionDurationHours, List<AuctionCondition> conditions) {
     this.publisherUser = user;
+    this.publisherName = user.getName();
+    this.publisherAvatarId = user.getAvatarId();
     this.card = card;
     this.cardNumber = card.getNumber();
     this.cardDescription = card.getDescription();

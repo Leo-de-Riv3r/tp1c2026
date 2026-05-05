@@ -6,6 +6,8 @@ import com.tacs.tp1c2026.entities.user.User;
 public class MinimalExchanges extends AuctionCondition{
   private Integer quantity;
 
+  protected MinimalExchanges() {}
+
   public MinimalExchanges(Integer quantity) {
     this.quantity = quantity;
   }

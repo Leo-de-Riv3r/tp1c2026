@@ -5,6 +5,13 @@ import com.tacs.tp1c2026.entities.dto.common.input.SearchPublicationsFilters;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
+
 public interface AuctionRepositoryCustom {
   Page<Auction> searchWithFilters(SearchPublicationsFilters filters, Pageable pageable);
+
+  Page<Auction> findByPublisherUserId(String userId, Pageable pageable);
+
+  /** Subastas donde el usuario tiene al menos una oferta. */
+  List<Auction> findByOffersBidderId(String userId);
 }

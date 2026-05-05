@@ -4,6 +4,7 @@ import com.tacs.tp1c2026.entities.auction.Auction;
 import com.tacs.tp1c2026.entities.dto.common.input.SearchPublicationsFilters;
 import com.tacs.tp1c2026.entities.enums.AuctionStatus;
 import com.tacs.tp1c2026.repositories.AuctionRepositoryCustom;
+import org.bson.types.ObjectId;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -56,5 +57,31 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
         pageable,
         () -> mongoTemplate.count(Query.of(query).limit(-1).skip(-1), Auction.class)
     );
+  }
+
+  @Override
+  public Page<Auction> findByPublisherUserId(String userId, Pageable pageable) {
+    // `publisherUser` está persistido como ObjectId vía @DocumentReference;
+    // matcheamos in(string, ObjectId) para tolerar cualquiera de las dos formas.
+    Query query = new Query(Criteria.where("publisherUser").in(userId, new ObjectId(userId)));
+    query.with(pageable);
+    List<Auction> results = mongoTemplate.find(query, Auction.class);
+    return PageableExecutionUtils.getPage(
+        results,
+        pageable,
+        () -> mongoTemplate.count(Query.of(query).limit(-1).skip(-1), Auction.class)
+    );
+  }
+
+  @Override
+  public List<Auction> findByOffersBidderId(String userId) {
+    // `offers[].bidder` es @DocumentReference dentro de un array embebido — la persistencia
+    // varía y la query directa por path no es confiable. Filtramos en memoria
+    // (datasets chicos por ahora; escalar con índice secundario si crece).
+    return mongoTemplate.findAll(Auction.class).stream()
+        .filter(a -> a.getOffers() != null && a.getOffers().stream()
+            .anyMatch(o -> o.getBidder() != null
+                && java.util.Objects.equals(o.getBidder().getId(), userId)))
+        .toList();
   }
 }

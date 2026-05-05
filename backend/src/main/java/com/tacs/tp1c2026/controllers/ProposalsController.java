@@ -2,6 +2,7 @@ package com.tacs.tp1c2026.controllers;
 
 import com.tacs.tp1c2026.entities.dto.trade.input.CreateTradeProposalDTO;
 import com.tacs.tp1c2026.entities.dto.trade.output.TradeProposalDto;
+import com.tacs.tp1c2026.entities.enums.TradeProposalStatus;
 import com.tacs.tp1c2026.entities.exchange.TradeProposal;
 import com.tacs.tp1c2026.exceptions.*;
 import com.tacs.tp1c2026.services.ProposalService;
@@ -12,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -40,6 +42,34 @@ public class ProposalsController {
         "message", "Propuesta enviada con éxito",
         "proposalId", proposal.getId()
     ));
+  }
+
+  /**
+   * Lista propuestas del usuario actual (o de {@code userId} si se pasa).
+   * {@code role}:
+   *   - "proposer" (default): propuestas que el usuario hizo (enviadas)
+   *   - "publisher" / "receiver": propuestas recibidas (sobre publicaciones del usuario)
+   * Filtros opcionales: {@code status}, {@code publicationId}.
+   */
+  @GetMapping
+  public ResponseEntity<List<TradeProposalDto>> listProposals(
+      @RequestAttribute("userId") String currentUserId,
+      @RequestParam(required = false) String userId,
+      @RequestParam(required = false, defaultValue = "proposer") String role,
+      @RequestParam(required = false) TradeProposalStatus status,
+      @RequestParam(required = false) String publicationId
+  ) {
+    List<TradeProposal> result;
+    if (publicationId != null) {
+      result = proposalService.findByPublicationId(publicationId);
+      if (status != null) {
+        result = result.stream().filter(p -> p.getStatus() == status).toList();
+      }
+    } else {
+      String targetUserId = userId != null ? userId : currentUserId;
+      result = proposalService.searchProposals(targetUserId, role, status);
+    }
+    return ResponseEntity.ok(tradeMapper.mapProposals(result));
   }
 
   /**

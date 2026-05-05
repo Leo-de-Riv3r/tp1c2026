@@ -6,9 +6,6 @@ import com.tacs.tp1c2026.entities.enums.Category;
 import com.tacs.tp1c2026.entities.enums.PublicationStatus;
 import com.tacs.tp1c2026.entities.user.User;
 import com.tacs.tp1c2026.exceptions.ConflictException;
-import com.tacs.tp1c2026.exceptions.NoAvailableSlotsException;
-import com.tacs.tp1c2026.exceptions.OfferAlreadyProcessedException;
-import com.tacs.tp1c2026.exceptions.ProposalNotInPublicationException;
 import com.tacs.tp1c2026.exceptions.UnauthorizedException;
 import lombok.Getter;
 import org.springframework.data.annotation.Id;
@@ -17,8 +14,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 @Document(collection = "publications")
@@ -31,6 +26,10 @@ public class TradePublication {
 
   @DocumentReference
   private User publisherUser;
+
+  // Snapshot del publisher (denormalizado) — evita join al leer
+  private String publisherName;
+  private String publisherAvatarId;
 
   @DocumentReference
   private Card card;
@@ -51,12 +50,12 @@ public class TradePublication {
 
   private PublicationStatus status = PublicationStatus.ACTIVE;
 
-  private final List<TradeProposal> proposals = new ArrayList<>();
-
   protected TradePublication() {}
 
   public TradePublication(User publisherUser, Card card, Integer quantity) {
     this.publisherUser = publisherUser;
+    this.publisherName = publisherUser.getName();
+    this.publisherAvatarId = publisherUser.getAvatarId();
     this.card = card;
     this.cardNumber = card.getNumber();
     this.cardDescription = card.getDescription();
@@ -67,37 +66,17 @@ public class TradePublication {
     this.remainingCount = quantity;
   }
 
-  /**
-   * Verifica si hay cupos disponibles para nuevas propuestas, considerando las pendientes
-   * (que ya tienen reservado su requestedCount frente a remainingCount).
-   */
-  public boolean hasAvailableSlots() {
-    int pendingRequested = this.proposals.stream()
-        .filter(TradeProposal::isPending)
-        .mapToInt(TradeProposal::getRequestedCount)
-        .sum();
-    return pendingRequested < this.remainingCount;
-  }
-
   public boolean isActive() {
     return this.status == PublicationStatus.ACTIVE;
   }
 
-  /**
-   * Valida si hay cupos disponibles para nuevas propuestas.
-   *
-   * @throws NoAvailableSlotsException si no hay cupos disponibles
-   */
-  public void validateAvailableSlots() throws NoAvailableSlotsException {
-    if (!hasAvailableSlots()) {
-      throw new NoAvailableSlotsException("Ya no hay cupos para nuevas propuestas");
-    }
+  public boolean notCancelled() {
+    return this.status != PublicationStatus.CANCELLED;
   }
 
   /**
    * Valida que el usuario sea el dueño de la publicación.
    *
-   * @param user usuario a validar
    * @throws UnauthorizedException si el usuario no es el dueño
    */
   public void validateOwner(User user) throws UnauthorizedException {
@@ -107,80 +86,24 @@ public class TradePublication {
   }
 
   /**
-   * Valida que una propuesta corresponda a esta publicación.
+   * Decrementa {@code remainingCount} por {@code amount} (cantidad pedida en la proposal aceptada).
+   * Si llega a 0, marca la publicación como FINALIZED. La cascada de cancelar proposals pendientes
+   * vive en el service.
+   *
+   * @throws ConflictException si {@code amount > remainingCount}
    */
-  public void validateProposalBelongsToPublication(TradeProposal proposal) throws ProposalNotInPublicationException {
-    if (!Objects.equals(proposal.getPublication().getId(), this.id)) {
-      throw new ProposalNotInPublicationException("La propuesta no corresponde a esta publicación");
+  public void decrementRemaining(int amount) {
+    if (amount > this.remainingCount) {
+      throw new ConflictException("La propuesta pide " + amount + " pero quedan " + this.remainingCount);
     }
-  }
-
-  /**
-   * Rechaza una propuesta de esta publicación.
-   */
-  public void rejectProposal(TradeProposal proposal)
-      throws ProposalNotInPublicationException, OfferAlreadyProcessedException {
-    validateProposalBelongsToPublication(proposal);
-    proposal.validatePending();
-    proposal.reject();
-  }
-
-  /**
-   * Acepta una propuesta de esta publicación. Decrementa {@code remainingCount} por
-   * {@code proposal.requestedCount}. Si llega a 0, finaliza la publicación y marca como
-   * {@code CANCELLED} las pendientes restantes (el service libera su {@code compromisedCount}).
-   */
-  public void acceptProposal(TradeProposal proposal)
-      throws ProposalNotInPublicationException, OfferAlreadyProcessedException {
-    validateProposalBelongsToPublication(proposal);
-    proposal.validatePending();
-    int requested = proposal.getRequestedCount();
-    if (requested > this.remainingCount) {
-      throw new ConflictException("La propuesta pide " + requested + " pero quedan " + this.remainingCount);
-    }
-    proposal.accept();
-    this.remainingCount -= requested;
+    this.remainingCount -= amount;
     if (this.remainingCount == 0) {
       this.status = PublicationStatus.FINALIZED;
-      this.proposals.stream()
-          .filter(TradeProposal::isPending)
-          .forEach(TradeProposal::cancel);
     }
   }
 
-  /**
-   * Devuelve las propuestas que el service tiene que liberar (release de compromisedCount)
-   * después de un cierre por cascada (auto-finalización o cancelación manual).
-   */
-  public List<TradeProposal> getCancelledPendingsForRelease() {
-    return this.proposals.stream()
-        .filter(p -> p.getStatus() == com.tacs.tp1c2026.entities.enums.TradeProposalStatus.CANCELLED)
-        .toList();
-  }
-
-  public void addProposal(TradeProposal proposal) {
-    this.proposals.add(proposal);
-  }
-
-  public void removeProposal(String proposalId) {
-    TradeProposal proposal = this.proposals.stream()
-        .filter(p -> Objects.equals(p.getId(), proposalId))
-        .findFirst()
-        .orElseThrow(() -> new ProposalNotInPublicationException("Propuesta no encontrada"));
-    if (!proposal.isPending()) {
-      throw new ConflictException("No se puede eliminar una propuesta procesada");
-    }
-    this.proposals.removeIf(p -> Objects.equals(p.getId(), proposalId));
-  }
-
+  /** Marca la publicación como CANCELLED. La cascada de proposals pendientes vive en el service. */
   public void cancel() {
     this.status = PublicationStatus.CANCELLED;
-    this.proposals.stream()
-        .filter(TradeProposal::isPending)
-        .forEach(TradeProposal::cancel);
-  }
-
-  public boolean notCancelled() {
-    return this.status != PublicationStatus.CANCELLED;
   }
 }

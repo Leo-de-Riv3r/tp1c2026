@@ -34,7 +34,7 @@ public class TradeProposal {
   private User receiver;
 
   @DocumentReference
-  private final List<Card> cards;
+  private List<Card> cards;
 
   /**
    * Cantidad de unidades del card publicado que pide el bidder.
@@ -44,7 +44,9 @@ public class TradeProposal {
 
   private TradeProposalStatus status = TradeProposalStatus.PENDING;
 
-  private final LocalDateTime creationDate = LocalDateTime.now();
+  private LocalDateTime creationDate = LocalDateTime.now();
+
+  protected TradeProposal() {}
 
   public TradeProposal(TradePublication publication, List<Card> cards, Integer requestedCount, User proposerUser, User receiver) {
     this.publication = publication;

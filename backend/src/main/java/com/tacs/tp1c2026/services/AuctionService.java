@@ -9,6 +9,7 @@ import com.tacs.tp1c2026.entities.card.Card;
 import com.tacs.tp1c2026.entities.dto.auction.input.CancelAuctionDto;
 import com.tacs.tp1c2026.entities.dto.auction.input.CreateAuctionDTO;
 import com.tacs.tp1c2026.entities.dto.auction.input.CreationAuctionOfferDTO;
+import com.tacs.tp1c2026.entities.dto.auction.output.UserBidDto;
 import com.tacs.tp1c2026.entities.dto.auction.output.AuctionDto;
 import com.tacs.tp1c2026.entities.dto.common.input.SearchPublicationsFilters;
 import com.tacs.tp1c2026.entities.dto.common.output.PaginationDtoOutput;
@@ -175,6 +176,45 @@ public class AuctionService {
 
     public List<Auction> getAuctions() {
         return this.auctionRepository.findAll();
+    }
+
+    /**
+     * Lista plana de las ofertas hechas por un usuario, con el contexto de la subasta.
+     */
+    public List<UserBidDto> getMyOffers(String userId) {
+        return this.auctionRepository.findByOffersBidderId(userId).stream()
+            .flatMap(auction -> auction.getOffers().stream()
+                .filter(offer -> offer.getBidder() != null
+                    && Objects.equals(offer.getBidder().getId(), userId))
+                .map(offer -> toUserBid(auction, offer)))
+            .toList();
+    }
+
+    private UserBidDto toUserBid(Auction auction, AuctionOffer offer) {
+        List<UserBidDto.OfferItemDto> items = offer.getOfferedItems() == null
+            ? List.of()
+            : offer.getOfferedItems().stream()
+                .map(it -> new UserBidDto.OfferItemDto(
+                    it.getCard() != null ? it.getCard().getId() : null,
+                    it.getCard() != null ? it.getCard().getNumber() : null,
+                    it.getCard() != null ? it.getCard().getDescription() : null,
+                    it.getAmount()))
+                .toList();
+        return new UserBidDto(
+            auction.getId(),
+            auction.getCardNumber(),
+            auction.getCardDescription(),
+            auction.getCardCountry(),
+            auction.getCardTeam(),
+            auction.getPublisherUser() != null ? auction.getPublisherUser().getId() : null,
+            auction.getPublisherName(),
+            auction.getStatus(),
+            auction.getCloseDate(),
+            offer.getId(),
+            items,
+            offer.getStatus(),
+            offer.getBidDate()
+        );
     }
 
     public Auction getAuctionById(String id) throws NotFoundException {

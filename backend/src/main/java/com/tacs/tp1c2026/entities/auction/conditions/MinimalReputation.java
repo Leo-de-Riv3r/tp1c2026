@@ -5,6 +5,9 @@ import com.tacs.tp1c2026.entities.user.User;
 
 public class MinimalReputation extends AuctionCondition{
   private Integer reputation;
+
+  protected MinimalReputation() {}
+
   public MinimalReputation(Integer quantity) {
     this.reputation = quantity;
   }

@@ -25,7 +25,10 @@ public class TradeMapper {
         publication.getCardDescription(),
         publication.getCardCountry(),
         publication.getCardTeam(),
-        publication.getCardCategory()
+        publication.getCardCategory(),
+        publication.getPublisherUser() != null ? publication.getPublisherUser().getId() : null,
+        publication.getPublisherName(),
+        publication.getPublisherAvatarId()
     );
   }
 
