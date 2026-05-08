@@ -1,0 +1,8 @@
+package com.tacs.tp1c2026.entities.enums;
+
+public enum NotificationType {
+    TRADE_PROPOSAL_RECEIVED,
+    AUCTION_ENDING_SOON,
+    WANTED_CARD_AVAILABLE_IN_AUCTION,
+    WANTED_CARD_AVAILABLE_IN_PUBLICATION
+}
