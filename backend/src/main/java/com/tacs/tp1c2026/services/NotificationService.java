@@ -1,7 +1,7 @@
 package com.tacs.tp1c2026.services;
 
 
-import com.tacs.tp1c2026.entities.Notification.Notification;
+import com.tacs.tp1c2026.entities.notification.Notification;
 import com.tacs.tp1c2026.entities.auction.Auction;
 import com.tacs.tp1c2026.entities.enums.AuctionStatus;
 import com.tacs.tp1c2026.entities.enums.NotificationStatus;
@@ -62,6 +62,7 @@ public class NotificationService {
       return notificationRepository.findByReceiverIdAndStatus(userId, status, pageable);
     }
 
+    //@Transactional todo
   public void checkEndingAuctions() {
     LocalDateTime now = LocalDateTime.now();
     LocalDateTime inTwoHour = now.plusHours(2);

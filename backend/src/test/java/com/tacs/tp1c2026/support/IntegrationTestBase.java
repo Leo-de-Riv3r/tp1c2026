@@ -6,6 +6,7 @@ import com.jayway.jsonpath.JsonPath;
 import com.tacs.tp1c2026.entities.card.Card;
 import com.tacs.tp1c2026.repositories.AuctionRepository;
 import com.tacs.tp1c2026.repositories.CardRepository;
+import com.tacs.tp1c2026.repositories.NotificationRepository;
 import com.tacs.tp1c2026.repositories.PublicationRepository;
 import com.tacs.tp1c2026.repositories.ProposalRepository;
 import com.tacs.tp1c2026.repositories.UserRepository;
@@ -43,6 +44,7 @@ public abstract class IntegrationTestBase {
   @Autowired protected AuctionRepository auctionRepository;
   @Autowired protected PublicationRepository publicationRepository;
   @Autowired protected ProposalRepository proposalRepository;
+  @Autowired protected NotificationRepository notificationRepository;
   @Autowired protected MongoTemplate mongoTemplate;
 
   protected final ObjectMapper objectMapper = new ObjectMapper();
@@ -56,6 +58,7 @@ public abstract class IntegrationTestBase {
     cardRepository.deleteAll();
     auctionRepository.deleteAll();
     publicationRepository.deleteAll();
+    notificationRepository.deleteAll();
     mongoTemplate.dropCollection("proposals");
     mongoTemplate.dropCollection("exchanges");
     try (InputStream stream = getClass().getResourceAsStream("/catalog.json")) {
