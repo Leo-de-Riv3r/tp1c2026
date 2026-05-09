@@ -8,13 +8,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import org.springframework.data.mongodb.core.index.Indexed;
 
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class CollectionCard {
-
+    @Indexed
     private String cardId;
     private Integer number;
     private String description;
