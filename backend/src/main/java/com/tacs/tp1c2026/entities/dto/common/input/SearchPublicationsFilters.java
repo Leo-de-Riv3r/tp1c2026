@@ -17,4 +17,5 @@ public class SearchPublicationsFilters {
   private String team;
   private Category category;
   private CardType cardType;
+  private Integer cardNumber;
 }

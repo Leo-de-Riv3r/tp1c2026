@@ -43,18 +43,21 @@ public class AuctionService {
     private final CardService cardService;
     private final AuctionRepository auctionRepository;
     private final PageableGenerator pageableGenerator;
+    private final ExchangeService exchangeService;
     @Autowired
     private AuctionMapper auctionMapper;
     public AuctionService(UserRepository userRepository,
                           UserService userService,
                           CardService cardService,
                           AuctionRepository auctionRepository,
-                          PageableGenerator pageableGenerator) {
+                          PageableGenerator pageableGenerator,
+                          ExchangeService exchangeService) {
         this.userRepository = userRepository;
         this.userService = userService;
         this.cardService = cardService;
         this.auctionRepository = auctionRepository;
         this.pageableGenerator = pageableGenerator;
+        this.exchangeService = exchangeService;
     }
 
     /**
@@ -182,12 +185,13 @@ public class AuctionService {
      * Lista plana de las ofertas hechas por un usuario, con el contexto de la subasta.
      */
     public List<UserBidDto> getMyOffers(String userId) {
-        return this.auctionRepository.findByOffersBidderId(userId).stream()
+        List<Auction> auctions = this.auctionRepository.findByOffersBidderId(userId);
+        List<UserBidDto> offers = auctions.stream()
             .flatMap(auction -> auction.getOffers().stream()
-                .filter(offer -> offer.getBidder() != null
-                    && Objects.equals(offer.getBidder().getId(), userId))
+                .filter(offer -> Objects.equals(offer.getBidderId(), userId))
                 .map(offer -> toUserBid(auction, offer)))
             .toList();
+            return offers;
     }
 
     private UserBidDto toUserBid(Auction auction, AuctionOffer offer) {
@@ -249,11 +253,8 @@ public class AuctionService {
     }
 
     /**
-     * Cierra una subasta cuya `closeDate` ya pasó. Si tiene mejor oferta, la adjudica
-     * y transfiere las cards entre subastante y postor ganador. Si no tiene ofertas,
-     * cancela la subasta y libera la unidad comprometida del subastante.
-     *
-     * Pensado para ser llamado por un job programado, pero se puede invocar a mano.
+     * Cierra una subasta cuya `closeDate` ya pasó. Adjudica al `bestOffer` si existe,
+     * o cancela y libera commits si no hay ofertas. Entry point del cronjob.
      */
     // @Transactional // TODO: rehabilitar cuando Mongo corra como replica set
     public void closeExpiredAuction(String auctionId) throws NotFoundException, AuctionClosedException, OfferAlreadyProcessedException, OfferNotFoundException {
@@ -263,52 +264,82 @@ public class AuctionService {
         }
 
         AuctionOffer best = auction.getBestOffer();
-        User publisher = auction.getPublisherUser();
-        Card publishedCard = auction.getCard();
-
         if (best != null) {
-            User winner = best.getBidder();
-            auction.acceptOffer(best);
-
-            // Publisher cede la card publicada → winner la recibe
-            transferCard(publisher, winner, publishedCard, 1);
-
-            // Winner cede las cards ofrecidas → publisher las recibe
-            for (AuctionItem oi : best.getOfferedItems()) {
-                transferCard(winner, publisher, oi.getCard(), oi.getAmount());
-            }
-
-            // Las demás ofertas quedaron rejected por acceptOffer; libera sus compromises
-            for (AuctionOffer offer : auction.getOffers()) {
-                if (offer == best) continue;
-                if(offer.getStatus() != AuctionOfferStatus.CANCELLED) {
-                  User bidder = offer.getBidder();
-                  for (AuctionItem oi : offer.getOfferedItems()) {
-                    bidder.findCollectionItem(oi.getCard().getId()).ifPresent(item -> item.release(oi.getAmount()));
-                  }
-                  userRepository.save(bidder);
-                  offer.reject();
-                }
-            }
-
-            userRepository.save(winner);
-            userRepository.save(publisher);
+            awardAuctionTo(auction, best);
         } else {
-            // Sin mejor oferta: cancela y libera la unidad comprometida
-            auction.cancel();
-            publisher.findCollectionItem(publishedCard.getId()).ifPresent(item -> item.release(1));
-            userRepository.save(publisher);
-            //liberar cartas de ofertantes
-            for (AuctionOffer offer : auction.getOffers()) {
-              User bidder = offer.getBidder();
-              for(AuctionItem oi : offer.getOfferedItems()) {
-                bidder.findCollectionItem(oi.getCard().getId()).ifPresent(item -> item.release(oi.getAmount()));
-              }
-              userRepository.save(bidder);
-            }
+            cancelEmptyAuction(auction);
         }
 
         auctionRepository.save(auction);
+    }
+
+    /**
+     * El publisher acepta manualmente una oferta y cierra la subasta. Mismo flujo que
+     * el cron pero el ganador lo elige el usuario (no requiere `bestOffer` previo).
+     */
+    // @Transactional // TODO: rehabilitar cuando Mongo corra como replica set
+    public void acceptAuctionOffer(String auctionId, String offerId, String userId) throws UserNotFoundException, NotFoundException, AuctionClosedException, OfferAlreadyProcessedException, OfferNotFoundException, ForbiddenException {
+        User reviewer = userService.getById(userId);
+        Auction auction = getAuctionById(auctionId);
+        auction.validateOwner(reviewer);
+        if (auction.getStatus() != AuctionStatus.ACTIVE) {
+            throw new ConflictException("La subasta ya está cerrada");
+        }
+        AuctionOffer offer = auction.findOfferById(offerId);
+        awardAuctionTo(auction, offer);
+        auctionRepository.save(auction);
+    }
+
+    private void awardAuctionTo(Auction auction, AuctionOffer winningOffer) throws AuctionClosedException, OfferAlreadyProcessedException, OfferNotFoundException {
+        User publisher = auction.getPublisherUser();
+        User winner = winningOffer.getBidder();
+        Card publishedCard = auction.getCard();
+
+        auction.acceptOffer(winningOffer);
+
+        transferCard(publisher, winner, publishedCard, 1);
+        for (AuctionItem oi : winningOffer.getOfferedItems()) {
+            transferCard(winner, publisher, oi.getCard(), oi.getAmount());
+        }
+
+        for (AuctionOffer other : auction.getOffers()) {
+            if (other == winningOffer) continue;
+            if (other.getStatus() != AuctionOfferStatus.CANCELLED) {
+                User bidder = other.getBidder();
+                for (AuctionItem oi : other.getOfferedItems()) {
+                    bidder.findCollectionItem(oi.getCard().getId()).ifPresent(item -> item.release(oi.getAmount()));
+                }
+                userRepository.save(bidder);
+                other.reject();
+            }
+        }
+
+        publisher.incrementExchangesAmount();
+        winner.incrementExchangesAmount();
+        userRepository.save(winner);
+        userRepository.save(publisher);
+
+        List<Card> offeredCardsExpanded = winningOffer.getOfferedItems().stream()
+            .flatMap(oi -> java.util.Collections.nCopies(oi.getAmount(), oi.getCard()).stream())
+            .toList();
+        exchangeService.createFromAcceptedAuction(auction.getId(), publisher, winner, publishedCard, offeredCardsExpanded);
+    }
+
+    private void cancelEmptyAuction(Auction auction) {
+        User publisher = auction.getPublisherUser();
+        Card publishedCard = auction.getCard();
+
+        auction.cancel();
+        publisher.findCollectionItem(publishedCard.getId()).ifPresent(item -> item.release(1));
+        userRepository.save(publisher);
+
+        for (AuctionOffer offer : auction.getOffers()) {
+            User bidder = offer.getBidder();
+            for (AuctionItem oi : offer.getOfferedItems()) {
+                bidder.findCollectionItem(oi.getCard().getId()).ifPresent(item -> item.release(oi.getAmount()));
+            }
+            userRepository.save(bidder);
+        }
     }
 
     //@Transactional

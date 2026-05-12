@@ -48,6 +48,10 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
       query.addCriteria(Criteria.where("cardType").is(filters.getCardType()));
     }
 
+    if (filters.getCardNumber() != null) {
+      query.addCriteria(Criteria.where("cardNumber").is(filters.getCardNumber()));
+    }
+
     query.with(pageable);
 
     List<Auction> results = mongoTemplate.find(query, Auction.class);
@@ -75,13 +79,8 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
 
   @Override
   public List<Auction> findByOffersBidderId(String userId) {
-    // `offers[].bidder` es @DocumentReference dentro de un array embebido — la persistencia
-    // varía y la query directa por path no es confiable. Filtramos en memoria
-    // (datasets chicos por ahora; escalar con índice secundario si crece).
-    return mongoTemplate.findAll(Auction.class).stream()
-        .filter(a -> a.getOffers() != null && a.getOffers().stream()
-            .anyMatch(o -> o.getBidder() != null
-                && java.util.Objects.equals(o.getBidder().getId(), userId)))
-        .toList();
+    // Match directo contra el campo denormalizado offers[].bidderId (String plano).
+    Query query = new Query(Criteria.where("offers.bidderId").is(userId));
+    return mongoTemplate.find(query, Auction.class);
   }
 }
