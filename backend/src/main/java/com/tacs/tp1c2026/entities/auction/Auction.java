@@ -8,6 +8,7 @@ import com.tacs.tp1c2026.entities.enums.CardType;
 import com.tacs.tp1c2026.entities.enums.Category;
 import com.tacs.tp1c2026.entities.user.User;
 import com.tacs.tp1c2026.exceptions.AuctionClosedException;
+import com.tacs.tp1c2026.exceptions.ForbiddenException;
 import com.tacs.tp1c2026.exceptions.OfferAlreadyProcessedException;
 import com.tacs.tp1c2026.exceptions.OfferAlreadyRejectedException;
 import com.tacs.tp1c2026.exceptions.OfferNotFoundException;
@@ -46,7 +47,7 @@ public class Auction {
   private String publisherName;
   private String publisherAvatarId;
 
-  private final LocalDateTime creationDate;
+  private LocalDateTime creationDate;
 
   private LocalDateTime closeDate;
 
@@ -57,14 +58,13 @@ public class Auction {
   @Setter
   private AuctionOffer bestOffer;
 
-  private final List<AuctionOffer> offers = new ArrayList<>();
+  private List<AuctionOffer> offers = new ArrayList<>();
 
   @DocumentReference
-  private final List<User> interestedUsers = new ArrayList<>();
+  private List<User> interestedUsers = new ArrayList<>();
 
   protected Auction() {
     // No-arg constructor para que Spring Data Mongo pueda hidratar via field reflection.
-    this.creationDate = null;
   }
 
   public Auction(User user, Card card, Integer auctionDurationHours, List<AuctionCondition> conditions) {
@@ -156,7 +156,7 @@ public class Auction {
 
   public void validateOwner(User user) {
     if (!this.publisherUser.getId().equals(user.getId())) {
-      throw new UnprocessableException("El usuario no es el dueño de la subasta");
+      throw new ForbiddenException("El usuario no es el dueño de la subasta");
     }
   }
 

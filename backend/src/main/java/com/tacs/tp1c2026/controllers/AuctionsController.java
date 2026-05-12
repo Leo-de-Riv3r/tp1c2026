@@ -16,6 +16,8 @@ import com.tacs.tp1c2026.exceptions.ForbiddenException;
 import com.tacs.tp1c2026.exceptions.InsufficientCardException;
 import com.tacs.tp1c2026.exceptions.MissingCardException;
 import com.tacs.tp1c2026.exceptions.NotFoundException;
+import com.tacs.tp1c2026.exceptions.OfferAlreadyProcessedException;
+import com.tacs.tp1c2026.exceptions.OfferNotFoundException;
 import com.tacs.tp1c2026.exceptions.UserNotFoundException;
 import com.tacs.tp1c2026.services.AuctionService;
 import jakarta.validation.Valid;
@@ -56,48 +58,48 @@ public class AuctionsController {
   }
 
   /**
-   * Búsqueda paginada de subastas activas con filtros.
+   * Búsqueda paginada de subastas.
+   *   - Si se envía {@code userId}, devuelve todas las subastas creadas por ese usuario
+   *     (cualquier estado), sin aplicar los filtros de actividad.
+   *   - Si no, devuelve subastas activas con filtros opcionales (name, country, team,
+   *     category, cardType).
    */
   @GetMapping
-  public ResponseEntity<PaginationDtoOutput<AuctionDto>> searchActiveAuctions(
+  public ResponseEntity<PaginationDtoOutput<AuctionDto>> searchAuctions(
+      @RequestAttribute("userId") String currentUserId,
       @RequestParam(defaultValue = "1") Integer page,
       @RequestParam(defaultValue = "10") Integer per_page,
+      @RequestParam(required = false) String userId,
       @RequestParam(required = false) String name,
       @RequestParam(required = false) String country,
       @RequestParam(required = false) String team,
       @RequestParam(required = false) Category category,
       @RequestParam(required = false) CardType cardType
   ) {
-    SearchPublicationsFilters filters = new SearchPublicationsFilters(name, country, team, category, cardType);
-    PaginationDtoOutput<AuctionDto> result = auctionService.searchActiveAuctions(page, per_page, filters);
-    return ResponseEntity.ok(result);
+    if (userId != null) {
+      Page<Auction> result = auctionService.getMyAuctions(userId, page, per_page);
+      return ResponseEntity.ok(new PaginationDtoOutput<>(
+          auctionMapper.mapAuctions(result.getContent()),
+          result.getNumber() + 1,
+          result.getTotalPages()
+      ));
+    }
+    SearchPublicationsFilters filters = new SearchPublicationsFilters(name, country, team, category, cardType, null);
+    return ResponseEntity.ok(auctionService.searchActiveAuctions(page, per_page, filters));
   }
 
   /**
-   * Subastas creadas por el usuario actual.
+   * Ofertas hechas por un usuario (vista "Mis Ofertas"). Devuelve una lista plana de
+   * {@link UserBidDto}, no de Auction (shape distinto al search por eso es endpoint propio).
+   * Si no se envía {@code userId}, usa el del token.
    */
-  @GetMapping("/createdByMe")
-  public ResponseEntity<PaginationDtoOutput<AuctionDto>> getMyAuctions(
-      @RequestAttribute("userId") String userId,
-      @RequestParam(defaultValue = "1") Integer page,
-      @RequestParam(defaultValue = "10") Integer per_page
+  @GetMapping("/offers")
+  public ResponseEntity<java.util.List<UserBidDto>> getOffers(
+      @RequestAttribute("userId") String currentUserId,
+      @RequestParam(required = false) String userId
   ) {
-    Page<Auction> result = auctionService.getMyAuctions(userId, page, per_page);
-    return ResponseEntity.ok(new PaginationDtoOutput<>(
-        auctionMapper.mapAuctions(result.getContent()),
-        result.getNumber() + 1,
-        result.getTotalPages()
-    ));
-  }
-
-  /**
-   * Lista plana de las ofertas hechas por el usuario actual (vista "Mis Ofertas").
-   */
-  @GetMapping("/myOffers")
-  public ResponseEntity<java.util.List<UserBidDto>> getMyOffers(
-      @RequestAttribute("userId") String userId
-  ) {
-    return ResponseEntity.ok(auctionService.getMyOffers(userId));
+    String targetUserId = userId != null ? userId : currentUserId;
+    return ResponseEntity.ok(auctionService.getMyOffers(targetUserId));
   }
 
   /**
@@ -182,6 +184,16 @@ public class AuctionsController {
       @RequestAttribute("userId") String userId
   ) {
     auctionService.rejectAuctionOffer(auctionId, offerId, userId);
+    return ResponseEntity.noContent().build();
+  }
+
+  @PutMapping("/{auctionId}/offers/{offerId}/accept")
+  public ResponseEntity<Void> acceptOffer(
+      @PathVariable String auctionId,
+      @PathVariable String offerId,
+      @RequestAttribute("userId") String userId
+  ) throws AuctionClosedException, NotFoundException, UserNotFoundException, ForbiddenException, OfferAlreadyProcessedException, OfferNotFoundException {
+    auctionService.acceptAuctionOffer(auctionId, offerId, userId);
     return ResponseEntity.noContent().build();
   }
 

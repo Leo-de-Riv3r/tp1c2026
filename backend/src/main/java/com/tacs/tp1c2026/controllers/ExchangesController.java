@@ -40,7 +40,11 @@ public class ExchangesController {
       @RequestParam(required = false) String userId,
       @RequestParam(defaultValue = "1") Integer page,
       @RequestParam(defaultValue = "10") Integer per_page
-  ) {
+  ) throws ForbiddenException {
+    // Guard: no se permite consultar exchanges de otro usuario (info leak)
+    if (userId != null && !userId.equals(currentUserId)) {
+      throw new ForbiddenException("No podés consultar los intercambios de otro usuario");
+    }
     String targetUserId = userId != null ? userId : currentUserId;
     Page<Exchange> result = exchangeService.findByUserId(targetUserId, page, per_page);
     return ResponseEntity.ok(new PaginationDtoOutput<>(
@@ -51,13 +55,19 @@ public class ExchangesController {
   }
 
   /**
-  * Returns the detail of a single exchange by its ID
+  * Returns the detail of a single exchange by its ID. Solo accesible para los participantes.
   * @param exchangeId
-  * @return the exchangeDto, or 404 if not found
+  * @return the exchangeDto, or 404 if not found, or 403 si el caller no participó
   */
   @GetMapping("/{exchangeId}")
-  public ResponseEntity<ExchangeDto> getExchange(@PathVariable String exchangeId) throws NotFoundException {
+  public ResponseEntity<ExchangeDto> getExchange(
+      @PathVariable String exchangeId,
+      @RequestAttribute("userId") String currentUserId
+  ) throws NotFoundException, ForbiddenException {
     Exchange exchange = exchangeService.findById(exchangeId);
+    if (!exchange.involves(currentUserId)) {
+      throw new ForbiddenException("No podés consultar un intercambio del que no sos parte");
+    }
     return ResponseEntity.ok(exchangeMapper.mapExchange(exchange));
   }
 

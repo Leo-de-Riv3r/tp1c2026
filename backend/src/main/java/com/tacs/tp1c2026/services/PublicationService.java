@@ -83,6 +83,10 @@ public class PublicationService {
         TradePublication publication = this.findPublication(publicationId);
         publication.validateOwner(user);
 
+        if (!publication.isActive()) {
+            throw new ConflictException("Solo se puede cancelar una publicación activa");
+        }
+
         Integer remaining = publication.getRemainingCount();
         publication.cancel();
         this.publicationRepository.save(publication);

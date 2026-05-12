@@ -44,6 +44,10 @@ public class PublicationRepositoryImpl implements PublicationRepositoryCustom {
       query.addCriteria(Criteria.where("cardCategory").is(filters.getCategory()));
     }
 
+    if (filters.getCardNumber() != null) {
+      query.addCriteria(Criteria.where("cardNumber").is(filters.getCardNumber()));
+    }
+
     query.with(pageable);
 
     List<TradePublication> results = mongoTemplate.find(query, TradePublication.class);

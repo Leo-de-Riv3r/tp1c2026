@@ -21,6 +21,10 @@ public class AuctionOffer {
   @DocumentReference
   private User bidder;
 
+  // Snapshot del id+nombre del bidder — evita depender de hidratar @DocumentReference dentro de array embebido
+  private String bidderId;
+  private String bidderName;
+
   private List<AuctionItem> offeredItems = new ArrayList<>();
 
   private AuctionOfferStatus status = AuctionOfferStatus.PENDING;
@@ -31,6 +35,8 @@ public class AuctionOffer {
 
   public AuctionOffer(User bidder, List<AuctionItem> items) {
     this.bidder = bidder;
+    this.bidderId = bidder != null ? bidder.getId() : null;
+    this.bidderName = bidder != null ? bidder.getName() : null;
     this.offeredItems = new ArrayList<>(items == null ? List.of() : items);
   }
 

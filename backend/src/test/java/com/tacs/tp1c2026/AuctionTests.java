@@ -3,23 +3,76 @@ package com.tacs.tp1c2026;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.jayway.jsonpath.JsonPath;
 import com.tacs.tp1c2026.entities.dto.auction.input.AuctionConditionDto;
 import com.tacs.tp1c2026.entities.dto.auction.input.CreateAuctionDTO;
-import com.tacs.tp1c2026.support.IntegrationTestBase;
+import com.tacs.tp1c2026.entities.exchange.Exchange;
 
+import com.tacs.tp1c2026.entities.enums.Category;
+import com.tacs.tp1c2026.repositories.AuctionRepository;
+import com.tacs.tp1c2026.repositories.CardRepository;
+import com.tacs.tp1c2026.repositories.ExchangeRepository;
+import com.tacs.tp1c2026.repositories.PublicationRepository;
+import com.tacs.tp1c2026.repositories.UserRepository;
+import com.tacs.tp1c2026.services.AuctionService;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
 
-// Ya no hacen falta las anotaciones de clase porque se heredan de IntegrationTestBase
-public class AuctionTests extends IntegrationTestBase {
+@SpringBootTest
+@AutoConfigureMockMvc
+@ActiveProfiles("test")
+public class AuctionTests {
+  @Autowired
+  private MockMvc mockMvc;
+  private final ObjectMapper objectMapper = new ObjectMapper();
+  @Autowired
+  private CardRepository cardRepository;
+  @Autowired
+  private UserRepository userRepository;
+  @Autowired
+  private AuctionRepository auctionRepository;
+  @Autowired
+  private PublicationRepository publicationRepository;
+  @Autowired
+  private ExchangeRepository exchangeRepository;
+  @Autowired
+  private MongoTemplate mongoTemplate;
+  @Autowired
+  private AuctionService auctionService;
+
+  @BeforeEach
+  void setup() throws IOException {
+    userRepository.deleteAll();
+    cardRepository.deleteAll();
+    auctionRepository.deleteAll();
+    publicationRepository.deleteAll();
+    mongoTemplate.dropCollection("proposals");
+    mongoTemplate.dropCollection("exchanges");
+    try (InputStream inputStream = getClass().getResourceAsStream("/catalog.json")) {
+      List<Card> cards = objectMapper.readValue(inputStream, new TypeReference<List<Card>>() {});
+      cardRepository.saveAll(cards);
+      System.out.println("✅ Base de datos de prueba inicializada con " + cards.size() + " cartas.");
+    }
+  }
 
   @Test
   void searchActiveAuctionsReturnsCreatedAuction() throws Exception {
@@ -65,8 +118,13 @@ public class AuctionTests extends IntegrationTestBase {
             .content(createAuctionBody("card_022", 24, List.of())))
         .andExpect(status().is2xxSuccessful());
 
-    MvcResult res = mockMvc.perform(get("/api/auctions/createdByMe")
-            .header("Authorization", "Bearer " + seller.token()))
+    String userId = JsonPath.read(mockMvc.perform(post("/api/auth/login")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(loginBody("seller@java.com", "password123")))
+        .andReturn().getResponse().getContentAsString(), "$.user.id");
+    MvcResult res = mockMvc.perform(get("/api/auctions")
+            .param("userId", userId)
+            .header("Authorization", "Bearer " + token))
         .andExpect(status().isOk())
         .andReturn();
 
@@ -97,11 +155,6 @@ public class AuctionTests extends IntegrationTestBase {
     assertEquals(0, (Integer) JsonPath.read(col.getResponse().getContentAsString(), "$[0].compromisedCount"));
   }
 
-  // TODO: test para GET /api/auctions/myOffers — el endpoint funciona en runtime
-  // pero el filtro en memoria no encuentra al bidder en los tests; revisar cómo persiste
-  // @DocumentReference dentro de array embebido en el contexto de MockMvc.
-
-  @org.junit.jupiter.api.Disabled("WIP: ver TODO arriba")
   @Test
   void myOffersReturnsBidsPlacedByCurrentUser() throws Exception {
     Session seller = register("seller", "seller@java.com", "password123");
@@ -127,8 +180,8 @@ public class AuctionTests extends IntegrationTestBase {
             .content(offerBody))
         .andExpect(status().is2xxSuccessful());
 
-    MvcResult res = mockMvc.perform(get("/api/auctions/myOffers")
-            .header("Authorization", "Bearer " + bidder.token()))
+    MvcResult res = mockMvc.perform(get("/api/auctions/offers")
+            .header("Authorization", "Bearer " + bidderToken))
         .andExpect(status().isOk())
         .andReturn();
 
@@ -136,8 +189,8 @@ public class AuctionTests extends IntegrationTestBase {
     assertEquals(1, ((java.util.List<?>) JsonPath.read(body, "$")).size());
     assertEquals(auctionId, JsonPath.read(body, "$[0].auctionId"));
 
-    MvcResult sellerRes = mockMvc.perform(get("/api/auctions/myOffers")
-            .header("Authorization", "Bearer " + seller.token()))
+    MvcResult sellerRes = mockMvc.perform(get("/api/auctions/offers")
+            .header("Authorization", "Bearer " + sellerToken))
         .andExpect(status().isOk())
         .andReturn();
 
@@ -178,6 +231,216 @@ public class AuctionTests extends IntegrationTestBase {
 
     // Se usa el objectMapper protegido de la clase base
     return objectMapper.writeValueAsString(dto);
+  }
+
+  // ===== Helpers para los tests de accept/close/reject/best =====
+
+  private String userIdFromLogin(String email, String password) throws Exception {
+    return JsonPath.read(mockMvc.perform(post("/api/auth/login")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(loginBody(email, password)))
+        .andReturn().getResponse().getContentAsString(), "$.user.id");
+  }
+
+  private String createAuctionAndGetId(String token, String cardId) throws Exception {
+    MvcResult res = mockMvc.perform(post("/api/auctions")
+        .contentType(MediaType.APPLICATION_JSON)
+        .header("Authorization", "Bearer " + token)
+        .content(createAuctionBody(cardId, 24, List.of())))
+        .andExpect(status().is2xxSuccessful())
+        .andReturn();
+    return JsonPath.read(res.getResponse().getContentAsString(), "$.auctionId");
+  }
+
+  private void placeBid(String bidderToken, String auctionId, String cardId, int amount) throws Exception {
+    String offerBody = """
+        { "auctionId": "%s", "items": [ { "cardId": "%s", "amount": %d } ] }
+        """.formatted(auctionId, cardId, amount);
+    mockMvc.perform(post("/api/auctions/" + auctionId + "/offers")
+        .contentType(MediaType.APPLICATION_JSON)
+        .header("Authorization", "Bearer " + bidderToken)
+        .content(offerBody))
+        .andExpect(status().is2xxSuccessful());
+  }
+
+  private String firstOfferId(String auctionId, String token) throws Exception {
+    MvcResult res = mockMvc.perform(get("/api/auctions/" + auctionId)
+        .header("Authorization", "Bearer " + token))
+        .andExpect(status().isOk())
+        .andReturn();
+    return JsonPath.read(res.getResponse().getContentAsString(), "$.offers[0].offerId");
+  }
+
+  private Integer compromisedCount(String userId, String cardId, String token) throws Exception {
+    MvcResult res = mockMvc.perform(get("/api/users/" + userId + "/collection")
+        .header("Authorization", "Bearer " + token))
+        .andReturn();
+    String body = res.getResponse().getContentAsString();
+    List<?> all = JsonPath.read(body, "$");
+    for (int i = 0; i < all.size(); i++) {
+      String cid = JsonPath.read(body, "$[" + i + "].cardId");
+      if (cardId.equals(cid)) return JsonPath.read(body, "$[" + i + "].compromisedCount");
+    }
+    return null;
+  }
+
+  // ===== Tests del refactor: accept manual / cron close / reject / best =====
+
+  @Test
+  void acceptAuctionOfferFinalizesAndCreatesExchange() throws Exception {
+    registrarUsuario("seller", "seller@java.com", "password123", "avatar1");
+    String sellerToken = getUserToken("seller@java.com", "password123");
+    String sellerId = userIdFromLogin("seller@java.com", "password123");
+    registerRepeatedCard("card_021", sellerToken, sellerId);
+    String auctionId = createAuctionAndGetId(sellerToken, "card_021");
+
+    registrarUsuario("bidder", "bidder@java.com", "password123", "avatar1");
+    String bidderToken = getUserToken("bidder@java.com", "password123");
+    String bidderId = userIdFromLogin("bidder@java.com", "password123");
+    registerRepeatedCard("card_050", bidderToken, bidderId);
+    placeBid(bidderToken, auctionId, "card_050", 1);
+    String offerId = firstOfferId(auctionId, sellerToken);
+
+    mockMvc.perform(put("/api/auctions/" + auctionId + "/offers/" + offerId + "/accept")
+        .header("Authorization", "Bearer " + sellerToken))
+        .andExpect(status().isNoContent());
+
+    MvcResult detail = mockMvc.perform(get("/api/auctions/" + auctionId)
+        .header("Authorization", "Bearer " + sellerToken))
+        .andReturn();
+    assertEquals("AWARDED", JsonPath.read(detail.getResponse().getContentAsString(), "$.status"));
+
+    List<Exchange> exchanges = exchangeRepository.findAll();
+    assertEquals(1, exchanges.size());
+    assertEquals("SUBASTA", exchanges.get(0).getOrigin().getType().name());
+
+    assertEquals(1, userRepository.findById(sellerId).get().getExchangesAmount());
+    assertEquals(1, userRepository.findById(bidderId).get().getExchangesAmount());
+  }
+
+  @Test
+  void acceptAuctionOfferForbiddenForNonPublisher() throws Exception {
+    registrarUsuario("seller", "seller@java.com", "password123", "avatar1");
+    String sellerToken = getUserToken("seller@java.com", "password123");
+    String sellerId = userIdFromLogin("seller@java.com", "password123");
+    registerRepeatedCard("card_021", sellerToken, sellerId);
+    String auctionId = createAuctionAndGetId(sellerToken, "card_021");
+
+    registrarUsuario("bidder", "bidder@java.com", "password123", "avatar1");
+    String bidderToken = getUserToken("bidder@java.com", "password123");
+    String bidderId = userIdFromLogin("bidder@java.com", "password123");
+    registerRepeatedCard("card_050", bidderToken, bidderId);
+    placeBid(bidderToken, auctionId, "card_050", 1);
+    String offerId = firstOfferId(auctionId, sellerToken);
+
+    mockMvc.perform(put("/api/auctions/" + auctionId + "/offers/" + offerId + "/accept")
+        .header("Authorization", "Bearer " + bidderToken))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void closeExpiredAuctionWithBestOfferAwardsAndCreatesExchange() throws Exception {
+    registrarUsuario("seller", "seller@java.com", "password123", "avatar1");
+    String sellerToken = getUserToken("seller@java.com", "password123");
+    String sellerId = userIdFromLogin("seller@java.com", "password123");
+    registerRepeatedCard("card_021", sellerToken, sellerId);
+    String auctionId = createAuctionAndGetId(sellerToken, "card_021");
+
+    registrarUsuario("bidder", "bidder@java.com", "password123", "avatar1");
+    String bidderToken = getUserToken("bidder@java.com", "password123");
+    String bidderId = userIdFromLogin("bidder@java.com", "password123");
+    registerRepeatedCard("card_050", bidderToken, bidderId);
+    placeBid(bidderToken, auctionId, "card_050", 1);
+    String offerId = firstOfferId(auctionId, sellerToken);
+
+    mockMvc.perform(put("/api/auctions/" + auctionId + "/offers/" + offerId + "/best")
+        .header("Authorization", "Bearer " + sellerToken))
+        .andExpect(status().isNoContent());
+
+    auctionService.closeExpiredAuction(auctionId);
+
+    MvcResult detail = mockMvc.perform(get("/api/auctions/" + auctionId)
+        .header("Authorization", "Bearer " + sellerToken))
+        .andReturn();
+    assertEquals("AWARDED", JsonPath.read(detail.getResponse().getContentAsString(), "$.status"));
+
+    List<Exchange> exchanges = exchangeRepository.findAll();
+    assertEquals(1, exchanges.size());
+    assertEquals("SUBASTA", exchanges.get(0).getOrigin().getType().name());
+
+    assertEquals(1, userRepository.findById(sellerId).get().getExchangesAmount());
+    assertEquals(1, userRepository.findById(bidderId).get().getExchangesAmount());
+  }
+
+  @Test
+  void closeExpiredAuctionWithoutOffersCancelsAndReleasesCommit() throws Exception {
+    registrarUsuario("seller", "seller@java.com", "password123", "avatar1");
+    String sellerToken = getUserToken("seller@java.com", "password123");
+    String sellerId = userIdFromLogin("seller@java.com", "password123");
+    registerRepeatedCard("card_021", sellerToken, sellerId);
+    String auctionId = createAuctionAndGetId(sellerToken, "card_021");
+
+    assertEquals(1, compromisedCount(sellerId, "card_021", sellerToken));
+
+    auctionService.closeExpiredAuction(auctionId);
+
+    MvcResult detail = mockMvc.perform(get("/api/auctions/" + auctionId)
+        .header("Authorization", "Bearer " + sellerToken))
+        .andReturn();
+    assertEquals("CANCELLED", JsonPath.read(detail.getResponse().getContentAsString(), "$.status"));
+    assertEquals(0, compromisedCount(sellerId, "card_021", sellerToken));
+    assertTrue(exchangeRepository.findAll().isEmpty());
+  }
+
+  @Test
+  void rejectOfferReleasesBidderCommit() throws Exception {
+    registrarUsuario("seller", "seller@java.com", "password123", "avatar1");
+    String sellerToken = getUserToken("seller@java.com", "password123");
+    String sellerId = userIdFromLogin("seller@java.com", "password123");
+    registerRepeatedCard("card_021", sellerToken, sellerId);
+    String auctionId = createAuctionAndGetId(sellerToken, "card_021");
+
+    registrarUsuario("bidder", "bidder@java.com", "password123", "avatar1");
+    String bidderToken = getUserToken("bidder@java.com", "password123");
+    String bidderId = userIdFromLogin("bidder@java.com", "password123");
+    registerRepeatedCard("card_050", bidderToken, bidderId);
+    placeBid(bidderToken, auctionId, "card_050", 1);
+    assertEquals(1, compromisedCount(bidderId, "card_050", bidderToken));
+
+    String offerId = firstOfferId(auctionId, sellerToken);
+    mockMvc.perform(put("/api/auctions/" + auctionId + "/offers/" + offerId + "/reject")
+        .header("Authorization", "Bearer " + sellerToken))
+        .andExpect(status().isNoContent());
+
+    assertEquals(0, compromisedCount(bidderId, "card_050", bidderToken));
+  }
+
+  @Test
+  void setBestOfferDoesNotCloseAuction() throws Exception {
+    registrarUsuario("seller", "seller@java.com", "password123", "avatar1");
+    String sellerToken = getUserToken("seller@java.com", "password123");
+    String sellerId = userIdFromLogin("seller@java.com", "password123");
+    registerRepeatedCard("card_021", sellerToken, sellerId);
+    String auctionId = createAuctionAndGetId(sellerToken, "card_021");
+
+    registrarUsuario("bidder", "bidder@java.com", "password123", "avatar1");
+    String bidderToken = getUserToken("bidder@java.com", "password123");
+    String bidderId = userIdFromLogin("bidder@java.com", "password123");
+    registerRepeatedCard("card_050", bidderToken, bidderId);
+    placeBid(bidderToken, auctionId, "card_050", 1);
+    String offerId = firstOfferId(auctionId, sellerToken);
+
+    mockMvc.perform(put("/api/auctions/" + auctionId + "/offers/" + offerId + "/best")
+        .header("Authorization", "Bearer " + sellerToken))
+        .andExpect(status().isNoContent());
+
+    MvcResult detail = mockMvc.perform(get("/api/auctions/" + auctionId)
+        .header("Authorization", "Bearer " + sellerToken))
+        .andReturn();
+    String body = detail.getResponse().getContentAsString();
+    assertEquals("ACTIVE", JsonPath.read(body, "$.status"));
+    assertNotNull(JsonPath.read(body, "$.bestOffer"));
+    assertTrue(exchangeRepository.findAll().isEmpty());
   }
 
 }

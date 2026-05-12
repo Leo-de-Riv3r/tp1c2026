@@ -37,6 +37,17 @@ public class ExchangeService {
         return exchangeRepository.save(exchange);
     }
 
+    /**
+     * Crea y persiste un Exchange a partir de una subasta adjudicada.
+     * Convención: A = subastante, B = postor ganador.
+     */
+    public Exchange createFromAcceptedAuction(String auctionId,
+                                              User publisher, User winner,
+                                              Card publishedCard, List<Card> offeredCards) {
+        Exchange exchange = Exchange.fromAcceptedAuction(auctionId, publisher, winner, publishedCard, offeredCards);
+        return exchangeRepository.save(exchange);
+    }
+
     public Exchange findById(String exchangeId) throws NotFoundException {
         return exchangeRepository.findById(exchangeId)
             .orElseThrow(() -> new NotFoundException("Exchange not found: " + exchangeId));

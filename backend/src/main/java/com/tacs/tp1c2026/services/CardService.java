@@ -5,11 +5,21 @@ import com.tacs.tp1c2026.entities.dto.card.input.CardSearchParamsDTO;
 import com.tacs.tp1c2026.entities.dto.card.input.IndicateMissingCardDTO;
 import com.tacs.tp1c2026.entities.dto.card.input.PublishCardDTO;
 import com.tacs.tp1c2026.entities.dto.card.output.CardDTO;
+import com.tacs.tp1c2026.entities.dto.card.output.SearchCardsResponseDto;
+import com.tacs.tp1c2026.entities.dto.common.input.SearchPublicationsFilters;
+import com.tacs.tp1c2026.entities.dto.common.output.PaginationDtoOutput;
+import com.tacs.tp1c2026.entities.dto.mappers.AuctionMapper;
 import com.tacs.tp1c2026.entities.dto.mappers.CardMapper;
 import com.tacs.tp1c2026.entities.user.User;
 import com.tacs.tp1c2026.exceptions.NotFoundException;
+import com.tacs.tp1c2026.repositories.AuctionRepository;
 import com.tacs.tp1c2026.repositories.CardRepository;
+import com.tacs.tp1c2026.repositories.PublicationRepository;
 import com.tacs.tp1c2026.repositories.UserRepository;
+import com.tacs.tp1c2026.services.mappers.TradeMapper;
+import com.tacs.tp1c2026.utils.PageableGenerator;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,10 +31,54 @@ public class CardService {
 
     private final CardRepository cardRepository;
     private final UserRepository userRepository;
+    private final PublicationRepository publicationRepository;
+    private final AuctionRepository auctionRepository;
+    private final TradeMapper tradeMapper;
+    private final AuctionMapper auctionMapper;
+    private final PageableGenerator pageableGenerator;
 
-    public CardService(CardRepository cardRepository, UserRepository userRepository) {
+    public CardService(CardRepository cardRepository,
+                       UserRepository userRepository,
+                       PublicationRepository publicationRepository,
+                       AuctionRepository auctionRepository,
+                       TradeMapper tradeMapper,
+                       AuctionMapper auctionMapper,
+                       PageableGenerator pageableGenerator) {
         this.cardRepository = cardRepository;
         this.userRepository = userRepository;
+        this.publicationRepository = publicationRepository;
+        this.auctionRepository = auctionRepository;
+        this.tradeMapper = tradeMapper;
+        this.auctionMapper = auctionMapper;
+        this.pageableGenerator = pageableGenerator;
+    }
+
+    /**
+     * Busca figuritas disponibles en publicaciones y subastas activas que matcheen los filtros.
+     * Cada lista se pagina por separado (default 10 por página) para que el FE pueda mostrar
+     * paginadores independientes y mantener performance con catálogos grandes.
+     */
+    public SearchCardsResponseDto searchInActiveListings(SearchPublicationsFilters filters,
+                                                          Integer pubPage, Integer pubPerPage,
+                                                          Integer aucPage, Integer aucPerPage) {
+        Pageable pubPageable = pageableGenerator.buildPageable(pubPage, pubPerPage, 10, null);
+        Pageable aucPageable = pageableGenerator.buildPageable(aucPage, aucPerPage, 10, null);
+
+        Page<com.tacs.tp1c2026.entities.exchange.TradePublication> pubResult =
+            publicationRepository.searchWithFilters(filters, pubPageable);
+        Page<com.tacs.tp1c2026.entities.auction.Auction> aucResult =
+            auctionRepository.searchWithFilters(filters, aucPageable);
+
+        return new SearchCardsResponseDto(
+            new PaginationDtoOutput<>(
+                tradeMapper.mapPublications(pubResult.getContent()),
+                pubResult.getNumber() + 1,
+                pubResult.getTotalPages()),
+            new PaginationDtoOutput<>(
+                auctionMapper.mapAuctions(aucResult.getContent()),
+                aucResult.getNumber() + 1,
+                aucResult.getTotalPages())
+        );
     }
 
     /**

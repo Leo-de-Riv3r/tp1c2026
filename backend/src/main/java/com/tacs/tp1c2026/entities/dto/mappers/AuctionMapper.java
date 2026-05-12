@@ -57,13 +57,14 @@ public class AuctionMapper {
             .map(it -> new AuctionOfferDto.ItemDetailDto(
                 it.getCard() != null ? it.getCard().getId() : null,
                 it.getCard() != null ? it.getCard().getNumber() : null,
+                it.getCard() != null ? it.getCard().getDescription() : null,
                 it.getAmount()))
             .toList();
     return new AuctionOfferDto(
         offer.getId(),
         auctionId,
-        offer.getBidder() != null ? offer.getBidder().getId() : null,
-        offer.getBidder() != null ? offer.getBidder().getName() : null,
+        offer.getBidderId(),
+        offer.getBidderName(),
         items,
         offer.getStatus(),
         offer.getBidDate()
