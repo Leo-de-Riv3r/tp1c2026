@@ -74,6 +74,22 @@ public class Exchange {
         );
     }
 
+    /**
+     * Construye un Exchange a partir de una subasta adjudicada.
+     * Convención: A = subastante (cede la card subastada), B = postor ganador (cede las offered cards).
+     */
+    public static Exchange fromAcceptedAuction(String auctionId,
+                                                User publisher, User winner,
+                                                Card publishedCard, List<Card> offeredCards) {
+        return new Exchange(
+            ExchangeOrigin.fromAuction(auctionId),
+            UserSnapshot.from(publisher),
+            UserSnapshot.from(winner),
+            List.of(CardSnapshot.from(publishedCard)),
+            offeredCards.stream().map(CardSnapshot::from).toList()
+        );
+    }
+
     public boolean involves(String userId) {
         return Objects.equals(userA.getUserId(), userId) || Objects.equals(userB.getUserId(), userId);
     }

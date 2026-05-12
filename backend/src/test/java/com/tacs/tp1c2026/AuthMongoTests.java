@@ -1,5 +1,8 @@
 package com.tacs.tp1c2026;
 
+import com.tacs.tp1c2026.repositories.AuctionRepository;
+import com.tacs.tp1c2026.repositories.CardRepository;
+import com.tacs.tp1c2026.repositories.PublicationRepository;
 import com.tacs.tp1c2026.repositories.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -7,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -23,9 +27,26 @@ public class AuthMongoTests {
   @Autowired
   private UserRepository userRepository;
 
+  @Autowired
+  private CardRepository cardRepository;
+
+  @Autowired
+  private AuctionRepository auctionRepository;
+
+  @Autowired
+  private PublicationRepository publicationRepository;
+
+  @Autowired
+  private MongoTemplate mongoTemplate;
+
   @BeforeEach
   void setUp() {
     userRepository.deleteAll();
+    cardRepository.deleteAll();
+    auctionRepository.deleteAll();
+    publicationRepository.deleteAll();
+    mongoTemplate.dropCollection("proposals");
+    mongoTemplate.dropCollection("exchanges");
   }
 
   @Test
@@ -49,7 +70,6 @@ public class AuthMongoTests {
         .andExpect(jsonPath("$.user.email").value("user@login.com"));
   }
 
-  @Disabled("Pendiente: configurar admin.password en test props")
   @Test
   void adminLoginDevuelve200() throws Exception {
     mockMvc.perform(post("/api/auth/admin/login")

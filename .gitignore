@@ -32,6 +32,9 @@ build/
 ### VS Code ###
 .vscode/
 
+### Claude Code (local config) ###
+.claude/
+
 .env
 .env.*
 !.env.example

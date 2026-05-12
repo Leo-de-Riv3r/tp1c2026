@@ -66,7 +66,7 @@ public class PublicationsController {
     if (userId != null) {
       result = publicationService.getMyPublications(userId, page, per_page);
     } else {
-      SearchPublicationsFilters filters = new SearchPublicationsFilters(name, country, team, category, null);
+      SearchPublicationsFilters filters = new SearchPublicationsFilters(name, country, team, category, null, null);
       result = publicationService.searchActivePublications(page, per_page, filters);
     }
     return ResponseEntity.ok(new PaginationDtoOutput<>(

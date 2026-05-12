@@ -159,6 +159,17 @@ public abstract class IntegrationTestBase {
         .andExpect(status().is2xxSuccessful());
   }
 
+  protected MvcResult createAuction(String token, String cardId, int durationHours) throws Exception {
+    String body = "{ \"cardId\": \"" + cardId + "\", \"auctionDurationHours\": " + durationHours
+        + ", \"conditions\": [] }";
+    return mockMvc.perform(post("/api/auctions")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Authorization", "Bearer " + token)
+            .content(body))
+        .andExpect(status().is2xxSuccessful())
+        .andReturn();
+  }
+
   protected String idFromCreated(MvcResult result, String key) throws Exception {
     return JsonPath.read(result.getResponse().getContentAsString(), "$." + key);
   }

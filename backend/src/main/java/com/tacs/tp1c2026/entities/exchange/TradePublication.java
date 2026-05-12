@@ -6,7 +6,7 @@ import com.tacs.tp1c2026.entities.enums.Category;
 import com.tacs.tp1c2026.entities.enums.PublicationStatus;
 import com.tacs.tp1c2026.entities.user.User;
 import com.tacs.tp1c2026.exceptions.ConflictException;
-import com.tacs.tp1c2026.exceptions.UnauthorizedException;
+import com.tacs.tp1c2026.exceptions.ForbiddenException;
 import lombok.Getter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.TypeAlias;
@@ -77,11 +77,11 @@ public class TradePublication {
   /**
    * Valida que el usuario sea el dueño de la publicación.
    *
-   * @throws UnauthorizedException si el usuario no es el dueño
+   * @throws ForbiddenException si el usuario no es el dueño (HTTP 403)
    */
-  public void validateOwner(User user) throws UnauthorizedException {
+  public void validateOwner(User user) throws ForbiddenException {
     if (!Objects.equals(this.publisherUser.getId(), user.getId())) {
-      throw new UnauthorizedException("El usuario no es el dueño de la publicación");
+      throw new ForbiddenException("El usuario no es el dueño de la publicación");
     }
   }
 

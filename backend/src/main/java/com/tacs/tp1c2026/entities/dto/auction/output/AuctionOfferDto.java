@@ -17,6 +17,7 @@ public record AuctionOfferDto(
   public record ItemDetailDto(
       String cardId,
       Integer cardNumber,
+      String cardDescription,
       Integer amount
   ) {}
 }

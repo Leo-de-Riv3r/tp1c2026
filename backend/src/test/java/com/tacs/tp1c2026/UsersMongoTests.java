@@ -1,14 +1,7 @@
 package com.tacs.tp1c2026;
 
-import com.tacs.tp1c2026.entities.user.User;
-import com.tacs.tp1c2026.repositories.UserRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
+import com.tacs.tp1c2026.support.IntegrationTestBase;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -16,43 +9,29 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * Tests de migración a MongoDB. Requieren una instancia de Mongo corriendo
- * (ver `application.properties` de tests).
+ * Tests originales de la migración a MongoDB. Refactorizados para usar IntegrationTestBase
+ * (limpieza de repos + helpers de auth) en lugar de armar el user directo por repository,
+ * lo que dejaba al request sin JWT y devolvía 401.
  */
-@SpringBootTest
-@AutoConfigureMockMvc
-public class UsersMongoTests {
+public class UsersMongoTests extends IntegrationTestBase {
 
-  @Autowired
-  private MockMvc mockMvc;
-
-  @Autowired
-  private UserRepository userRepository;
-
-  private String userId;
-
-  @BeforeEach
-  void setUp() {
-    userRepository.deleteAll();
-    User user = new User();
-    user.setName("Test User");
-    user.setEmail("test@test.com");
-    userId = userRepository.save(user).getId();
-  }
-
-  @Disabled("Pendiente: agregar JWT auth al request — sin token devuelve 401")
   @Test
   void getUsuarioPorIdDevuelve200() throws Exception {
-    mockMvc.perform(get("/api/users/" + userId))
+    Session s = register("Test User", "test@test.com", "password123");
+
+    mockMvc.perform(get("/api/users/" + s.userId())
+            .header("Authorization", "Bearer " + s.token()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.name").value("Test User"))
         .andExpect(jsonPath("$.email").value("test@test.com"));
   }
 
-  @Disabled("Pendiente: agregar JWT auth al request — sin token devuelve 401")
   @Test
   void getCollectionDeUsuarioNuevoEsVacia() throws Exception {
-    mockMvc.perform(get("/api/users/" + userId + "/collection"))
+    Session s = register("Test User", "test@test.com", "password123");
+
+    mockMvc.perform(get("/api/users/" + s.userId() + "/collection")
+            .header("Authorization", "Bearer " + s.token()))
         .andExpect(status().isOk())
         .andExpect(content().json("[]"));
   }
