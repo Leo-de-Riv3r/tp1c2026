@@ -8,11 +8,14 @@ import com.tacs.tp1c2026.entities.exchange.TradeProposal;
 import com.tacs.tp1c2026.entities.exchange.TradePublication;
 import com.tacs.tp1c2026.entities.user.User;
 import com.tacs.tp1c2026.entities.user.embedded.CollectionCard;
+import com.tacs.tp1c2026.events.CardAvailableEvent;
 import com.tacs.tp1c2026.exceptions.*;
 import com.tacs.tp1c2026.repositories.ProposalRepository;
 import com.tacs.tp1c2026.repositories.PublicationRepository;
 import com.tacs.tp1c2026.repositories.UserRepository;
 import com.tacs.tp1c2026.utils.PageableGenerator;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -22,7 +25,8 @@ import java.util.List;
 
 @Service
 public class PublicationService {
-
+  @Autowired
+  private ApplicationEventPublisher eventPublisher;
     private final UserRepository userRepository;
     private final PublicationRepository publicationRepository;
     private final ProposalRepository proposalRepository;
@@ -59,6 +63,12 @@ public class PublicationService {
         TradePublication publication = new TradePublication(user, card, dto.quantity());
         TradePublication saved = this.publicationRepository.save(publication);
         this.userRepository.save(user);
+      eventPublisher.publishEvent(new CardAvailableEvent(
+          saved.getCard().getId(),
+          saved.getId(),
+          "PUBLICATION"
+      ));
+
         return saved;
     }
 

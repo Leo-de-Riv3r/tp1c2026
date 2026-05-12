@@ -19,11 +19,13 @@ import com.tacs.tp1c2026.entities.enums.AuctionOfferStatus;
 import com.tacs.tp1c2026.entities.enums.AuctionStatus;
 import com.tacs.tp1c2026.entities.user.User;
 import com.tacs.tp1c2026.entities.user.embedded.CollectionCard;
+import com.tacs.tp1c2026.events.CardAvailableEvent;
 import com.tacs.tp1c2026.exceptions.*;
 import com.tacs.tp1c2026.repositories.AuctionRepository;
 import com.tacs.tp1c2026.repositories.UserRepository;
 import com.tacs.tp1c2026.utils.PageableGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -37,7 +39,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AuctionService {
-
+  @Autowired
+  private ApplicationEventPublisher eventPublisher;
     private final UserRepository userRepository;
     private final UserService userService;
     private final CardService cardService;
@@ -75,6 +78,13 @@ public class AuctionService {
         Auction auction = new Auction(user, card, dto.getAuctionDurationHours(), conditions);
         Auction saved = this.auctionRepository.save(auction);
         this.userRepository.save(user);
+
+      eventPublisher.publishEvent(new CardAvailableEvent(
+          saved.getCard().getId(),
+          saved.getId(),
+          "AUCTION"
+      ));
+
         return saved;
     }
 

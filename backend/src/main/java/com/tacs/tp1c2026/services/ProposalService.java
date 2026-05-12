@@ -2,6 +2,7 @@ package com.tacs.tp1c2026.services;
 
 import com.tacs.tp1c2026.entities.card.Card;
 import com.tacs.tp1c2026.entities.dto.trade.input.CreateTradeProposalDTO;
+import com.tacs.tp1c2026.entities.enums.NotificationType;
 import com.tacs.tp1c2026.entities.enums.PublicationStatus;
 import com.tacs.tp1c2026.entities.enums.TradeProposalStatus;
 import com.tacs.tp1c2026.entities.exchange.TradeProposal;
@@ -28,14 +29,14 @@ public class ProposalService {
     private final CardService cardService;
     private final PublicationService publicationService;
     private final ExchangeService exchangeService;
-
+    private final NotificationService notificationService;
     public ProposalService(UserRepository userRepository,
                            PublicationRepository publicationRepository,
                            ProposalRepository proposalRepository,
                            UserService userService,
                            CardService cardService,
                            PublicationService publicationService,
-                           ExchangeService exchangeService) {
+                           ExchangeService exchangeService, NotificationService notificationService) {
         this.userRepository = userRepository;
         this.publicationRepository = publicationRepository;
         this.proposalRepository = proposalRepository;
@@ -43,6 +44,7 @@ public class ProposalService {
         this.cardService = cardService;
         this.publicationService = publicationService;
         this.exchangeService = exchangeService;
+      this.notificationService = notificationService;
     }
 
     /**
@@ -97,6 +99,8 @@ public class ProposalService {
         TradeProposal proposal = new TradeProposal(publication, cards, requested, proposer, publisher);
         TradeProposal saved = proposalRepository.save(proposal);  // autogenera id
         userRepository.save(proposer);
+        //save notification for publication publisher
+        notificationService.createNotification(publisher, NotificationType.TRADE_PROPOSAL_RECEIVED, saved.getId());
         return saved;
     }
 

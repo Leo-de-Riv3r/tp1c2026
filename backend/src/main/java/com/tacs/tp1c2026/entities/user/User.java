@@ -1,7 +1,6 @@
 package com.tacs.tp1c2026.entities.user;
 
 import com.tacs.tp1c2026.entities.profiles.Profile;
-import com.tacs.tp1c2026.entities.user.embedded.Alert;
 import com.tacs.tp1c2026.entities.user.embedded.CollectionCard;
 import com.tacs.tp1c2026.entities.user.embedded.MissingCard;
 import com.tacs.tp1c2026.entities.user.embedded.Suggestion;
@@ -65,8 +64,6 @@ public class User {
     private List<MissingCard> missingCards = new ArrayList<>();
 
     private List<Suggestion> suggestions = new ArrayList<>();
-
-    private List<Alert> alerts = new ArrayList<>();
 
     private Profile vectorProfile = new Profile();
 

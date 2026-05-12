@@ -3,6 +3,7 @@ package com.tacs.tp1c2026.repositories;
 import com.tacs.tp1c2026.entities.auction.Auction;
 import com.tacs.tp1c2026.entities.enums.AuctionStatus;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -13,4 +14,9 @@ import java.util.List;
 public interface AuctionRepository extends Repository<Auction, String>, AuctionRepositoryCustom {
 
   List<Auction> findByStatus(AuctionStatus status);
+  List<Auction> findByStatusAndCloseDateBetween(
+      AuctionStatus status,
+      LocalDateTime from,
+      LocalDateTime to
+  );
 }

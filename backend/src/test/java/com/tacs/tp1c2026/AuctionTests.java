@@ -12,7 +12,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.jayway.jsonpath.JsonPath;
-import com.tacs.tp1c2026.entities.card.Card;
 import com.tacs.tp1c2026.entities.dto.auction.input.AuctionConditionDto;
 import com.tacs.tp1c2026.entities.dto.auction.input.CreateAuctionDTO;
 import com.tacs.tp1c2026.entities.exchange.Exchange;
@@ -28,15 +27,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -80,21 +76,24 @@ public class AuctionTests {
 
   @Test
   void searchActiveAuctionsReturnsCreatedAuction() throws Exception {
-    registrarUsuario("seller", "seller@java.com", "password123", "avatar1");
-    String token = getUserToken("seller@java.com", "password123");
+    Session seller = register("seller", "seller@java.com", "password123");
     String cardId = "card_021";
-    registerRepeatedCard(cardId, token, "1");
+
+    // Usamos el helper de la clase base y el ID real del usuario
+    addToCollection(seller.userId(), cardId, seller.token());
+
     String auctionBody = createAuctionBody(cardId, 24, List.of());
     mockMvc.perform(post("/api/auctions")
             .contentType(MediaType.APPLICATION_JSON)
-            .header("Authorization", "Bearer " + token)
+            .header("Authorization", "Bearer " + seller.token())
             .content(auctionBody))
         .andExpect(status().is2xxSuccessful());
 
     MvcResult res = mockMvc.perform(get("/api/auctions")
-            .header("Authorization", "Bearer " + token))
+            .header("Authorization", "Bearer " + seller.token()))
         .andExpect(status().isOk())
         .andReturn();
+
     String body = res.getResponse().getContentAsString();
     assertEquals(1, ((java.util.List<?>) JsonPath.read(body, "$.data")).size());
     assertEquals(21, (Integer) JsonPath.read(body, "$.data[0].cardNumber"));
@@ -102,18 +101,20 @@ public class AuctionTests {
 
   @Test
   void getMyAuctionsReturnsCurrentUserAuctions() throws Exception {
-    registrarUsuario("seller", "seller@java.com", "password123", "avatar1");
-    String token = getUserToken("seller@java.com", "password123");
-    registerRepeatedCard("card_021", token, "1");
-    registerRepeatedCard("card_022", token, "1");
+    Session seller = register("seller", "seller@java.com", "password123");
+
+    addToCollection(seller.userId(), "card_021", seller.token());
+    addToCollection(seller.userId(), "card_022", seller.token());
+
     mockMvc.perform(post("/api/auctions")
             .contentType(MediaType.APPLICATION_JSON)
-            .header("Authorization", "Bearer " + token)
+            .header("Authorization", "Bearer " + seller.token())
             .content(createAuctionBody("card_021", 24, List.of())))
         .andExpect(status().is2xxSuccessful());
+
     mockMvc.perform(post("/api/auctions")
             .contentType(MediaType.APPLICATION_JSON)
-            .header("Authorization", "Bearer " + token)
+            .header("Authorization", "Bearer " + seller.token())
             .content(createAuctionBody("card_022", 24, List.of())))
         .andExpect(status().is2xxSuccessful());
 
@@ -126,55 +127,56 @@ public class AuctionTests {
             .header("Authorization", "Bearer " + token))
         .andExpect(status().isOk())
         .andReturn();
+
     assertEquals(2, ((java.util.List<?>) JsonPath.read(res.getResponse().getContentAsString(), "$.data")).size());
   }
 
   @Test
   void cancelAuctionReleasesCommittedCard() throws Exception {
-    registrarUsuario("seller", "seller@java.com", "password123", "avatar1");
-    String token = getUserToken("seller@java.com", "password123");
-    registerRepeatedCard("card_021", token, "1");
+    Session seller = register("seller", "seller@java.com", "password123");
+    addToCollection(seller.userId(), "card_021", seller.token());
+
     MvcResult created = mockMvc.perform(post("/api/auctions")
             .contentType(MediaType.APPLICATION_JSON)
-            .header("Authorization", "Bearer " + token)
+            .header("Authorization", "Bearer " + seller.token())
             .content(createAuctionBody("card_021", 24, List.of())))
         .andReturn();
+
     String auctionId = JsonPath.read(created.getResponse().getContentAsString(), "$.auctionId");
 
     mockMvc.perform(delete("/api/auctions/" + auctionId)
-            .header("Authorization", "Bearer " + token))
+            .header("Authorization", "Bearer " + seller.token()))
         .andExpect(status().is2xxSuccessful());
 
-    String userId = JsonPath.read(mockMvc.perform(post("/api/auth/login")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(loginBody("seller@java.com", "password123")))
-        .andReturn().getResponse().getContentAsString(), "$.user.id");
-    MvcResult col = mockMvc.perform(get("/api/users/" + userId + "/collection")
-            .header("Authorization", "Bearer " + token)).andReturn();
+    // Al usar el objeto seller.userId(), ya no necesitamos volver a loguearnos para leer el ID
+    MvcResult col = mockMvc.perform(get("/api/users/" + seller.userId() + "/collection")
+        .header("Authorization", "Bearer " + seller.token())).andReturn();
+
     assertEquals(0, (Integer) JsonPath.read(col.getResponse().getContentAsString(), "$[0].compromisedCount"));
   }
 
   @Test
   void myOffersReturnsBidsPlacedByCurrentUser() throws Exception {
-    registrarUsuario("seller", "seller@java.com", "password123", "avatar1");
-    String sellerToken = getUserToken("seller@java.com", "password123");
-    registerRepeatedCard("card_021", sellerToken, "1");
+    Session seller = register("seller", "seller@java.com", "password123");
+    addToCollection(seller.userId(), "card_021", seller.token());
+
     MvcResult created = mockMvc.perform(post("/api/auctions")
             .contentType(MediaType.APPLICATION_JSON)
-            .header("Authorization", "Bearer " + sellerToken)
+            .header("Authorization", "Bearer " + seller.token())
             .content(createAuctionBody("card_021", 24, List.of())))
         .andReturn();
     String auctionId = JsonPath.read(created.getResponse().getContentAsString(), "$.auctionId");
 
-    registrarUsuario("bidder", "bidder@java.com", "password123", "avatar1");
-    String bidderToken = getUserToken("bidder@java.com", "password123");
-    registerRepeatedCard("card_022", bidderToken, "2");
+    Session bidder = register("bidder", "bidder@java.com", "password123");
+    addToCollectionN(bidder.userId(), "card_022", 2, bidder.token()); // Usa el addToCollectionN de la clase base
+
     String offerBody = """
         { "auctionId": "%s", "items": [ { "cardId": "card_022", "amount": 1 } ] }
         """.formatted(auctionId);
+
     mockMvc.perform(post("/api/auctions/" + auctionId + "/offers")
             .contentType(MediaType.APPLICATION_JSON)
-            .header("Authorization", "Bearer " + bidderToken)
+            .header("Authorization", "Bearer " + bidder.token())
             .content(offerBody))
         .andExpect(status().is2xxSuccessful());
 
@@ -182,6 +184,7 @@ public class AuctionTests {
             .header("Authorization", "Bearer " + bidderToken))
         .andExpect(status().isOk())
         .andReturn();
+
     String body = res.getResponse().getContentAsString();
     assertEquals(1, ((java.util.List<?>) JsonPath.read(body, "$")).size());
     assertEquals(auctionId, JsonPath.read(body, "$[0].auctionId"));
@@ -190,16 +193,15 @@ public class AuctionTests {
             .header("Authorization", "Bearer " + sellerToken))
         .andExpect(status().isOk())
         .andReturn();
+
     assertEquals(0, ((java.util.List<?>) JsonPath.read(sellerRes.getResponse().getContentAsString(), "$")).size());
   }
 
   @Test
   void publishCardForAuction() throws Exception {
-    registrarUsuario("testUser", "test@java.com", "password123", "avatar1");
-    String token = getUserToken("test@java.com", "password123");
+    Session user = register("testUser", "test@java.com", "password123");
     String cardId = "card_021";
-    //pongo id de user aleatorio porque lo extrae del token
-    registerRepeatedCard(cardId, token, "1");
+    addToCollection(user.userId(), cardId, user.token());
 
     AuctionConditionDto condicion1 = AuctionConditionDto.builder()
         .filterName("MIN_CARD_COUNT")
@@ -210,74 +212,24 @@ public class AuctionTests {
         .filterName("MIN_EXCHANGES")
         .quantity(5)
         .build();
+
     String auctionBody = createAuctionBody(cardId, 10, List.of(condicion1, condicion2));
+
     mockMvc.perform(post("/api/auctions")
-        .contentType(MediaType.APPLICATION_JSON)
-        .header("Authorization", "Bearer " + token)
-        .content(auctionBody))
-        .andExpect(status().is2xxSuccessful());
-  }
-
-  private void registerRepeatedCard(String cardId, String token, String userID) throws Exception {
-    mockMvc.perform(post("/api/users/" + userID + "/collection")
-        .contentType(MediaType.APPLICATION_JSON)
-        .header("Authorization", "Bearer " + token)
-        .content(addToCollectionBody(cardId)))
-        .andExpect(status().is2xxSuccessful());
-  }
-
-  private String addToCollectionBody(String cardId) {
-    return """
-        {
-          "cardId": "%s"
-        }
-        """.formatted(cardId);
-  }
-  private void registrarUsuario(String name, String email, String password, String avatarId) throws Exception {
-    mockMvc.perform(post("/api/auth/register")
             .contentType(MediaType.APPLICATION_JSON)
-            .content(registerBody(name, email, password, avatarId)))
+            .header("Authorization", "Bearer " + user.token())
+            .content(auctionBody))
         .andExpect(status().is2xxSuccessful());
   }
 
-  private String getUserToken(String email, String password) throws Exception{
-    MvcResult result = mockMvc.perform(post("/api/auth/login")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(loginBody(email, password)))
-        .andExpect(status().isOk())
-        .andReturn();
-
-    String responseBody = result.getResponse().getContentAsString();
-
-    return JsonPath.read(responseBody, "$.token");
-  }
-
-  private String registerBody(String name, String email, String password, String avatarId) {
-    return """
-        {
-          "name": "%s",
-          "email": "%s",
-          "password": "%s",
-          "avatarId": "%s"
-        }
-        """.formatted(name, email, password, avatarId);
-  }
-
-  private String loginBody(String email, String password) {
-    return """
-        {
-          "email": "%s",
-          "password": "%s"
-        }
-        """.formatted(email, password);
-  }
-
+  // Conservamos solo el helper exclusivo de Auction, el resto se borró porque se hereda
   private String createAuctionBody(String cardId, Integer auctionDurationHours, List<AuctionConditionDto> conditions) throws JsonProcessingException {
     CreateAuctionDTO dto = new CreateAuctionDTO();
     dto.setCardId(cardId);
     dto.setAuctionDurationHours(auctionDurationHours);
     dto.setConditions(conditions);
 
+    // Se usa el objectMapper protegido de la clase base
     return objectMapper.writeValueAsString(dto);
   }
 
