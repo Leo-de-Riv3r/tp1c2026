@@ -4,6 +4,7 @@ import com.tacs.tp1c2026.entities.card.Card;
 import com.tacs.tp1c2026.entities.user.User;
 import com.tacs.tp1c2026.entities.user.embedded.CollectionCard;
 import com.tacs.tp1c2026.entities.user.embedded.MissingCard;
+import com.tacs.tp1c2026.entities.user.embedded.Suggestion;
 import com.tacs.tp1c2026.exceptions.ConflictException;
 import com.tacs.tp1c2026.exceptions.InsufficientCardException;
 import com.tacs.tp1c2026.exceptions.MissingCardException;
@@ -133,5 +134,19 @@ public class UserService {
         userRepository.save(user);
     }
 
+    /* Suggestions */
+
+    /**
+     * Returns the persisted suggestions for a user
+     * @param userId the user's ID
+     * @return list of {@link Suggestion} entities
+     */
+    public List<Suggestion> getUserSuggestions(String userId) throws UserNotFoundException {
+        return getById(userId).getSuggestions();
+    }
+
+    public void saveAll(List<User> users) {
+        userRepository.saveAll(users);
+    }
 
 }

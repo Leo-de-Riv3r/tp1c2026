@@ -17,14 +17,14 @@
  public class ProfileGroup {
 
      @Id
-     private Integer id;
+     private String id;
 
-     @Getter
-     private Profile representativeProfile = initializeVectorProfile();
+    @Getter
+    private Profile representativeProfile = new Profile();
 
-     @DocumentReference
-     @Getter
-     private final Set<User> neighbours = new HashSet<>();
+    @DocumentReference
+    @Getter
+    private Set<User> neighbours = new HashSet<>();
 
      private final ProfileProperties properties;
 
