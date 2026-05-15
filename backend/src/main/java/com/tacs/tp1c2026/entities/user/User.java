@@ -63,6 +63,7 @@ public class User {
     @Getter
     private List<MissingCard> missingCards = new ArrayList<>();
 
+    @Getter
     private List<Suggestion> suggestions = new ArrayList<>();
 
     private Profile vectorProfile = new Profile();

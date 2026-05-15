@@ -2,6 +2,7 @@ package com.tacs.tp1c2026.controllers;
 
 import com.tacs.tp1c2026.entities.dto.user.input.*;
 import com.tacs.tp1c2026.entities.dto.user.output.CollectionCardResult;
+import com.tacs.tp1c2026.entities.dto.user.output.SuggestionResult;
 import com.tacs.tp1c2026.entities.dto.user.output.UserDto;
 import com.tacs.tp1c2026.entities.user.embedded.CollectionCard;
 import com.tacs.tp1c2026.entities.user.embedded.MissingCard;
@@ -129,5 +130,23 @@ public class UsersController {
             @PathVariable String cardId) throws NotFoundException, UserNotFoundException {
         userService.removeFromMissingCards(id, cardId);
         return ResponseEntity.noContent().build();
+    }
+
+    /* Suggestions endpoint */
+
+    /**
+     * Returns the exchange suggestions for a user.
+     * Suggestions are computed periodically by the scheduled SuggestionGenerator.
+     * Each suggestion indicates another user whose available cards match this user's missing cards.
+     * @param id the user's ID
+     * @return list of {@link SuggestionResult}
+     */
+    @GetMapping("/{id}/suggestions")
+    public ResponseEntity<List<SuggestionResult>> getSuggestions(@PathVariable String id) throws UserNotFoundException {
+        return ResponseEntity.ok(
+            userService.getUserSuggestions(id).stream()
+                .map(SuggestionResult::from)
+                .toList()
+        );
     }
 }

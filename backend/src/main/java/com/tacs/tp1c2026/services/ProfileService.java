@@ -41,16 +41,16 @@ public class ProfileService {
                     .limit(this.properties.getMaximumNumberOfUsersToSuggest())
                     .toList();
 
-            List<Suggestion> suggestions = closesMatchingUsers.stream().map(u ->
-                            new Suggestion(
-                                    u,
-                                    user.missingCardsItCanGetFrom(u)
-                            )
-                    ).toList();
+            List<Suggestion> suggestions = closesMatchingUsers.stream()
+                    .map(u -> new Suggestion(u, user.missingCardsItCanGetFrom(u)))
+                    .filter(s -> !s.getObtainableCards().isEmpty())
+                    .toList();
 
             user.updateSuggestions(suggestions);
 
         }
+
+        this.userService.saveAll(users);
 
         for (ProfileGroup pfg : groups) {
             pfg.updateVector();
