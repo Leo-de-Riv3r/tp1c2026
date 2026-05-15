@@ -8,7 +8,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.jayway.jsonpath.JsonPath;
@@ -24,6 +23,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
+
+import java.util.List;
 
 public class AuctionTests extends IntegrationTestBase {
 
@@ -183,6 +184,13 @@ public class AuctionTests extends IntegrationTestBase {
     return objectMapper.writeValueAsString(dto);
   }
 
+  private String userIdFromLogin(String email, String password) throws Exception {
+    return JsonPath.read(mockMvc.perform(post("/api/auth/login")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(loginBody(email, password)))
+        .andReturn().getResponse().getContentAsString(), "$.user.id");
+  }
+
   private String createAuctionAndGetId(String token, String cardId) throws Exception {
     MvcResult res = mockMvc.perform(post("/api/auctions")
         .contentType(MediaType.APPLICATION_JSON)
@@ -225,7 +233,28 @@ public class AuctionTests extends IntegrationTestBase {
     return null;
   }
 
-  // ===== Tests: accept / cron close / reject / best =====
+  private void registrarUsuario(String name, String email, String password, String avatarId) throws Exception {
+    String body = "{ \"name\": \"" + name + "\", \"email\": \"" + email
+        + "\", \"password\": \"" + password + "\", \"avatarId\": \"" + avatarId + "\" }";
+    mockMvc.perform(post("/api/auth/register")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(body))
+        .andExpect(status().is2xxSuccessful());
+  }
+
+  private String getUserToken(String email, String password) throws Exception {
+    return login(email, password).token();
+  }
+
+  private void registerRepeatedCard(String cardId, String token, String userId) throws Exception {
+    addToCollection(userId, cardId, token);
+  }
+
+  private String loginBody(String email, String password) {
+    return "{ \"email\": \"" + email + "\", \"password\": \"" + password + "\" }";
+  }
+
+  // ===== Tests del refactor: accept manual / cron close / reject / best =====
 
   @Test
   void acceptAuctionOfferFinalizesAndCreatesExchange() throws Exception {
