@@ -10,7 +10,7 @@ import lombok.Setter;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class PaginacionDto<T> {
+public class PaginationDto<T> {
   private List<T> data;
   private int currentPage;
   private int totalPages;
