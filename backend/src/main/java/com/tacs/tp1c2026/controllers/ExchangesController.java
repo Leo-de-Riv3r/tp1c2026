@@ -1,5 +1,6 @@
 package com.tacs.tp1c2026.controllers;
 
+import com.tacs.tp1c2026.entities.dto.common.ApiResponse;
 import com.tacs.tp1c2026.entities.dto.common.output.PaginationDtoOutput;
 import com.tacs.tp1c2026.entities.dto.exchange.input.AddFeedbackDto;
 import com.tacs.tp1c2026.entities.dto.exchange.output.ExchangeDto;
@@ -12,9 +13,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDateTime;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/exchanges")
@@ -76,14 +74,11 @@ public class ExchangesController {
   * It fails if the user is not related to the exchange or if the feedback was already given
   */
   @PostMapping("/{exchangeId}/feedback")
-  public ResponseEntity<Map<String, Object>> addFeedback(@PathVariable String exchangeId,
+  public ResponseEntity<ApiResponse> addFeedback(@PathVariable String exchangeId,
       @RequestAttribute("userId") String userId,
       @Valid @RequestBody AddFeedbackDto body
   ) throws NotFoundException {
     exchangeService.addFeedback(exchangeId, userId, body.getScore(), body.getComment());
-    return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
-        "timestamp", LocalDateTime.now(),
-        "message", "Feedback registrado"
-    ));
+    return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.of("Feedback registrado"));
   }
 }

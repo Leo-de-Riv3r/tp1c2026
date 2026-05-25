@@ -4,7 +4,7 @@ import com.tacs.tp1c2026.entities.dto.card.output.CardDTO;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public class RepetidaDto {
+public class RepeatedDto {
   private Integer cantidad;
-  private CardDTO figurita;
+  private CardDTO card;
 }

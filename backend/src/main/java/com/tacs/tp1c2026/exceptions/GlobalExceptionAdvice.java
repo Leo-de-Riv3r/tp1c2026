@@ -1,8 +1,6 @@
 package com.tacs.tp1c2026.exceptions;
 
 import com.tacs.tp1c2026.entities.dto.common.ApiError;
-import java.util.HashMap;
-import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -28,21 +26,19 @@ public class GlobalExceptionAdvice {
             ));
     }
 
-  @ExceptionHandler(MethodArgumentNotValidException.class)
-  public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
-
-    Map<String, String> errores = new HashMap<>();
-
-    // Recorremos todos los errores que encontró Spring en el DTO
-    ex.getBindingResult().getAllErrors().forEach((error) -> {
-      String nombreCampo = ((FieldError) error).getField();
-      String mensajeError = error.getDefaultMessage();
-      errores.put(nombreCampo, mensajeError);
-    });
-
-    // Devolvemos un JSON limpio con código 400
-    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errores);
-  }
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiError> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        var errors = new StringBuilder();
+        ex.getBindingResult().getAllErrors().forEach(error -> {
+            if (!errors.isEmpty()) errors.append(", ");
+            errors.append(((FieldError) error).getField())
+                  .append(": ")
+                  .append(error.getDefaultMessage());
+        });
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(ApiError.of(400, "Bad Request", errors.toString()));
+    }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleUnexpectedError(Exception ex) {
