@@ -16,6 +16,7 @@ import com.tacs.tp1c2026.exceptions.UnprocessableException;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
@@ -29,6 +30,9 @@ public class Auction {
 
   @Id
   private String id;
+
+  @Version
+  private Long version;
 
   @DocumentReference
   private Card card;

@@ -10,6 +10,7 @@ import com.tacs.tp1c2026.exceptions.ForbiddenException;
 import lombok.Getter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.TypeAlias;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
@@ -23,6 +24,9 @@ public class TradePublication {
 
   @Id
   private String id;
+
+  @Version
+  private Long version;
 
   @DocumentReference
   private User publisherUser;

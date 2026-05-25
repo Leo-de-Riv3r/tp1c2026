@@ -1,6 +1,7 @@
 package com.tacs.tp1c2026.services;
 
 import com.tacs.tp1c2026.entities.card.Card;
+import com.tacs.tp1c2026.entities.enums.UserRole;
 import com.tacs.tp1c2026.entities.user.User;
 import com.tacs.tp1c2026.entities.user.embedded.CollectionCard;
 import com.tacs.tp1c2026.entities.user.embedded.MissingCard;
@@ -28,11 +29,13 @@ public class UserService {
     }
 
     /**
-     * Returns all registered users
-     * @return list of {@link User} entities
+     * Returns all registered regular users (excluding {@link UserRole#ADMIN}). The admin is a User
+     * in Mongo but shouldn't appear in candidate lists for trading, suggestions, or listings.
      */
     public List<User> getAll() {
-        return userRepository.findAll();
+        return userRepository.findAll().stream()
+            .filter(u -> u.getRole() != UserRole.ADMIN)
+            .toList();
     }
 
     /**
@@ -113,7 +116,7 @@ public class UserService {
         Card card = cardService.getById(cardId);
         User user = getById(userId);
         if (user.hasInCollection(cardId)) {
-            throw new ConflictException("La figurita " + cardId + " ya está en la colección del usuario");
+            throw new ConflictException("La figurita #" + card.getNumber() + " (" + card.getDescription() + ") ya está en tu colección");
         }
         MissingCard mc = MissingCard.fromCatalog(card);
         user.addToMissingCards(mc);

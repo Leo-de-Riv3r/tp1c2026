@@ -19,7 +19,12 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -52,7 +57,8 @@ public class PublicationService {
      * Crea una publicación de N unidades de una figurita. Compromete N unidades en la
      * colección del publicante.
      */
-    // @Transactional // TODO: rehabilitar cuando Mongo corra como replica set
+    @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
+    @Transactional
     public TradePublication createPublication(String userId, CreateTradePublicationDto dto)
             throws UserNotFoundException, NotFoundException, InsufficientCardException, MissingCardException {
         User user = this.userService.getById(userId);
@@ -76,7 +82,8 @@ public class PublicationService {
      * Cancela una publicación. Libera todas las unidades comprometidas restantes
      * (de la publicada y de las propuestas pendientes que se cancelan en cascada).
      */
-    // @Transactional // TODO: rehabilitar cuando Mongo corra como replica set
+    @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
+    @Transactional
     public void cancelPublication(String userId, String publicationId)
             throws UserNotFoundException, NotFoundException, ForbiddenException {
         User user = this.userService.getById(userId);

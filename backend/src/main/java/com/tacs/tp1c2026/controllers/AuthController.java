@@ -33,11 +33,6 @@ public class AuthController {
     return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(dto));
   }
 
-  @PostMapping("/admin/login")
-  public ResponseEntity<LoginResponseDto> adminLogin(@Valid @RequestBody LoginDTO dto) {
-    return ResponseEntity.ok(authService.adminLogin(dto));
-  }
-
   @PostMapping("/logout")
   public ResponseEntity<Void> logout() {
     return ResponseEntity.ok().build();

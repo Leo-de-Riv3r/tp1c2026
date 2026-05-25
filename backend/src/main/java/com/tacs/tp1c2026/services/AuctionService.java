@@ -26,9 +26,13 @@ import com.tacs.tp1c2026.repositories.UserRepository;
 import com.tacs.tp1c2026.utils.PageableGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -67,7 +71,8 @@ public class AuctionService {
      * Crea una nueva subasta sobre una figurita de la colección del usuario.
      * Compromete una unidad de la figurita en la colección.
      */
-    // @Transactional // TODO: rehabilitar cuando Mongo corra como replica set
+    @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
+    @Transactional
     public Auction createAuction(String userId, CreateAuctionDTO dto) throws InsufficientCardException, MissingCardException, UserNotFoundException, NotFoundException {
         User user = this.userService.getById(userId);
         Card card = this.cardService.getById(dto.getCardId());
@@ -91,7 +96,8 @@ public class AuctionService {
     /**
      * Registra una oferta sobre una subasta activa.
      */
-    // @Transactional // TODO: rehabilitar cuando Mongo corra como replica set
+    @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
+    @Transactional
     public void createAuctionOffer(String userId, CreationAuctionOfferDTO dto) throws InsufficientCardException, MissingCardException, NotFoundException, UserNotFoundException {
         User proposer = this.userService.getById(userId);
         Auction auction = this.getAuctionById(dto.auctionId());
@@ -121,7 +127,8 @@ public class AuctionService {
      * Cancela una subasta activa. Libera el `compromisedCount` de las figuritas
      * involucradas (la del subastante y las ofrecidas en cada oferta pendiente).
      */
-    // @Transactional // TODO: rehabilitar cuando Mongo corra como replica set
+    @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
+    @Transactional
     public void cancelAuction(String userId, CancelAuctionDto dto) throws AuctionClosedException, NotFoundException, UserNotFoundException, ForbiddenException {
       User user = this.userService.getById(userId);
       Auction auction = this.getAuctionById(dto.getAuctionId());
@@ -179,7 +186,8 @@ public class AuctionService {
     /**
      * Marca al usuario como interesado en la subasta.
      */
-    // @Transactional // TODO: rehabilitar cuando Mongo corra como replica set
+    @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
+    @Transactional
     public void addInterestedUser(String auctionId, String userId) throws NotFoundException, UserNotFoundException {
         User user = this.userService.getById(userId);
         Auction auction = this.getAuctionById(auctionId);
@@ -245,7 +253,8 @@ public class AuctionService {
       auctionRepository.save(auction);
     }
 
-    //@Transactional
+    @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
+    @Transactional
     public void rejectAuctionOffer(String auctionId, String offerId, String userId) {
       User user = userService.getById(userId);
       Auction auction = getAuctionById(auctionId);
@@ -266,7 +275,8 @@ public class AuctionService {
      * Cierra una subasta cuya `closeDate` ya pasó. Adjudica al `bestOffer` si existe,
      * o cancela y libera commits si no hay ofertas. Entry point del cronjob.
      */
-    // @Transactional // TODO: rehabilitar cuando Mongo corra como replica set
+    @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
+    @Transactional
     public void closeExpiredAuction(String auctionId) throws NotFoundException, AuctionClosedException, OfferAlreadyProcessedException, OfferNotFoundException {
         Auction auction = getAuctionById(auctionId);
         if (auction.getStatus() != AuctionStatus.ACTIVE) {
@@ -287,7 +297,8 @@ public class AuctionService {
      * El publisher acepta manualmente una oferta y cierra la subasta. Mismo flujo que
      * el cron pero el ganador lo elige el usuario (no requiere `bestOffer` previo).
      */
-    // @Transactional // TODO: rehabilitar cuando Mongo corra como replica set
+    @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
+    @Transactional
     public void acceptAuctionOffer(String auctionId, String offerId, String userId) throws UserNotFoundException, NotFoundException, AuctionClosedException, OfferAlreadyProcessedException, OfferNotFoundException, ForbiddenException {
         User reviewer = userService.getById(userId);
         Auction auction = getAuctionById(auctionId);
@@ -313,7 +324,9 @@ public class AuctionService {
         }
 
         for (AuctionOffer other : auction.getOffers()) {
-            if (other == winningOffer) continue;
+            // Comparar por id, no por referencia: Spring puede hidratar auction.bestOffer y
+            // auction.offers[i] como instancias Java distintas del mismo offer lógico.
+            if (Objects.equals(other.getId(), winningOffer.getId())) continue;
             if (other.getStatus() != AuctionOfferStatus.CANCELLED) {
                 User bidder = other.getBidder();
                 for (AuctionItem oi : other.getOfferedItems()) {
@@ -352,7 +365,8 @@ public class AuctionService {
         }
     }
 
-    //@Transactional
+    @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
+    @Transactional
     public void cancelOffer(String offerId, String userId, String auctionId) {
       User user = userService.getById(userId);
       Auction auction = getAuctionById(auctionId);

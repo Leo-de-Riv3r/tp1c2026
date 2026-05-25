@@ -1,6 +1,7 @@
 services:
   mongo:
     image: mongo:7
+    command: ["--replSet", "rs0", "--bind_ip_all"]
     ports:
       - "27018:27017"
     volumes:
@@ -14,17 +15,30 @@ services:
       retries: 10
       start_period: 5s
 
-  mongo-seed:
+  mongo-init:
     image: mongo:7
     depends_on:
       mongo:
         condition: service_healthy
+    networks:
+      - tacs-network
+    restart: "no"
+    command: >
+      mongosh --host mongo:27017 --quiet --eval
+      'try { rs.status().ok } catch (e) { rs.initiate({_id: "rs0", members: [{_id: 0, host: "mongo:27017"}]}); }
+       while (!db.hello().isWritablePrimary) { sleep(200); }'
+
+  mongo-seed:
+    image: mongo:7
+    depends_on:
+      mongo-init:
+        condition: service_completed_successfully
     volumes:
       - ./seed:/seed:ro
     networks:
       - tacs-network
     command: >
-      mongosh "mongodb://mongo:27017/tacs_db" --file /seed/seed.js
+      mongosh "mongodb://mongo:27017/tacs_db?directConnection=true" --file /seed/seed.js
     restart: "no"
 
   backend:
@@ -35,10 +49,12 @@ services:
     depends_on:
       mongo:
         condition: service_healthy
+      mongo-init:
+        condition: service_completed_successfully
       mongo-seed:
         condition: service_completed_successfully
     environment:
-      SPRING_DATA_MONGODB_URI: mongodb://mongo:27017/tacs_db
+      SPRING_DATA_MONGODB_URI: mongodb://mongo:27017/tacs_db?directConnection=true
       MONGO_DATABASE: tacs_db
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRATION: ${JWT_EXPIRATION}

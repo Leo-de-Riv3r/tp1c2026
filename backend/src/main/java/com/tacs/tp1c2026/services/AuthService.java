@@ -4,6 +4,7 @@ import com.tacs.tp1c2026.entities.dto.user.input.LoginDTO;
 import com.tacs.tp1c2026.entities.dto.user.input.RegisterDTO;
 import com.tacs.tp1c2026.entities.dto.user.output.LoginResponseDto;
 import com.tacs.tp1c2026.entities.dto.user.output.UserDto;
+import com.tacs.tp1c2026.entities.enums.UserRole;
 import com.tacs.tp1c2026.entities.user.User;
 import com.tacs.tp1c2026.exceptions.BadInputException;
 import com.tacs.tp1c2026.exceptions.ConflictException;
@@ -29,23 +30,14 @@ public class AuthService {
   private final SecretKey jwtSecretKey;
   private final long jwtExpirationMs;
   private final PasswordEncoder passwordEncoder;
-  private final String adminEmail;
-  private final String adminPassword;
-  private final String adminPasswordHash;
 
   public AuthService(UserRepository userRepository,
                      @Value("${jwt.secret}") String jwtSecret,
-                     @Value("${jwt.expiration}") long jwtExpirationMs,
-                     @Value("${admin.email:admin@tacs.local}") String adminEmail,
-                     @Value("${admin.password:}") String adminPassword,
-                     @Value("${admin.password-hash:}") String adminPasswordHash) {
+                     @Value("${jwt.expiration}") long jwtExpirationMs) {
     this.userRepository = userRepository;
     this.jwtSecretKey = Keys.hmacShaKeyFor(jwtSecret.getBytes());
     this.jwtExpirationMs = jwtExpirationMs;
     this.passwordEncoder = new BCryptPasswordEncoder();
-    this.adminEmail = adminEmail == null ? "" : adminEmail.trim().toLowerCase();
-    this.adminPassword = adminPassword;
-    this.adminPasswordHash = adminPasswordHash;
   }
 
   public UserDto register(RegisterDTO dto) {
@@ -60,49 +52,30 @@ public class AuthService {
     user.setEmail(email);
     user.setAvatarId(dto.getAvatarId());
     user.setPasswordHash(passwordEncoder.encode(dto.getPassword()));
+    user.setRole(UserRole.USER);
 
     User saved = userRepository.save(user);
     return UserDto.from(saved);
   }
 
+  /**
+   * Endpoint único de login. Busca al user por email en Mongo, valida la password y arma el JWT con el rol real del User como claim
+   * Admin y User comparten el flow — la diferencia vive solo en {@link User#getRole()} (sembrado como {@link UserRole#ADMIN} en {@code seed.js})
+   */
   public LoginResponseDto login(LoginDTO dto) {
     if (dto == null || isBlank(dto.getEmail()) || isBlank(dto.getPassword())) {
       throw new BadInputException("Email y password son obligatorios");
     }
-
     String email = dto.getEmail().trim().toLowerCase();
     User user = userRepository.findByEmail(email)
         .orElseThrow(() -> new UnauthorizedException("Credenciales inválidas"));
-
     if (user.getPasswordHash() == null || !passwordEncoder.matches(dto.getPassword(), user.getPasswordHash())) {
       throw new UnauthorizedException("Credenciales inválidas");
     }
-
     user.setLastLogin(LocalDateTime.now());
     userRepository.save(user);
-
-    return new LoginResponseDto(generateJwt(user.getId(), user.getEmail(), "USER"), UserDto.from(user));
-  }
-
-  public LoginResponseDto adminLogin(LoginDTO dto) {
-    if (dto == null || isBlank(dto.getEmail()) || isBlank(dto.getPassword())) {
-      throw new BadInputException("Email y password son obligatorios");
-    }
-    if (isBlank(adminPasswordHash) && isBlank(adminPassword)) {
-      throw new UnauthorizedException("Admin no configurado");
-    }
-
-    String email = dto.getEmail().trim().toLowerCase();
-    boolean validPassword = !isBlank(adminPasswordHash)
-        ? passwordEncoder.matches(dto.getPassword(), adminPasswordHash)
-        : dto.getPassword().equals(adminPassword);
-
-    if (!email.equals(adminEmail) || !validPassword) {
-      throw new UnauthorizedException("Credenciales inválidas");
-    }
-
-    UserDto admin = new UserDto("admin", "Administrador", email, null, 0, "admin", LocalDateTime.now().toString());
-    return new LoginResponseDto(generateJwt("admin", email, "ADMIN"), admin);
+    UserRole role = user.getRole() == null ? UserRole.USER : user.getRole();
+    return new LoginResponseDto(generateJwt(user.getId(), user.getEmail(), role.name()), UserDto.from(user));
   }
 
   public boolean isTokenValid(String token) {

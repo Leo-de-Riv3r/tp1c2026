@@ -1,5 +1,6 @@
 package com.tacs.tp1c2026.entities.user;
 
+import com.tacs.tp1c2026.entities.enums.UserRole;
 import com.tacs.tp1c2026.entities.profiles.Profile;
 import com.tacs.tp1c2026.entities.user.embedded.CollectionCard;
 import com.tacs.tp1c2026.entities.user.embedded.MissingCard;
@@ -11,6 +12,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.TypeAlias;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -26,6 +28,10 @@ public class User {
     @Id
     @Getter
     private String id;
+
+    @Version
+    @Getter
+    private Long version;
 
     @Getter
     @Setter
@@ -43,6 +49,10 @@ public class User {
     @Getter
     @Setter
     private String avatarId;
+
+    @Getter
+    @Setter
+    private UserRole role = UserRole.USER;
 
     @Getter
     private Double rating = null;

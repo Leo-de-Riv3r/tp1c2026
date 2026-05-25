@@ -7,6 +7,10 @@ import com.tacs.tp1c2026.entities.user.User;
 import com.tacs.tp1c2026.entities.user.embedded.Suggestion;
 import com.tacs.tp1c2026.properties.ProfileProperties;
 import com.tacs.tp1c2026.repositories.ProfileGroupRepository;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,7 +30,8 @@ public class ProfileService {
         this.properties = properties;
     }
 
-    // @Transactional // TODO: rehabilitar cuando Mongo corra como replica set
+    @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
+    @Transactional
     public void updateSuggestionsForUsers() {
 
         List<ProfileGroup> groups = this.profileGroupRepository.findAll();
@@ -59,7 +64,8 @@ public class ProfileService {
 
     }
 
-    // @Transactional // TODO: rehabilitar cuando Mongo corra como replica set
+    @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
+    @Transactional
     public void updateProfileGroups(User user){
         List<ProfileGroup> pfg = this.profileGroupRepository.findAll();
 

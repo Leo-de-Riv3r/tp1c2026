@@ -74,6 +74,16 @@
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-crypto</artifactId>
 		</dependency>
+		<!-- Retry para mitigar conflictos de optimistic locking (OptimisticLockingFailureException) -->
+		<dependency>
+			<groupId>org.springframework.retry</groupId>
+			<artifactId>spring-retry</artifactId>
+			<version>2.0.11</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-aspects</artifactId>
+		</dependency>
 		<!-- Dependencias de tests -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
