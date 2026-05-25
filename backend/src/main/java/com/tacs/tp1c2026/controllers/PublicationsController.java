@@ -1,6 +1,7 @@
 package com.tacs.tp1c2026.controllers;
 
 import com.tacs.tp1c2026.entities.dto.common.input.SearchPublicationsFilters;
+import com.tacs.tp1c2026.entities.dto.common.output.CreatedResponseDto;
 import com.tacs.tp1c2026.entities.dto.common.output.PaginationDtoOutput;
 import com.tacs.tp1c2026.entities.dto.trade.input.CreateTradePublicationDto;
 import com.tacs.tp1c2026.entities.dto.trade.output.TradePublicationDto;
@@ -11,12 +12,10 @@ import com.tacs.tp1c2026.services.PublicationService;
 import com.tacs.tp1c2026.services.mappers.TradeMapper;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
-import java.util.Map;
+import java.net.URI;
 
 @RestController
 @RequestMapping("/publications")
@@ -34,16 +33,15 @@ public class PublicationsController {
    * Crea una publicación de intercambio.
    */
   @PostMapping
-  public ResponseEntity<Map<String, Object>> createPublication(
+  public ResponseEntity<CreatedResponseDto<TradePublicationDto>> createPublication(
       @RequestAttribute("userId") String userId,
       @Valid @RequestBody CreateTradePublicationDto dto
   ) throws UserNotFoundException, NotFoundException, InsufficientCardException, MissingCardException {
     TradePublication publication = publicationService.createPublication(userId, dto);
-    return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
-        "timestamp", LocalDateTime.now(),
-        "message", "Publicación creada con éxito",
-        "publicationId", publication.getId()
-    ));
+    TradePublicationDto body = tradeMapper.mapPublication(publication);
+    return ResponseEntity
+        .created(URI.create("/api/publications/" + publication.getId()))
+        .body(CreatedResponseDto.of("Publicación creada con éxito", body));
   }
 
   /**

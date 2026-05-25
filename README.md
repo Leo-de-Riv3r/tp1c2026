@@ -40,13 +40,73 @@ docker compose up -d --build
 
 ## Estado actual del proyecto
 
-**Catálogo**: todavía no encontramos una API pública que devuelva las figuritas del Mundial. Hay una con información de los jugadores y es posible encontrar el listado de las +900 figuritas — estamos evaluando combinar esta api y el listado para armar una propia. Mientras tanto, generamos un catálogo de 500 figuritas en [`backend/seed/catalog.json`](backend/seed/catalog.json) que el contenedor `mongo-seed` inserta automáticamente en la colección `cards` al levantar el stack, junto con un usuario de prueba en la colección `users`
+**Catálogo**: todavía no encontramos una API pública que devuelva las figuritas del Mundial. Hay una con información de los jugadores y es posible encontrar el listado de las +900 figuritas — estamos evaluando combinar esta api y el listado para armar una propia. Mientras tanto, generamos un catálogo de 500 figuritas en [`backend/seed/catalog.json`](backend/seed/catalog.json) que el contenedor `mongo-seed` inserta automáticamente en la colección `cards` al levantar el stack, junto con usuarios de prueba en la colección `users`
 
-**Autenticación**: el módulo de auth todavía no está integrado (en progreso). Mientras tanto, el frontend usa un mock que apunta al ID del usuario seedeado para que ambos coincidan y se puedan ejecutar las operaciones básicas contra la instancia de Mongo
+**Autenticación**: integrada vía JWT. Único endpoint `POST /api/auth/login` que detecta admin vs user según el `role` del User en Mongo (no hay endpoint admin separado). El FE decodifica el claim `role` del JWT para decidir qué UI mostrar
+
+## Usuarios de prueba
+
+Todos los users del seed comparten el mismo password: **`123456`**
+
+| Email                    | Rol   | Notas                                                                  |
+|--------------------------|-------|------------------------------------------------------------------------|
+| `peperacing@gmail.com`   | USER  | Tiene cards en colección (3x card_001, 2x card_005, 1x card_010) y missing cards |
+| `moniargento@gmail.com`  | USER  | Tiene 2 publicaciones activas (card_003 y card_004)            |
+| `admin@mail.com`         | ADMIN | Usuario de administración. Filtrado de listas de candidatos a trading  |
+
+## Levantar Mongo localmente (sin Docker)
+
+Si se quiere correr el BE local con `./mvnw spring-boot:run` y Mongo nativo en vez del compose:
+
+**Requisitos:** [MongoDB Community Server](https://www.mongodb.com/try/download/community) instalado. El BE necesita Mongo en modo **replica set** (las transacciones `@Transactional` lo requieren)
+
+**bash (Linux / macOS / Git Bash / WSL):**
+
+```bash
+# 1. Crear directorio de datos
+mkdir -p /tmp/tacs-mongo
+
+# 2. Arrancar mongod como replica set de 1 nodo (queda corriendo en foreground)
+mongod --dbpath /tmp/tacs-mongo --port 27017 --replSet rs0 --bind_ip 127.0.0.1
+
+# 3. En otra terminal: inicializar el replica set (solo la primera vez)
+mongosh --eval 'rs.initiate({_id: "rs0", members: [{_id: 0, host: "localhost:27017"}]})'
+
+# 4. Correr el seed (carga catálogo + usuarios)
+mongosh "mongodb://localhost:27017/tacs_db?directConnection=true" --file backend/seed/seed.js
+
+# 5. Levantar el BE apuntando a esa Mongo
+cd backend
+export SPRING_DATA_MONGODB_URI="mongodb://localhost:27017/tacs_db?directConnection=true"
+./mvnw spring-boot:run
+```
+
+**PowerShell (Windows):**
+
+```powershell
+# 1. Crear directorio de datos
+New-Item -ItemType Directory -Force -Path "$env:TEMP\tacs-mongo" | Out-Null
+
+# 2. Arrancar mongod como replica set de 1 nodo (queda corriendo en foreground)
+mongod --dbpath "$env:TEMP\tacs-mongo" --port 27017 --replSet rs0 --bind_ip 127.0.0.1
+
+# 3. En otra terminal: inicializar el replica set (solo la primera vez)
+mongosh --eval 'rs.initiate({_id: "rs0", members: [{_id: 0, host: "localhost:27017"}]})'
+
+# 4. Correr el seed (carga catálogo + usuarios)
+mongosh "mongodb://localhost:27017/tacs_db?directConnection=true" --file backend\seed\seed.js
+
+# 5. Levantar el BE apuntando a esa Mongo
+cd backend
+$env:SPRING_DATA_MONGODB_URI = "mongodb://localhost:27017/tacs_db?directConnection=true"
+.\mvnw.cmd spring-boot:run
+```
+
+> **Nota:** el seed es idempotente — si ya hay datos, no los duplica. Para resetear: parar mongodb, borrar `/tmp/tacs-mongo` o `%TEMP%\tacs-mongo` y empezar de nuevo
 
 ## Visualizar la base (opcional)
 
-Si se quiere inspeccionar los datos en Mongo, se debe instalar [`mongosh`](https://www.mongodb.com/try/download/shell) y/o [Compass](https://www.mongodb.com/try/download/compass).
+Si se quiere inspeccionar los datos en Mongo, se debe instalar [`mongosh`](https://www.mongodb.com/try/download/shell) y/o [Compass](https://www.mongodb.com/try/download/compass)
 
 **Instalar mongosh:**
 
@@ -72,11 +132,11 @@ La base se llama `tacs_db`.
 
 ## Sobre el frontend
 
-El servicio `frontend` del compose **no buildea desde código local**: pullea la imagen publicada en GHCR ([`ghcr.io/salometredici/tacs-2026-c1-fe:latest`](https://github.com/salometredici/tacs-2026-c1-FE/pkgs/container/tacs-2026-c1-fe)). Cada merge a `main` del [repo del frontend](https://github.com/salometredici/tacs-2026-c1-FE) dispara un workflow de GitHub Actions que rebuildea y republica la imagen
+El servicio `frontend` del compose **no buildea desde código local**: pullea la imagen publicada en GHCR ([`ghcr.io/salometredici/tacs-2026-c1-fe:latest`](https://github.com/salometredici/tacs-2026-c1-FE/pkgs/container/tacs-2026-c1-fe)) (Si dejamos latest, será la imagen correspondiente al tag de la Entrega actual, no vamos a generar una imagen sobre código posterior a la misma hasta recibir la corrección, sino, vamos a dejar explícita la imagen en el docker-compose). Se pueden generar las imágenes desde un workflow en el repositorio del FE de forma manual de ser necesario
 
-Por eso, para correr el stack **no hace falta tener el frontend clonado**.
+Por eso, para correr el stack **no hace falta tener el frontend clonado**
 
-Si querés trabajar con el frontend en local (modificar código y verlo reflejado en docker), cloná el repo como hermano del backend:
+Si se quiere trabajar con el FE en local (modificar código y verlo reflejado en docker), cloná el repo bajo el mismo padre del backend:
 
 ```
 carpeta-padre/

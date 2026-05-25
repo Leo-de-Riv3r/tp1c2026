@@ -29,8 +29,8 @@ public class UserService {
     }
 
     /**
-     * Returns all registered regular users (excluding {@link UserRole#ADMIN}). The admin is a User
-     * in Mongo but shouldn't appear in candidate lists for trading, suggestions, or listings.
+     * Returns all registered regular users (excluding {@link UserRole#ADMIN})
+     * The admin is a User in Mongo but shouldn't appear in candidate lists for trading, suggestions, or listings
      */
     public List<User> getAll() {
         return userRepository.findAll().stream()

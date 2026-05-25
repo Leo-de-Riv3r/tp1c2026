@@ -81,7 +81,7 @@ public class ExchangeTests extends IntegrationTestBase {
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + s.alice().token())
             .content(body))
-        .andExpect(status().isCreated());
+        .andExpect(status().isNoContent());
 
     MvcResult res = mockMvc.perform(get("/api/exchanges/" + s.exchangeId())
             .header("Authorization", "Bearer " + s.alice().token()))
@@ -168,13 +168,13 @@ public class ExchangeTests extends IntegrationTestBase {
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + s.alice().token())
             .content(feedback))
-        .andExpect(status().isCreated());
+        .andExpect(status().isNoContent());
     // Bob deja feedback → feedbackFromB
     mockMvc.perform(post("/api/exchanges/" + s.exchangeId() + "/feedback")
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + s.bob().token())
             .content("{ \"score\": 5, \"comment\": \"Ok\" }"))
-        .andExpect(status().isCreated());
+        .andExpect(status().isNoContent());
 
     String body = mockMvc.perform(get("/api/exchanges/" + s.exchangeId())
             .header("Authorization", "Bearer " + s.alice().token()))
@@ -239,7 +239,7 @@ public class ExchangeTests extends IntegrationTestBase {
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + s.alice().token())
             .content(body))
-        .andExpect(status().isCreated());
+        .andExpect(status().isNoContent());
     // Segundo intento del mismo usuario → 4xx (ConflictException → 409)
     mockMvc.perform(post("/api/exchanges/" + s.exchangeId() + "/feedback")
             .contentType(MediaType.APPLICATION_JSON)
@@ -269,7 +269,7 @@ public class ExchangeTests extends IntegrationTestBase {
                                        String publishedCardId, String offeredCardId) throws Exception {
     String auctionId = JsonPath.read(
         createAuction(publisher.token(), publishedCardId, 24).getResponse().getContentAsString(),
-        "$.auctionId");
+        "$.data.id");
 
     String offerBody = "{ \"auctionId\": \"" + auctionId + "\", \"items\": [{ \"cardId\": \""
         + offeredCardId + "\", \"amount\": 1 }] }";

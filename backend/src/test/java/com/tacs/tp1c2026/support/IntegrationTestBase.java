@@ -3,6 +3,7 @@ package com.tacs.tp1c2026.support;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.PathNotFoundException;
 import com.tacs.tp1c2026.entities.card.Card;
 import com.tacs.tp1c2026.repositories.AuctionRepository;
 import com.tacs.tp1c2026.repositories.CardRepository;
@@ -173,7 +174,21 @@ public abstract class IntegrationTestBase {
         .andReturn();
   }
 
+  /**
+   * Extrae el id del recurso recién creado del body de un POST envuelto en
+   * {@code CreatedResponseDto<T>}. Los DTOs no son consistentes en cómo nombran el id
+   * ({@code AuctionDto} y {@code TradeProposalDto} usan {@code id};
+   * {@code TradePublicationDto} usa {@code publicationId}; {@code AuctionOfferDto} usa
+   * {@code offerId}). El helper intenta {@code $.data.id} primero, sino cae al
+   * {@code key} pasado por el caller. Cuando se uniformicen los DTOs a {@code id},
+   * el parámetro {@code key} puede eliminarse
+   */
   protected String idFromCreated(MvcResult result, String key) throws Exception {
-    return JsonPath.read(result.getResponse().getContentAsString(), "$." + key);
+    String body = result.getResponse().getContentAsString();
+    try {
+      return JsonPath.read(body, "$.data.id");
+    } catch (PathNotFoundException e) {
+      return JsonPath.read(body, "$.data." + key);
+    }
   }
 }

@@ -94,11 +94,12 @@ public class AuctionService {
     }
 
     /**
-     * Registra una oferta sobre una subasta activa.
+     * Registra una oferta sobre una subasta activa.¿
+     * @return la {@link AuctionOffer} recién creada (con id generado), para que el controller pueda exponerla al cliente en el response
      */
     @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
     @Transactional
-    public void createAuctionOffer(String userId, CreationAuctionOfferDTO dto) throws InsufficientCardException, MissingCardException, NotFoundException, UserNotFoundException {
+    public AuctionOffer createAuctionOffer(String userId, CreationAuctionOfferDTO dto) throws InsufficientCardException, MissingCardException, NotFoundException, UserNotFoundException {
         User proposer = this.userService.getById(userId);
         Auction auction = this.getAuctionById(dto.auctionId());
 
@@ -121,6 +122,7 @@ public class AuctionService {
         auction.addOffer(offer);
         this.auctionRepository.save(auction);
         this.userRepository.save(proposer);
+        return offer;
     }
 
     /**
