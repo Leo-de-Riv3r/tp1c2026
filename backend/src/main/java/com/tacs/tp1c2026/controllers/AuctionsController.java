@@ -1,15 +1,13 @@
 package com.tacs.tp1c2026.controllers;
 
 import com.tacs.tp1c2026.entities.auction.Auction;
-import com.tacs.tp1c2026.entities.auction.AuctionOffer;
+import com.tacs.tp1c2026.entities.dto.common.ApiResponse;
 import com.tacs.tp1c2026.entities.dto.auction.input.CancelAuctionDto;
 import com.tacs.tp1c2026.entities.dto.auction.input.CreateAuctionDTO;
 import com.tacs.tp1c2026.entities.dto.auction.input.CreationAuctionOfferDTO;
 import com.tacs.tp1c2026.entities.dto.auction.output.AuctionDto;
-import com.tacs.tp1c2026.entities.dto.auction.output.AuctionOfferDto;
 import com.tacs.tp1c2026.entities.dto.auction.output.UserBidDto;
 import com.tacs.tp1c2026.entities.dto.common.input.SearchPublicationsFilters;
-import com.tacs.tp1c2026.entities.dto.common.output.CreatedResponseDto;
 import com.tacs.tp1c2026.entities.dto.common.output.PaginationDtoOutput;
 import com.tacs.tp1c2026.entities.dto.mappers.AuctionMapper;
 import com.tacs.tp1c2026.entities.enums.CardType;
@@ -25,10 +23,9 @@ import com.tacs.tp1c2026.exceptions.UserNotFoundException;
 import com.tacs.tp1c2026.services.AuctionService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.net.URI;
 
 @RestController
 @RequestMapping("/auctions")
@@ -46,15 +43,12 @@ public class AuctionsController {
    * Crea una nueva subasta sobre una figurita repetida del usuario.
    */
   @PostMapping
-  public ResponseEntity<CreatedResponseDto<AuctionDto>> createAuction(
+  public ResponseEntity<ApiResponse> createAuction(
       @RequestAttribute("userId") String userId,
       @Valid @RequestBody CreateAuctionDTO dto
   ) throws InsufficientCardException, MissingCardException, NotFoundException, UserNotFoundException {
     Auction auction = auctionService.createAuction(userId, dto);
-    AuctionDto body = auctionMapper.mapAuction(auction);
-    return ResponseEntity
-        .created(URI.create("/api/auctions/" + auction.getId()))
-        .body(CreatedResponseDto.of("Subasta creada con éxito", body));
+    return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.of("Subasta creada con éxito", auction.getId()));
   }
 
   /**
@@ -115,17 +109,14 @@ public class AuctionsController {
    * Crea una oferta sobre una subasta existente.
    */
   @PostMapping("/{auctionId}/offers")
-  public ResponseEntity<CreatedResponseDto<AuctionOfferDto>> createOffer(
+  public ResponseEntity<ApiResponse> createOffer(
       @PathVariable String auctionId,
       @RequestAttribute("userId") String userId,
       @Valid @RequestBody CreationAuctionOfferDTO body
   ) throws InsufficientCardException, MissingCardException, NotFoundException, UserNotFoundException {
     CreationAuctionOfferDTO dto = new CreationAuctionOfferDTO(auctionId, body.items());
-    AuctionOffer offer = auctionService.createAuctionOffer(userId, dto);
-    AuctionOfferDto offerDto = auctionMapper.mapOffer(auctionId, offer);
-    return ResponseEntity
-        .created(URI.create("/api/auctions/" + auctionId + "/offers/" + offer.getId()))
-        .body(CreatedResponseDto.of("Oferta publicada con éxito", offerDto));
+    auctionService.createAuctionOffer(userId, dto);
+    return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.of("Oferta publicada con éxito"));
   }
 
   /**

@@ -22,7 +22,7 @@ public class AuctionConditionDto {
 
   @JsonIgnore // Fundamental para que Spring no devuelva esto en las respuestas del controlador
   @AssertTrue(message = "Falta un campo: Si es por categoría requiere 'value', si es por cantidad requiere 'quantity'")
-  public boolean isCondicionValida() {
+  public boolean isValidCondition() {
 
     if (this.filterName == null) {
       return true;

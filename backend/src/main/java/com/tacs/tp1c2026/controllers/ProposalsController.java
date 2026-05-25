@@ -1,6 +1,6 @@
 package com.tacs.tp1c2026.controllers;
 
-import com.tacs.tp1c2026.entities.dto.common.output.CreatedResponseDto;
+import com.tacs.tp1c2026.entities.dto.common.ApiResponse;
 import com.tacs.tp1c2026.entities.dto.trade.input.CreateTradeProposalDTO;
 import com.tacs.tp1c2026.entities.dto.trade.output.TradeProposalDto;
 import com.tacs.tp1c2026.entities.enums.TradeProposalStatus;
@@ -9,10 +9,10 @@ import com.tacs.tp1c2026.exceptions.*;
 import com.tacs.tp1c2026.services.ProposalService;
 import com.tacs.tp1c2026.services.mappers.TradeMapper;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -31,15 +31,12 @@ public class ProposalsController {
    * Crea una propuesta sobre una publicación. {@code publicationId} en el body.
    */
   @PostMapping
-  public ResponseEntity<CreatedResponseDto<TradeProposalDto>> createProposal(
+  public ResponseEntity<ApiResponse> createProposal(
       @RequestAttribute("userId") String userId,
       @Valid @RequestBody CreateTradeProposalDTO body
   ) throws UserNotFoundException, NotFoundException, InsufficientCardException, MissingCardException, NoAvailableSlotsException {
     TradeProposal proposal = proposalService.createProposal(userId, body);
-    TradeProposalDto dto = tradeMapper.mapProposal(proposal);
-    return ResponseEntity
-        .created(URI.create("/api/proposals/" + proposal.getId()))
-        .body(CreatedResponseDto.of("Propuesta enviada con éxito", dto));
+    return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.of("Propuesta enviada con éxito", proposal.getId()));
   }
 
   /**
@@ -85,35 +82,35 @@ public class ProposalsController {
    * Aceptar una propuesta. Dispara el flujo bilateral completo y crea el Exchange histórico.
    */
   @PutMapping("/{proposalId}/accept")
-  public ResponseEntity<Void> acceptProposal(
+  public ResponseEntity<ApiResponse> acceptProposal(
       @PathVariable String proposalId,
       @RequestAttribute("userId") String userId
   ) throws UserNotFoundException, NotFoundException, ProposalNotInPublicationException, OfferAlreadyProcessedException, ForbiddenException, MissingCardException, InsufficientCardException {
     proposalService.acceptProposal(userId, proposalId);
-    return ResponseEntity.noContent().build();
+    return ResponseEntity.ok(ApiResponse.of("Propuesta aceptada con éxito"));
   }
 
   /**
    * Rechazar una propuesta. Libera el compromisedCount del proponente.
    */
   @PutMapping("/{proposalId}/reject")
-  public ResponseEntity<Void> rejectProposal(
+  public ResponseEntity<ApiResponse> rejectProposal(
       @PathVariable String proposalId,
       @RequestAttribute("userId") String userId
   ) throws UserNotFoundException, NotFoundException, ProposalNotInPublicationException, OfferAlreadyProcessedException, ForbiddenException {
     proposalService.rejectProposal(userId, proposalId);
-    return ResponseEntity.noContent().build();
+    return ResponseEntity.ok(ApiResponse.of("Propuesta rechazada"));
   }
 
   /**
    * Cancelar una propuesta del lado del proponente.
    */
   @PutMapping("/{proposalId}/cancel")
-  public ResponseEntity<Void> cancelProposal(
+  public ResponseEntity<ApiResponse> cancelProposal(
       @PathVariable String proposalId,
       @RequestAttribute("userId") String userId
   ) throws UserNotFoundException, NotFoundException, OfferAlreadyProcessedException, ForbiddenException {
     proposalService.cancelProposal(userId, proposalId);
-    return ResponseEntity.noContent().build();
+    return ResponseEntity.ok(ApiResponse.of("Propuesta cancelada"));
   }
 }
