@@ -4,8 +4,8 @@ import com.tacs.tp1c2026.entities.auction.Auction;
 import com.tacs.tp1c2026.entities.auction.AuctionOffer;
 import com.tacs.tp1c2026.entities.dto.common.ApiResponse;
 import com.tacs.tp1c2026.entities.dto.auction.input.CancelAuctionDto;
-import com.tacs.tp1c2026.entities.dto.auction.input.CreateAuctionDTO;
-import com.tacs.tp1c2026.entities.dto.auction.input.CreationAuctionOfferDTO;
+import com.tacs.tp1c2026.entities.dto.auction.input.CreateAuctionDto;
+import com.tacs.tp1c2026.entities.dto.auction.input.CreationAuctionOfferDto;
 import com.tacs.tp1c2026.entities.dto.auction.output.AuctionDto;
 import com.tacs.tp1c2026.entities.dto.auction.output.AuctionOfferDto;
 import com.tacs.tp1c2026.entities.dto.auction.output.UserBidDto;
@@ -48,7 +48,7 @@ public class AuctionsController {
   @PostMapping
   public ResponseEntity<ApiResponse<AuctionDto>> createAuction(
       @RequestAttribute("userId") String userId,
-      @Valid @RequestBody CreateAuctionDTO dto
+      @Valid @RequestBody CreateAuctionDto dto
   ) throws InsufficientCardException, MissingCardException, NotFoundException, UserNotFoundException {
     Auction auction = auctionService.createAuction(userId, dto);
     AuctionDto body = auctionMapper.mapAuction(auction);
@@ -118,9 +118,9 @@ public class AuctionsController {
   public ResponseEntity<ApiResponse<AuctionOfferDto>> createOffer(
       @PathVariable String auctionId,
       @RequestAttribute("userId") String userId,
-      @Valid @RequestBody CreationAuctionOfferDTO body
+      @Valid @RequestBody CreationAuctionOfferDto body
   ) throws InsufficientCardException, MissingCardException, NotFoundException, UserNotFoundException {
-    CreationAuctionOfferDTO dto = new CreationAuctionOfferDTO(auctionId, body.items());
+    CreationAuctionOfferDto dto = new CreationAuctionOfferDto(auctionId, body.items());
     AuctionOffer offer = auctionService.createAuctionOffer(userId, dto);
     AuctionOfferDto offerDto = auctionMapper.mapOffer(auctionId, offer);
     return ResponseEntity

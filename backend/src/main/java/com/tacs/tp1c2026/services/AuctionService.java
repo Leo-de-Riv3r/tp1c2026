@@ -7,14 +7,14 @@ import com.tacs.tp1c2026.entities.auction.AuctionOffer;
 import com.tacs.tp1c2026.entities.auction.conditions.AuctionCondition;
 import com.tacs.tp1c2026.entities.card.Card;
 import com.tacs.tp1c2026.entities.dto.auction.input.CancelAuctionDto;
-import com.tacs.tp1c2026.entities.dto.auction.input.CreateAuctionDTO;
-import com.tacs.tp1c2026.entities.dto.auction.input.CreationAuctionOfferDTO;
+import com.tacs.tp1c2026.entities.dto.auction.input.CreateAuctionDto;
+import com.tacs.tp1c2026.entities.dto.auction.input.CreationAuctionOfferDto;
 import com.tacs.tp1c2026.entities.dto.auction.output.UserBidDto;
 import com.tacs.tp1c2026.entities.dto.auction.output.AuctionDto;
 import com.tacs.tp1c2026.entities.dto.common.input.SearchPublicationsFilters;
 import com.tacs.tp1c2026.entities.dto.common.output.PaginationDtoOutput;
 import com.tacs.tp1c2026.entities.dto.mappers.AuctionMapper;
-import com.tacs.tp1c2026.entities.dto.mappers.CreateAuctionDTOMapper;
+import com.tacs.tp1c2026.entities.dto.mappers.CreateAuctionDtoMapper;
 import com.tacs.tp1c2026.entities.enums.AuctionOfferStatus;
 import com.tacs.tp1c2026.entities.enums.AuctionStatus;
 import com.tacs.tp1c2026.entities.user.User;
@@ -73,13 +73,13 @@ public class AuctionService {
      */
     @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
     @Transactional
-    public Auction createAuction(String userId, CreateAuctionDTO dto) throws InsufficientCardException, MissingCardException, UserNotFoundException, NotFoundException {
+    public Auction createAuction(String userId, CreateAuctionDto dto) throws InsufficientCardException, MissingCardException, UserNotFoundException, NotFoundException {
         User user = this.userService.getById(userId);
         Card card = this.cardService.getById(dto.getCardId());
         CollectionCard item = user.findCollectionItem(card.getId())
             .orElseThrow(() -> new MissingCardException("User does not have card " + card.getId()));
         item.commit(1);
-        List<AuctionCondition> conditions = CreateAuctionDTOMapper.toDomainConditions(dto.getConditions());
+        List<AuctionCondition> conditions = CreateAuctionDtoMapper.toDomainConditions(dto.getConditions());
         Auction auction = new Auction(user, card, dto.getAuctionDurationHours(), conditions);
         Auction saved = this.auctionRepository.save(auction);
         this.userRepository.save(user);
@@ -99,7 +99,7 @@ public class AuctionService {
      */
     @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
     @Transactional
-    public AuctionOffer createAuctionOffer(String userId, CreationAuctionOfferDTO dto) throws InsufficientCardException, MissingCardException, NotFoundException, UserNotFoundException {
+    public AuctionOffer createAuctionOffer(String userId, CreationAuctionOfferDto dto) throws InsufficientCardException, MissingCardException, NotFoundException, UserNotFoundException {
         User proposer = this.userService.getById(userId);
         Auction auction = this.getAuctionById(dto.auctionId());
 
@@ -111,7 +111,7 @@ public class AuctionService {
         }
 
         List<AuctionItem> offerItems = new ArrayList<>();
-        for (CreationAuctionOfferDTO.Item it : dto.items()) {
+        for (CreationAuctionOfferDto.Item it : dto.items()) {
             Card card = this.cardService.getById(it.cardId());
             CollectionCard item = proposer.findCollectionItem(card.getId())
                 .orElseThrow(() -> new MissingCardException("User does not have card " + card.getId()));
@@ -410,14 +410,7 @@ public class AuctionService {
      * (creando el subdocumento si no existía).
      */
     private void transferCard(User from, User to, Card card, int amount) {
-        from.findCollectionItem(card.getId()).ifPresent(item -> {
-            item.release(amount);
-            try {
-                item.decrement(amount);
-            } catch (InsufficientCardException ignored) {
-                // No debería pasar — el compromise garantiza disponibilidad
-            }
-        });
+        from.releaseAndDecrement(card.getId(), amount);
 
         to.findCollectionItem(card.getId()).ifPresentOrElse(
             existing -> existing.increment(amount),

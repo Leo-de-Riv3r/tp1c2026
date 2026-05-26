@@ -19,7 +19,7 @@ package com.tacs.tp1c2026.scheduled;// package com.tacs.tp1c2026.scheduled;
       * {@code app.scheduled.alert.delayMinutes} (por defecto 60 minutos).
       */
      @Scheduled(fixedDelayString = "#{${app.scheduled.alert.delayMinutes:60} * 60000}")
-     public void alertarUsuarios() {
+     public void notifyInterestedUsers() {
          notificationService.checkEndingAuctions();
      }
  }
