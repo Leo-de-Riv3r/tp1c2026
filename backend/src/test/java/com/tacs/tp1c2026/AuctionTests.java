@@ -269,7 +269,7 @@ public class AuctionTests extends IntegrationTestBase {
 
     mockMvc.perform(put("/api/auctions/" + auctionId + "/offers/" + offerId + "/accept")
         .header("Authorization", "Bearer " + seller.token()))
-        .andExpect(status().isNoContent());
+        .andExpect(status().isOk());
 
     MvcResult detail = mockMvc.perform(get("/api/auctions/" + auctionId)
         .header("Authorization", "Bearer " + seller.token()))
@@ -313,7 +313,7 @@ public class AuctionTests extends IntegrationTestBase {
 
     mockMvc.perform(put("/api/auctions/" + auctionId + "/offers/" + offerId + "/best")
         .header("Authorization", "Bearer " + seller.token()))
-        .andExpect(status().isNoContent());
+        .andExpect(status().isOk());
 
     auctionService.closeExpiredAuction(auctionId);
 
@@ -362,7 +362,7 @@ public class AuctionTests extends IntegrationTestBase {
     String offerId = firstOfferId(auctionId, seller.token());
     mockMvc.perform(put("/api/auctions/" + auctionId + "/offers/" + offerId + "/reject")
         .header("Authorization", "Bearer " + seller.token()))
-        .andExpect(status().isNoContent());
+        .andExpect(status().isOk());
 
     assertEquals(0, compromisedCount(bidder.userId(), "card_050", bidder.token()));
   }
@@ -380,7 +380,7 @@ public class AuctionTests extends IntegrationTestBase {
 
     mockMvc.perform(put("/api/auctions/" + auctionId + "/offers/" + offerId + "/best")
         .header("Authorization", "Bearer " + seller.token()))
-        .andExpect(status().isNoContent());
+        .andExpect(status().isOk());
 
     MvcResult detail = mockMvc.perform(get("/api/auctions/" + auctionId)
         .header("Authorization", "Bearer " + seller.token()))

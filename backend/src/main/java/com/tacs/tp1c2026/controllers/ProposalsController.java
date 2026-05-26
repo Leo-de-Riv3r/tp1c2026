@@ -9,10 +9,10 @@ import com.tacs.tp1c2026.exceptions.*;
 import com.tacs.tp1c2026.services.ProposalService;
 import com.tacs.tp1c2026.services.mappers.TradeMapper;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -31,12 +31,15 @@ public class ProposalsController {
    * Crea una propuesta sobre una publicación. {@code publicationId} en el body.
    */
   @PostMapping
-  public ResponseEntity<ApiResponse> createProposal(
+  public ResponseEntity<ApiResponse<TradeProposalDto>> createProposal(
       @RequestAttribute("userId") String userId,
       @Valid @RequestBody CreateTradeProposalDTO body
   ) throws UserNotFoundException, NotFoundException, InsufficientCardException, MissingCardException, NoAvailableSlotsException {
     TradeProposal proposal = proposalService.createProposal(userId, body);
-    return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.of("Propuesta enviada con éxito", proposal.getId()));
+    TradeProposalDto dto = tradeMapper.mapProposal(proposal);
+    return ResponseEntity
+        .created(URI.create("/api/proposals/" + proposal.getId()))
+        .body(ApiResponse.of("Propuesta enviada con éxito", dto));
   }
 
   /**
@@ -80,21 +83,22 @@ public class ProposalsController {
 
   /**
    * Aceptar una propuesta. Dispara el flujo bilateral completo y crea el Exchange histórico.
+   * El {@code exchangeId} devuelto permite al FE redirigir al detalle del Exchange sin un GET extra.
    */
   @PutMapping("/{proposalId}/accept")
-  public ResponseEntity<ApiResponse> acceptProposal(
+  public ResponseEntity<ApiResponse<String>> acceptProposal(
       @PathVariable String proposalId,
       @RequestAttribute("userId") String userId
   ) throws UserNotFoundException, NotFoundException, ProposalNotInPublicationException, OfferAlreadyProcessedException, ForbiddenException, MissingCardException, InsufficientCardException {
-    proposalService.acceptProposal(userId, proposalId);
-    return ResponseEntity.ok(ApiResponse.of("Propuesta aceptada con éxito"));
+    String exchangeId = proposalService.acceptProposal(userId, proposalId);
+    return ResponseEntity.ok(ApiResponse.of("Propuesta aceptada con éxito", exchangeId));
   }
 
   /**
    * Rechazar una propuesta. Libera el compromisedCount del proponente.
    */
   @PutMapping("/{proposalId}/reject")
-  public ResponseEntity<ApiResponse> rejectProposal(
+  public ResponseEntity<ApiResponse<Void>> rejectProposal(
       @PathVariable String proposalId,
       @RequestAttribute("userId") String userId
   ) throws UserNotFoundException, NotFoundException, ProposalNotInPublicationException, OfferAlreadyProcessedException, ForbiddenException {
@@ -106,7 +110,7 @@ public class ProposalsController {
    * Cancelar una propuesta del lado del proponente.
    */
   @PutMapping("/{proposalId}/cancel")
-  public ResponseEntity<ApiResponse> cancelProposal(
+  public ResponseEntity<ApiResponse<Void>> cancelProposal(
       @PathVariable String proposalId,
       @RequestAttribute("userId") String userId
   ) throws UserNotFoundException, NotFoundException, OfferAlreadyProcessedException, ForbiddenException {

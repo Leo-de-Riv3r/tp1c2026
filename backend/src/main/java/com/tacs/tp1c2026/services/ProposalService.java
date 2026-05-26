@@ -150,9 +150,12 @@ public class ProposalService {
      *  - decrementa remainingCount de la publicación por M; si llega a 0, finaliza y cancela
      *    en cascada las pendientes (liberando su compromisedCount también).
      */
+    /**
+     * @return el id del {@link com.tacs.tp1c2026.entities.exchange.Exchange} creado, para que el controller pueda exponerlo en el response y el FE redirija al detalle sin GET extra
+     */
     @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
     @Transactional
-    public void acceptProposal(String userId, String proposalId)
+    public String acceptProposal(String userId, String proposalId)
             throws UserNotFoundException, NotFoundException, ProposalNotInPublicationException, OfferAlreadyProcessedException, ForbiddenException, MissingCardException, InsufficientCardException {
         User reviewer = userService.getById(userId);
         TradeProposal proposal = findProposal(proposalId);
@@ -206,7 +209,8 @@ public class ProposalService {
         publisher.incrementExchangesAmount();
         proposer.incrementExchangesAmount();
 
-        exchangeService.createFromAcceptedProposal(proposal.getId(), publisher, proposer, publishedCard, offeredCards);
+        com.tacs.tp1c2026.entities.exchange.Exchange exchange =
+            exchangeService.createFromAcceptedProposal(proposal.getId(), publisher, proposer, publishedCard, offeredCards);
 
         proposalRepository.save(proposal);
         userRepository.save(proposer);
@@ -218,6 +222,7 @@ public class ProposalService {
         if (publication.getStatus() == PublicationStatus.FINALIZED) {
             cancelPendingProposalsAndRelease(publication.getId(), proposal.getId());
         }
+        return exchange.getId();
     }
 
     /**

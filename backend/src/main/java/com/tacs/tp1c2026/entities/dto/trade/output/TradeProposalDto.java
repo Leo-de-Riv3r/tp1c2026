@@ -13,7 +13,7 @@ public record TradeProposalDto(
     List<String> cardIds,
     List<CardDTO> cards,
     Integer requestedCount,
-    String proposerUserId,
+    UserDto proposer,
     UserDto receiver,
     TradeProposalStatus status,
     LocalDateTime creationDate

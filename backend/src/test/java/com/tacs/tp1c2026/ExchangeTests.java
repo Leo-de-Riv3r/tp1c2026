@@ -81,7 +81,7 @@ public class ExchangeTests extends IntegrationTestBase {
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + s.alice().token())
             .content(body))
-        .andExpect(status().isNoContent());
+        .andExpect(status().isCreated());
 
     MvcResult res = mockMvc.perform(get("/api/exchanges/" + s.exchangeId())
             .header("Authorization", "Bearer " + s.alice().token()))
@@ -168,13 +168,13 @@ public class ExchangeTests extends IntegrationTestBase {
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + s.alice().token())
             .content(feedback))
-        .andExpect(status().isNoContent());
+        .andExpect(status().isCreated());
     // Bob deja feedback → feedbackFromB
     mockMvc.perform(post("/api/exchanges/" + s.exchangeId() + "/feedback")
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + s.bob().token())
             .content("{ \"score\": 5, \"comment\": \"Ok\" }"))
-        .andExpect(status().isNoContent());
+        .andExpect(status().isCreated());
 
     String body = mockMvc.perform(get("/api/exchanges/" + s.exchangeId())
             .header("Authorization", "Bearer " + s.alice().token()))
@@ -239,7 +239,7 @@ public class ExchangeTests extends IntegrationTestBase {
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + s.alice().token())
             .content(body))
-        .andExpect(status().isNoContent());
+        .andExpect(status().isCreated());
     // Segundo intento del mismo usuario → 4xx (ConflictException → 409)
     mockMvc.perform(post("/api/exchanges/" + s.exchangeId() + "/feedback")
             .contentType(MediaType.APPLICATION_JSON)
