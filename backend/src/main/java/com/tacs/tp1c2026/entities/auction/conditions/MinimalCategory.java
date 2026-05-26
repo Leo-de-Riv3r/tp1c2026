@@ -10,9 +10,10 @@ public class MinimalCategory extends AuctionCondition {
   protected MinimalCategory() {}
 
   public MinimalCategory(Category value) {
-    //map value to a catreogry from enum, if not mappeable, throw exception
     this.category = value;
   }
+
+  public Category getCategory() { return category; }
 
   @Override
   public boolean canOffer(User user, AuctionOffer offer) {

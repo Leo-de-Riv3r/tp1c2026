@@ -37,11 +37,12 @@ public class NotificationService {
   @Autowired
   private UserRepository userRepository;
 
-    public void createNotification(User receiver, NotificationType type, String referenceId) {
+    public void createNotification(User receiver, NotificationType type, String referenceId, String message) {
         Notification notification = Notification.builder()
                 .receiverId(receiver.getId())
                 .type(type)
                 .referenceId(referenceId)
+                .message(message)
                 .build();
         notificationRepository.save(notification);
     }
@@ -53,9 +54,19 @@ public class NotificationService {
       notificationRepository.save(notification);
     }
 
+    public void markAllAsRead(String userId) {
+      List<Notification> unread = notificationRepository.findByReceiverIdAndStatus(userId, NotificationStatus.UNREAD);
+      unread.forEach(Notification::setAsRead);
+      notificationRepository.saveAll(unread);
+    }
+
     public Notification getByID(String notificationId) {
       return notificationRepository.findById(notificationId)
           .orElseThrow(() -> new NotFoundException("Notification not found"));
+    }
+
+    public List<Notification> getNotificationsForUser(String userId) {
+      return notificationRepository.findByReceiverId(userId);
     }
 
     public Page<Notification> getNotificationsForUser(String userId, NotificationStatus status, Integer page, Integer perPage) {
@@ -68,7 +79,6 @@ public class NotificationService {
     LocalDateTime now = LocalDateTime.now();
     LocalDateTime inTwoHour = now.plusHours(2);
 
-    // Buscamos las ACTIVAS que cierran en los próximos 60 minutos
     List<Auction> endingSoon = auctionRepository.findByStatusAndCloseDateBetween(
         AuctionStatus.ACTIVE,
         now,
@@ -84,6 +94,7 @@ public class NotificationService {
             .receiverId(user.getId())
             .type(NotificationType.AUCTION_ENDING_SOON)
             .referenceId(auction.getId())
+            .message("Una subasta que te interesa cierra en menos de 2 horas.")
             .build();
         notificationsToSave.add(notification);
       }
@@ -92,21 +103,27 @@ public class NotificationService {
     notificationRepository.saveAll(notificationsToSave);
   }
 
-  @Async // <-- 🚀 Magia para no bloquear al usuario que creó la subasta/intercambio
+  @Async
   @EventListener
   public void handleCardAvailableEvent(CardAvailableEvent event) {
     List<User> seekers = userRepository.findUsersSeekingCard(event.cardId());
     if (seekers.isEmpty()) {
       return;
     }
-    NotificationType notificationType  = event.sourceType().equals("AUCTION") ? NotificationType.WANTED_CARD_AVAILABLE_IN_AUCTION: NotificationType.WANTED_CARD_AVAILABLE_IN_PUBLICATION;
+    NotificationType notificationType = event.sourceType().equals("AUCTION")
+        ? NotificationType.WANTED_CARD_AVAILABLE_IN_AUCTION
+        : NotificationType.WANTED_CARD_AVAILABLE_IN_PUBLICATION;
+    String message = event.sourceType().equals("AUCTION")
+        ? "Hay una figurita que buscás disponible en una subasta."
+        : "Hay una figurita que buscás disponible en una publicación.";
 
     List<Notification> notificationList = new ArrayList<>();
     for (User seeker : seekers) {
       Notification notification = Notification.builder()
           .receiverId(seeker.getId())
           .type(notificationType)
-          .referenceId(event.referenceId()) // ID de la subasta o trade
+          .referenceId(event.referenceId())
+          .message(message)
           .build();
       notificationList.add(notification);
     }

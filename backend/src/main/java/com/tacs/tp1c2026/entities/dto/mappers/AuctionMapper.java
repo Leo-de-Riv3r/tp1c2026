@@ -2,6 +2,12 @@ package com.tacs.tp1c2026.entities.dto.mappers;
 
 import com.tacs.tp1c2026.entities.auction.Auction;
 import com.tacs.tp1c2026.entities.auction.AuctionOffer;
+import com.tacs.tp1c2026.entities.auction.conditions.AuctionCondition;
+import com.tacs.tp1c2026.entities.auction.conditions.MinimalCardCount;
+import com.tacs.tp1c2026.entities.auction.conditions.MinimalCategory;
+import com.tacs.tp1c2026.entities.auction.conditions.MinimalExchanges;
+import com.tacs.tp1c2026.entities.auction.conditions.MinimalReputation;
+import com.tacs.tp1c2026.entities.dto.auction.output.AuctionConditionOutputDto;
 import com.tacs.tp1c2026.entities.dto.auction.output.AuctionDto;
 import com.tacs.tp1c2026.entities.dto.auction.output.AuctionOfferDto;
 import com.tacs.tp1c2026.entities.dto.auction.output.BestOfferDto;
@@ -33,6 +39,10 @@ public class AuctionMapper {
         ? List.of()
         : auction.getOffers().stream().map(o -> mapOffer(auction.getId(), o)).toList();
 
+    List<AuctionConditionOutputDto> conditionDtos = auction.getConditions() == null
+        ? List.of()
+        : auction.getConditions().stream().map(this::mapCondition).toList();
+
     return new AuctionDto(
         auction.getId(),
         auction.getCardNumber(),
@@ -46,8 +56,25 @@ public class AuctionMapper {
         auction.getPublisherUser() != null ? auction.getPublisherUser().getId() : null,
         auction.getPublisherName(),
         auction.getPublisherAvatarId(),
-        offerDtos
+        offerDtos,
+        conditionDtos
     );
+  }
+
+  private AuctionConditionOutputDto mapCondition(AuctionCondition condition) {
+    if (condition instanceof MinimalReputation r) {
+      return new AuctionConditionOutputDto("MIN_REPUTATION", r.getReputation(), null);
+    }
+    if (condition instanceof MinimalCardCount c) {
+      return new AuctionConditionOutputDto("MIN_CARD_COUNT", c.getCount(), null);
+    }
+    if (condition instanceof MinimalExchanges e) {
+      return new AuctionConditionOutputDto("MIN_EXCHANGES", e.getQuantity(), null);
+    }
+    if (condition instanceof MinimalCategory cat) {
+      return new AuctionConditionOutputDto("MIN_CATEGORY", null, cat.getCategory());
+    }
+    return new AuctionConditionOutputDto(condition.getClass().getSimpleName(), null, null);
   }
 
   public AuctionOfferDto mapOffer(String auctionId, AuctionOffer offer) {
@@ -67,7 +94,9 @@ public class AuctionMapper {
         offer.getBidderName(),
         items,
         offer.getStatus(),
-        offer.getBidDate()
+        offer.getBidDate(),
+        offer.getBidderRating(),
+        offer.getBidderAvatarId()
     );
   }
 

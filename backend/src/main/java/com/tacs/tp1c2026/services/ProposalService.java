@@ -105,8 +105,12 @@ public class ProposalService {
         TradeProposal proposal = new TradeProposal(publication, cards, requested, proposer, publisher);
         TradeProposal saved = proposalRepository.save(proposal);  // autogenera id
         userRepository.save(proposer);
-        //save notification for publication publisher
-        notificationService.createNotification(publisher, NotificationType.TRADE_PROPOSAL_RECEIVED, saved.getId());
+        notificationService.createNotification(
+            publisher,
+            NotificationType.TRADE_PROPOSAL_RECEIVED,
+            saved.getId(),
+            "Recibiste una nueva propuesta de " + proposer.getName()
+        );
         return saved;
     }
 
@@ -211,6 +215,13 @@ public class ProposalService {
         userRepository.save(publisher);
         publicationRepository.save(publication);
 
+        notificationService.createNotification(
+            proposer,
+            NotificationType.TRADE_PROPOSAL_ACCEPTED,
+            proposal.getId(),
+            "Tu propuesta fue aceptada. Revisá tus intercambios."
+        );
+
         // Cascada: si la publi quedó FINALIZADA, cancelar pendientes restantes y liberar
         // su compromisedCount.
         if (publication.getStatus() == PublicationStatus.FINALIZED) {
@@ -233,11 +244,18 @@ public class ProposalService {
         proposal.validatePending();
 
         proposal.reject();
+        User proposer = proposal.getProposerUser();
         for (Card c : proposal.getCards()) {
-            proposal.getProposerUser().findCollectionItem(c.getId()).ifPresent(item -> item.release(1));
+            proposer.findCollectionItem(c.getId()).ifPresent(item -> item.release(1));
         }
         proposalRepository.save(proposal);
-        userRepository.save(proposal.getProposerUser());
+        userRepository.save(proposer);
+        notificationService.createNotification(
+            proposer,
+            NotificationType.TRADE_PROPOSAL_REJECTED,
+            proposal.getId(),
+            "Tu propuesta fue rechazada."
+        );
     }
 
     /**

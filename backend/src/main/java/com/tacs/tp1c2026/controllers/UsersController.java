@@ -2,14 +2,18 @@ package com.tacs.tp1c2026.controllers;
 
 import com.tacs.tp1c2026.entities.dto.user.input.*;
 import com.tacs.tp1c2026.entities.dto.user.output.CollectionCardResult;
+import com.tacs.tp1c2026.entities.dto.user.output.NotificationDto;
 import com.tacs.tp1c2026.entities.dto.user.output.SuggestionResult;
 import com.tacs.tp1c2026.entities.dto.user.output.UserDto;
 import com.tacs.tp1c2026.entities.user.embedded.CollectionCard;
 import com.tacs.tp1c2026.entities.user.embedded.MissingCard;
+import com.tacs.tp1c2026.config.RequiresRole;
+import com.tacs.tp1c2026.exceptions.ForbiddenException;
 import com.tacs.tp1c2026.exceptions.InsufficientCardException;
 import com.tacs.tp1c2026.exceptions.MissingCardException;
 import com.tacs.tp1c2026.exceptions.NotFoundException;
 import com.tacs.tp1c2026.exceptions.UserNotFoundException;
+import com.tacs.tp1c2026.services.NotificationService;
 import com.tacs.tp1c2026.services.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,9 +26,11 @@ import java.util.List;
 public class UsersController {
 
     private final UserService userService;
+    private final NotificationService notificationService;
 
-    public UsersController(UserService userService) {
+    public UsersController(UserService userService, NotificationService notificationService) {
         this.userService = userService;
+        this.notificationService = notificationService;
     }
 
     /**
@@ -32,6 +38,7 @@ public class UsersController {
      * @return list of users as {@link UserDto}
      */
     @GetMapping
+    @RequiresRole("ADMIN")
     public ResponseEntity<List<UserDto>> getAll() {
         return ResponseEntity.ok(userService.getAll().stream()
                 .map(UserDto::from)
@@ -148,5 +155,26 @@ public class UsersController {
                 .map(SuggestionResult::from)
                 .toList()
         );
+    }
+
+    /* Notification endpoints */
+
+    @GetMapping("/{userId}/notifications")
+    public ResponseEntity<List<NotificationDto>> getNotifications(
+            @PathVariable String userId,
+            @RequestAttribute("userId") String jwtUserId) {
+        if (!jwtUserId.equals(userId)) throw new ForbiddenException("No podés ver notificaciones de otro usuario");
+        List<NotificationDto> dtos = notificationService.getNotificationsForUser(userId)
+            .stream().map(NotificationDto::from).toList();
+        return ResponseEntity.ok(dtos);
+    }
+
+    @PutMapping("/{userId}/notifications/read")
+    public ResponseEntity<Void> markAllNotificationsAsRead(
+            @PathVariable String userId,
+            @RequestAttribute("userId") String jwtUserId) {
+        if (!jwtUserId.equals(userId)) throw new ForbiddenException("No podés marcar notificaciones de otro usuario");
+        notificationService.markAllAsRead(userId);
+        return ResponseEntity.noContent().build();
     }
 }
