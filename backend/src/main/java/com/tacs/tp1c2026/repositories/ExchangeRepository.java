@@ -12,4 +12,16 @@ public interface ExchangeRepository extends Repository<Exchange, String> {
    */
   @Query("{ $or: [ { 'userA.userId': ?0 }, { 'userB.userId': ?0 } ] }")
   Page<Exchange> findByUserId(String userId, Pageable pageable);
+
+  /**
+   * Exchanges donde el usuario fue A y recibió feedback (feedbackFromB != null).
+   * Usado para recalcular el rating del usuario reviewado.
+   */
+  java.util.List<Exchange> findByUserAUserIdAndFeedbackFromBNotNull(String userId);
+
+  /**
+   * Exchanges donde el usuario fue B y recibió feedback (feedbackFromA != null).
+   * Usado para recalcular el rating del usuario reviewado.
+   */
+  java.util.List<Exchange> findByUserBUserIdAndFeedbackFromANotNull(String userId);
 }

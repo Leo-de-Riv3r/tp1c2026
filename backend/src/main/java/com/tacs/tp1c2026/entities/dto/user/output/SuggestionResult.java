@@ -1,24 +1,38 @@
 package com.tacs.tp1c2026.entities.dto.user.output;
 
-import com.tacs.tp1c2026.entities.user.embedded.MissingCard;
+import com.tacs.tp1c2026.entities.enums.Category;
 import com.tacs.tp1c2026.entities.user.embedded.Suggestion;
-import java.util.List;
+
+import java.time.LocalDateTime;
 
 public record SuggestionResult(
-    String suggestedUserId,
-    String suggestedUserName,
-    String suggestedUserAvatarId,
-    Double suggestedUserRating,
-    List<MissingCard> obtainableCards
+    Suggestion.SourceType sourceType,
+    String sourceId,
+    String cardId,
+    Integer cardNumber,
+    String cardDescription,
+    String cardCountry,
+    String cardTeam,
+    Category cardCategory,
+    String publisherUserId,
+    String publisherName,
+    String publisherAvatarId,
+    LocalDateTime generatedAt
 ) {
     public static SuggestionResult from(Suggestion suggestion) {
-        var user = suggestion.getSuggestedUser();
         return new SuggestionResult(
-            user.getId(),
-            user.getName(),
-            user.getAvatarId(),
-            user.getRating(),
-            suggestion.getObtainableCards()
+            suggestion.getSourceType(),
+            suggestion.getSourceId(),
+            suggestion.getCardId(),
+            suggestion.getCardNumber(),
+            suggestion.getCardDescription(),
+            suggestion.getCardCountry(),
+            suggestion.getCardTeam(),
+            suggestion.getCardCategory(),
+            suggestion.getPublisherUserId(),
+            suggestion.getPublisherName(),
+            suggestion.getPublisherAvatarId(),
+            suggestion.getGeneratedAt()
         );
     }
 }

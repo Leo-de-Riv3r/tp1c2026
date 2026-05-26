@@ -147,12 +147,14 @@ public class AuctionService {
       this.userRepository.save(user);
 
       // Libera las unidades comprometidas de cada postor
+      // Re-fetch por bidderId: @DocumentReference no hidrata bien en subdocs embebidos
       for (AuctionOffer offer : auction.getOffers()) {
-        User bidder = offer.getBidder();
+        User bidder = userRepository.findById(offer.getBidderId())
+            .orElseThrow(() -> new NotFoundException("Bidder not found: " + offer.getBidderId()));
         for (AuctionItem oi : offer.getOfferedItems()) {
           bidder.findCollectionItem(oi.getCard().getId()).ifPresent(item -> item.release(oi.getAmount()));
-          this.userRepository.save(bidder);
         }
+        userRepository.save(bidder);
       }
     }
 
@@ -265,7 +267,9 @@ public class AuctionService {
       AuctionOffer rejectedOffer = auction.findOfferById(offerId);
       rejectedOffer.cancel();
       auctionRepository.save(auction);
-      User bidder = rejectedOffer.getBidder();
+      // Re-fetch por bidderId: @DocumentReference no hidrata bien en subdocs embebidos
+      User bidder = userRepository.findById(rejectedOffer.getBidderId())
+          .orElseThrow(() -> new NotFoundException("Bidder not found: " + rejectedOffer.getBidderId()));
       //return cards to bidder
       for(AuctionItem oi : rejectedOffer.getOfferedItems()) {
         bidder.findCollectionItem(oi.getCard().getId()).ifPresent(item -> item.release(oi.getAmount()));
@@ -314,8 +318,13 @@ public class AuctionService {
     }
 
     private void awardAuctionTo(Auction auction, AuctionOffer winningOffer) throws AuctionClosedException, OfferAlreadyProcessedException, OfferNotFoundException {
-        User publisher = auction.getPublisherUser();
-        User winner = winningOffer.getBidder();
+        // @DocumentReference no hidrata correctamente dentro de subdocumentos embebidos en arrays
+        // (caso de AuctionOffer.bidder dentro de Auction.offers). Re-fetcheamos por id para
+        // garantizar que la colección del usuario esté completa antes de modificarla.
+        User publisher = userRepository.findById(auction.getPublisherUser().getId())
+            .orElseThrow(() -> new NotFoundException("Publisher not found"));
+        User winner = userRepository.findById(winningOffer.getBidderId())
+            .orElseThrow(() -> new NotFoundException("Winner not found"));
         Card publishedCard = auction.getCard();
 
         auction.acceptOffer(winningOffer);
@@ -330,7 +339,8 @@ public class AuctionService {
             // auction.offers[i] como instancias Java distintas del mismo offer lógico.
             if (Objects.equals(other.getId(), winningOffer.getId())) continue;
             if (other.getStatus() != AuctionOfferStatus.CANCELLED) {
-                User bidder = other.getBidder();
+                User bidder = userRepository.findById(other.getBidderId())
+                    .orElseThrow(() -> new NotFoundException("Bidder not found: " + other.getBidderId()));
                 for (AuctionItem oi : other.getOfferedItems()) {
                     bidder.findCollectionItem(oi.getCard().getId()).ifPresent(item -> item.release(oi.getAmount()));
                 }
@@ -358,8 +368,10 @@ public class AuctionService {
         publisher.findCollectionItem(publishedCard.getId()).ifPresent(item -> item.release(1));
         userRepository.save(publisher);
 
+        // Re-fetch por bidderId: @DocumentReference no hidrata bien en subdocs embebidos
         for (AuctionOffer offer : auction.getOffers()) {
-            User bidder = offer.getBidder();
+            User bidder = userRepository.findById(offer.getBidderId())
+                .orElseThrow(() -> new NotFoundException("Bidder not found: " + offer.getBidderId()));
             for (AuctionItem oi : offer.getOfferedItems()) {
                 bidder.findCollectionItem(oi.getCard().getId()).ifPresent(item -> item.release(oi.getAmount()));
             }
@@ -379,7 +391,9 @@ public class AuctionService {
       offer.validateCreator(userId);
       offer.cancel();
       //return cards to  bidder
-      User bidder = offer.getBidder();
+      // Re-fetch por bidderId: @DocumentReference no hidrata bien en subdocs embebidos
+      User bidder = userRepository.findById(offer.getBidderId())
+          .orElseThrow(() -> new NotFoundException("Bidder not found: " + offer.getBidderId()));
       for(AuctionItem oi : offer.getOfferedItems()) {
         bidder.findCollectionItem(oi.getCard().getId()).ifPresent(item -> item.release(oi.getAmount()));
       }

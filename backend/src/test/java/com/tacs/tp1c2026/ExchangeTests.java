@@ -183,6 +183,35 @@ public class ExchangeTests extends IntegrationTestBase {
     assertEquals(5, (Integer) JsonPath.read(body, "$.feedbackFromB.score"));
   }
 
+  @Test
+  void addFeedbackRecalculatesReviewedUserRating() throws Exception {
+    Setup s = setupAcceptedExchange();
+
+    // Alice (A) deja feedback score=4 sobre Bob (B) → bob.rating debería ser 4.0
+    mockMvc.perform(post("/api/exchanges/" + s.exchangeId() + "/feedback")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Authorization", "Bearer " + s.alice().token())
+            .content("{ \"score\": 4, \"comment\": \"Bien\" }"))
+        .andExpect(status().isCreated());
+
+    String bobBody = mockMvc.perform(get("/api/users/" + s.bob().userId())
+            .header("Authorization", "Bearer " + s.bob().token()))
+        .andReturn().getResponse().getContentAsString();
+    assertEquals(4.0, ((Number) JsonPath.read(bobBody, "$.rating")).doubleValue(), 0.001);
+
+    // Bob (B) deja feedback score=5 sobre Alice (A) → alice.rating debería ser 5.0
+    mockMvc.perform(post("/api/exchanges/" + s.exchangeId() + "/feedback")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Authorization", "Bearer " + s.bob().token())
+            .content("{ \"score\": 5, \"comment\": \"Genial\" }"))
+        .andExpect(status().isCreated());
+
+    String aliceBody = mockMvc.perform(get("/api/users/" + s.alice().userId())
+            .header("Authorization", "Bearer " + s.alice().token()))
+        .andReturn().getResponse().getContentAsString();
+    assertEquals(5.0, ((Number) JsonPath.read(aliceBody, "$.rating")).doubleValue(), 0.001);
+  }
+
   // ───────────────── Inválidos: permisos ─────────────────
 
   @Test

@@ -17,6 +17,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * Suite del nuevo modelo de Suggestion: el cron genera sugerencias apuntando a publications/auctions
+ * ACTIVE concretas (no a usuarios pelados). Cada sugerencia tiene `sourceType` + `sourceId` que
+ * referencia la entidad real
+ */
 public class SuggestionTests extends IntegrationTestBase {
 
     @Autowired
@@ -33,6 +38,7 @@ public class SuggestionTests extends IntegrationTestBase {
         profileGroupRepository.deleteAll();
     }
 
+    /** Sin sugerencias precargadas, el endpoint devuelve []. */
     @Test
     void getSuggestionsReturnsEmptyListWhenNoneExist() throws Exception {
         Session pepe = register("Pepe", "pepe@test.com", "pass123");
@@ -46,28 +52,21 @@ public class SuggestionTests extends IntegrationTestBase {
         assertEquals(0, suggestions.size());
     }
 
+    /**
+     * Si un candidato publicó una card que el current user busca, la sugerencia apunta a esa publicación.
+     * sourceType=PUBLICATION, sourceId=id de la publicación, snapshots de card + publisher
+     */
     @Test
-    void getSuggestionsReturnsMatchingUsersAfterGeneration() throws Exception {
+    void publicationSuggestionIsGeneratedForMatchingCard() throws Exception {
         Session sessionA = register("UserA", "usera@test.com", "pass123");
         Session sessionB = register("UserB", "userb@test.com", "pass123");
 
         addToCollection(sessionB.userId(), "card_001", sessionB.token());
-        addToCollection(sessionB.userId(), "card_002", sessionB.token());
+        String pubId = idFromCreated(publish(sessionB.token(), "card_001", 1), "publicationId");
 
         addMissingCard(sessionA.userId(), "card_001", sessionA.token());
-        addMissingCard(sessionA.userId(), "card_002", sessionA.token());
 
-        User userA = userRepository.findById(sessionA.userId()).orElseThrow();
-        User userB = userRepository.findById(sessionB.userId()).orElseThrow();
-
-        ProfileGroup group = new ProfileGroup(profileProperties);
-        group.addNeighbor(userA);
-        group.addNeighbor(userB);
-        profileGroupRepository.save(group);
-
-        group.updateVector();
-        profileGroupRepository.save(group);
-
+        connectInProfileGroup(sessionA, sessionB);
         profileService.updateSuggestionsForUsers();
 
         String body = mockMvc.perform(get("/api/users/" + sessionA.userId() + "/suggestions")
@@ -75,36 +74,28 @@ public class SuggestionTests extends IntegrationTestBase {
             .andExpect(status().isOk())
             .andReturn().getResponse().getContentAsString();
 
-        List<?> suggestions = JsonPath.read(body, "$");
-        assertEquals(1, suggestions.size(), "should have 1 suggestion");
-        assertEquals(sessionB.userId(), JsonPath.read(body, "$[0].suggestedUserId"));
-        assertEquals("UserB", JsonPath.read(body, "$[0].suggestedUserName"));
-
-        List<String> obtainableIds = JsonPath.read(body, "$[0].obtainableCards[*].cardId");
-        assertEquals(2, obtainableIds.size());
+        assertEquals(1, ((List<?>) JsonPath.read(body, "$")).size());
+        assertEquals("PUBLICATION", JsonPath.read(body, "$[0].sourceType"));
+        assertEquals(pubId,         JsonPath.read(body, "$[0].sourceId"));
+        assertEquals("card_001",    JsonPath.read(body, "$[0].cardId"));
+        assertEquals("UserB",       JsonPath.read(body, "$[0].publisherName"));
+        assertEquals(sessionB.userId(), JsonPath.read(body, "$[0].publisherUserId"));
     }
 
+    /**
+     * Si un candidato subastó una card que el current user busca, la sugerencia es de tipo AUCTION
+     */
     @Test
-    void getSuggestionsFiltersByCardsOtherUserActuallyHas() throws Exception {
-        Session sessionA = register("UserA", "usera2@test.com", "pass123");
-        Session sessionB = register("UserB", "userb2@test.com", "pass123");
+    void auctionSuggestionIsGeneratedForMatchingCard() throws Exception {
+        Session sessionA = register("UserA", "userauc@test.com", "pass123");
+        Session sessionB = register("UserB", "userbauc@test.com", "pass123");
 
-        addToCollection(sessionB.userId(), "card_003", sessionB.token());
+        addToCollection(sessionB.userId(), "card_005", sessionB.token());
+        String aucId = idFromCreated(createAuction(sessionB.token(), "card_005", 24), "id");
 
-        addMissingCard(sessionA.userId(), "card_001", sessionA.token());
-        addMissingCard(sessionA.userId(), "card_003", sessionA.token());
+        addMissingCard(sessionA.userId(), "card_005", sessionA.token());
 
-        User userA = userRepository.findById(sessionA.userId()).orElseThrow();
-        User userB = userRepository.findById(sessionB.userId()).orElseThrow();
-
-        ProfileGroup group = new ProfileGroup(profileProperties);
-        group.addNeighbor(userA);
-        group.addNeighbor(userB);
-        profileGroupRepository.save(group);
-
-        group.updateVector();
-        profileGroupRepository.save(group);
-
+        connectInProfileGroup(sessionA, sessionB);
         profileService.updateSuggestionsForUsers();
 
         String body = mockMvc.perform(get("/api/users/" + sessionA.userId() + "/suggestions")
@@ -112,65 +103,27 @@ public class SuggestionTests extends IntegrationTestBase {
             .andExpect(status().isOk())
             .andReturn().getResponse().getContentAsString();
 
-        List<?> suggestions = JsonPath.read(body, "$");
-        assertEquals(1, suggestions.size());
-
-        List<String> obtainableIds = JsonPath.read(body, "$[0].obtainableCards[*].cardId");
-        assertEquals(1, obtainableIds.size(), "only card_003 is obtainable");
-        assertEquals("card_003", obtainableIds.get(0));
+        assertEquals(1, ((List<?>) JsonPath.read(body, "$")).size());
+        assertEquals("AUCTION",  JsonPath.read(body, "$[0].sourceType"));
+        assertEquals(aucId,      JsonPath.read(body, "$[0].sourceId"));
+        assertEquals("card_005", JsonPath.read(body, "$[0].cardId"));
     }
 
+    /**
+     * Si un candidato tiene la card en su colección pero NO la publicó/subastó, no hay sugerencia
+     * — solo se sugiere contenido público (publication/auction activa)
+     */
     @Test
-    void getSuggestionsIsEmptyForUserWithNoMissingCards() throws Exception {
-        Session sessionA = register("UserA", "usera3@test.com", "pass123");
-        Session sessionB = register("UserB", "userb3@test.com", "pass123");
+    void noSuggestionWhenCandidateHasCardInCollectionButDidNotPublish() throws Exception {
+        Session sessionA = register("UserA", "userac@test.com", "pass123");
+        Session sessionB = register("UserB", "userbc@test.com", "pass123");
 
+        // UserB tiene la card pero no la publica ni subasta
         addToCollection(sessionB.userId(), "card_001", sessionB.token());
 
         addMissingCard(sessionA.userId(), "card_001", sessionA.token());
 
-        User userA = userRepository.findById(sessionA.userId()).orElseThrow();
-        User userB = userRepository.findById(sessionB.userId()).orElseThrow();
-
-        ProfileGroup group = new ProfileGroup(profileProperties);
-        group.addNeighbor(userA);
-        group.addNeighbor(userB);
-        profileGroupRepository.save(group);
-
-        group.updateVector();
-        profileGroupRepository.save(group);
-
-        profileService.updateSuggestionsForUsers();
-
-        String body = mockMvc.perform(get("/api/users/" + sessionB.userId() + "/suggestions")
-                .header("Authorization", "Bearer " + sessionB.token()))
-            .andExpect(status().isOk())
-            .andReturn().getResponse().getContentAsString();
-
-        List<?> suggestions = JsonPath.read(body, "$");
-        assertEquals(0, suggestions.size(), "user with no missing cards gets no suggestions");
-    }
-
-    @Test
-    void getSuggestionsReturnsEmptyWhenNoOneHasMissingCard() throws Exception {
-        Session sessionA = register("UserA", "usera4@test.com", "pass123");
-        Session sessionB = register("UserB", "userb4@test.com", "pass123");
-
-        addToCollection(sessionB.userId(), "card_003", sessionB.token());
-
-        addMissingCard(sessionA.userId(), "card_099", sessionA.token());
-
-        User userA = userRepository.findById(sessionA.userId()).orElseThrow();
-        User userB = userRepository.findById(sessionB.userId()).orElseThrow();
-
-        ProfileGroup group = new ProfileGroup(profileProperties);
-        group.addNeighbor(userA);
-        group.addNeighbor(userB);
-        profileGroupRepository.save(group);
-
-        group.updateVector();
-        profileGroupRepository.save(group);
-
+        connectInProfileGroup(sessionA, sessionB);
         profileService.updateSuggestionsForUsers();
 
         String body = mockMvc.perform(get("/api/users/" + sessionA.userId() + "/suggestions")
@@ -178,7 +131,77 @@ public class SuggestionTests extends IntegrationTestBase {
             .andExpect(status().isOk())
             .andReturn().getResponse().getContentAsString();
 
-        String suggestions = JsonPath.read(body, "$").toString();
-        assertEquals("[]", suggestions, "no suggestions when no one has the missing card");
+        assertEquals(0, ((List<?>) JsonPath.read(body, "$")).size());
+    }
+
+    /**
+     * Solo las publications/auctions cuyas cards estén en `missingCards` del current user
+     * se transforman en sugerencias. Las que no matchean se descartan
+     */
+    @Test
+    void onlySuggestsPublicationsMatchingMissingCards() throws Exception {
+        Session sessionA = register("UserA", "useraf@test.com", "pass123");
+        Session sessionB = register("UserB", "userbf@test.com", "pass123");
+
+        // UserB publica dos cards: card_001 (la que UserA busca) y card_003 (que no busca)
+        addToCollection(sessionB.userId(), "card_001", sessionB.token());
+        addToCollection(sessionB.userId(), "card_003", sessionB.token());
+        String pubId001 = idFromCreated(publish(sessionB.token(), "card_001", 1), "publicationId");
+        idFromCreated(publish(sessionB.token(), "card_003", 1), "publicationId");
+
+        addMissingCard(sessionA.userId(), "card_001", sessionA.token());
+
+        connectInProfileGroup(sessionA, sessionB);
+        profileService.updateSuggestionsForUsers();
+
+        String body = mockMvc.perform(get("/api/users/" + sessionA.userId() + "/suggestions")
+                .header("Authorization", "Bearer " + sessionA.token()))
+            .andExpect(status().isOk())
+            .andReturn().getResponse().getContentAsString();
+
+        assertEquals(1, ((List<?>) JsonPath.read(body, "$")).size());
+        assertEquals(pubId001,   JsonPath.read(body, "$[0].sourceId"));
+        assertEquals("card_001", JsonPath.read(body, "$[0].cardId"));
+    }
+
+    /**
+     * Si el user no tiene missing cards, no hay nada que sugerirle (early-return en el algoritmo)
+     */
+    @Test
+    void getSuggestionsIsEmptyForUserWithNoMissingCards() throws Exception {
+        Session sessionA = register("UserA", "userae@test.com", "pass123");
+        Session sessionB = register("UserB", "userbe@test.com", "pass123");
+
+        addToCollection(sessionB.userId(), "card_001", sessionB.token());
+        idFromCreated(publish(sessionB.token(), "card_001", 1), "publicationId");
+
+        // UserA no tiene missing cards
+
+        connectInProfileGroup(sessionA, sessionB);
+        profileService.updateSuggestionsForUsers();
+
+        String body = mockMvc.perform(get("/api/users/" + sessionA.userId() + "/suggestions")
+                .header("Authorization", "Bearer " + sessionA.token()))
+            .andExpect(status().isOk())
+            .andReturn().getResponse().getContentAsString();
+
+        assertEquals(0, ((List<?>) JsonPath.read(body, "$")).size());
+    }
+
+    /**
+     * Setup helper: pone a ambos users como vecinos de un ProfileGroup nuevo y refresca el vector
+     * — necesario para que el cron los encuentre como candidatos entre sí
+     */
+    private void connectInProfileGroup(Session a, Session b) {
+        User userA = userRepository.findById(a.userId()).orElseThrow();
+        User userB = userRepository.findById(b.userId()).orElseThrow();
+
+        ProfileGroup group = new ProfileGroup(profileProperties);
+        group.addNeighbor(userA);
+        group.addNeighbor(userB);
+        profileGroupRepository.save(group);
+
+        group.updateVector();
+        profileGroupRepository.save(group);
     }
 }
