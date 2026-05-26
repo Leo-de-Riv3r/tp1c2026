@@ -23,6 +23,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class NotificationService {
@@ -62,7 +63,7 @@ public class NotificationService {
       return notificationRepository.findByReceiverIdAndStatus(userId, status, pageable);
     }
 
-    //@Transactional todo
+    @Transactional
   public void checkEndingAuctions() {
     LocalDateTime now = LocalDateTime.now();
     LocalDateTime inTwoHour = now.plusHours(2);

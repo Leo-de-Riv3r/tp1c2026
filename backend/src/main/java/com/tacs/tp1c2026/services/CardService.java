@@ -18,8 +18,12 @@ import com.tacs.tp1c2026.repositories.PublicationRepository;
 import com.tacs.tp1c2026.repositories.UserRepository;
 import com.tacs.tp1c2026.services.mappers.TradeMapper;
 import com.tacs.tp1c2026.utils.PageableGenerator;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -89,7 +93,8 @@ public class CardService {
         return cardRepository.findAll();
     }
 
-    // @Transactional // TODO: rehabilitar cuando Mongo corra como replica set
+    @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
+    @Transactional
     public void publishCard(String userId, PublishCardDTO dto){
         User user = this.userRepository.findOrThrow(userId);
         Card card = this.cardRepository.findOrThrow(dto.cardId());
@@ -97,7 +102,8 @@ public class CardService {
         this.userRepository.save(user);
     }
 
-    // @Transactional // TODO: rehabilitar cuando Mongo corra como replica set
+    @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
+    @Transactional
     public void indicateMissingCard(String userId, IndicateMissingCardDTO dto){
         User user = this.userRepository.findOrThrow(userId);
         Card card = this.cardRepository.findOrThrow(dto.cardId());
@@ -105,7 +111,7 @@ public class CardService {
         this.userRepository.save(user);
     }
 
-    // @Transactional // TODO: rehabilitar cuando Mongo corra como replica set
+    @Transactional
     public CardDTO searchForCard(CardSearchParamsDTO dto) throws NotFoundException {
         if (dto.number() != null) {
             Card card = this.cardRepository.findByNumber(dto.number()).orElseThrow(() -> new NotFoundException("Card not found"));
@@ -118,7 +124,7 @@ public class CardService {
                 .orElseThrow(() -> new NotFoundException("Card not found with given parameters"));
     }
 
-    // @Transactional // TODO: rehabilitar cuando Mongo corra como replica set
+    @Transactional
     public Card getById(String cardId) throws NotFoundException {
         return this.cardRepository.findById(cardId).orElseThrow(() -> new NotFoundException("Card not found"));
     }

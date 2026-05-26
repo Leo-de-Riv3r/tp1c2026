@@ -74,7 +74,7 @@ public class ExchangesController {
   * It fails if the user is not related to the exchange or if the feedback was already given
   */
   @PostMapping("/{exchangeId}/feedback")
-  public ResponseEntity<ApiResponse> addFeedback(@PathVariable String exchangeId,
+  public ResponseEntity<ApiResponse<Void>> addFeedback(@PathVariable String exchangeId,
       @RequestAttribute("userId") String userId,
       @Valid @RequestBody AddFeedbackDto body
   ) throws NotFoundException {

@@ -269,7 +269,7 @@ public class ExchangeTests extends IntegrationTestBase {
                                        String publishedCardId, String offeredCardId) throws Exception {
     String auctionId = JsonPath.read(
         createAuction(publisher.token(), publishedCardId, 24).getResponse().getContentAsString(),
-        "$.auctionId");
+        "$.data.id");
 
     String offerBody = "{ \"auctionId\": \"" + auctionId + "\", \"items\": [{ \"cardId\": \""
         + offeredCardId + "\", \"amount\": 1 }] }";

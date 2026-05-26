@@ -50,7 +50,7 @@ public class AuctionMapper {
     );
   }
 
-  private AuctionOfferDto mapOffer(String auctionId, AuctionOffer offer) {
+  public AuctionOfferDto mapOffer(String auctionId, AuctionOffer offer) {
     List<AuctionOfferDto.ItemDetailDto> items = offer.getOfferedItems() == null
         ? List.of()
         : offer.getOfferedItems().stream()

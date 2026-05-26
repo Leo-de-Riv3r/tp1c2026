@@ -13,7 +13,12 @@ import com.tacs.tp1c2026.exceptions.*;
 import com.tacs.tp1c2026.repositories.ProposalRepository;
 import com.tacs.tp1c2026.repositories.PublicationRepository;
 import com.tacs.tp1c2026.repositories.UserRepository;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +56,8 @@ public class ProposalService {
      * Crea una propuesta sobre una publicación. Compromete las figuritas ofrecidas
      * por el proponente en su colección.
      */
-    // @Transactional // TODO: rehabilitar cuando Mongo corra como replica set
+    @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
+    @Transactional
     public TradeProposal createProposal(String userId, CreateTradeProposalDTO dto)
             throws UserNotFoundException, NotFoundException, InsufficientCardException, MissingCardException, NoAvailableSlotsException {
         TradePublication publication = publicationService.findPublication(dto.publicationId());
@@ -144,8 +150,12 @@ public class ProposalService {
      *  - decrementa remainingCount de la publicación por M; si llega a 0, finaliza y cancela
      *    en cascada las pendientes (liberando su compromisedCount también).
      */
-    // @Transactional // TODO: rehabilitar cuando Mongo corra como replica set
-    public void acceptProposal(String userId, String proposalId)
+    /**
+     * @return el id del {@link com.tacs.tp1c2026.entities.exchange.Exchange} creado, para que el controller pueda exponerlo en el response y el FE redirija al detalle sin GET extra
+     */
+    @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
+    @Transactional
+    public String acceptProposal(String userId, String proposalId)
             throws UserNotFoundException, NotFoundException, ProposalNotInPublicationException, OfferAlreadyProcessedException, ForbiddenException, MissingCardException, InsufficientCardException {
         User reviewer = userService.getById(userId);
         TradeProposal proposal = findProposal(proposalId);
@@ -199,7 +209,8 @@ public class ProposalService {
         publisher.incrementExchangesAmount();
         proposer.incrementExchangesAmount();
 
-        exchangeService.createFromAcceptedProposal(proposal.getId(), publisher, proposer, publishedCard, offeredCards);
+        com.tacs.tp1c2026.entities.exchange.Exchange exchange =
+            exchangeService.createFromAcceptedProposal(proposal.getId(), publisher, proposer, publishedCard, offeredCards);
 
         proposalRepository.save(proposal);
         userRepository.save(proposer);
@@ -211,12 +222,14 @@ public class ProposalService {
         if (publication.getStatus() == PublicationStatus.FINALIZED) {
             cancelPendingProposalsAndRelease(publication.getId(), proposal.getId());
         }
+        return exchange.getId();
     }
 
     /**
      * Rechaza una propuesta. Solo libera el compromisedCount del proponente; no transfiere nada.
      */
-    // @Transactional // TODO: rehabilitar cuando Mongo corra como replica set
+    @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
+    @Transactional
     public void rejectProposal(String userId, String proposalId)
             throws UserNotFoundException, NotFoundException, ProposalNotInPublicationException, OfferAlreadyProcessedException, ForbiddenException {
         User reviewer = userService.getById(userId);
@@ -236,7 +249,8 @@ public class ProposalService {
     /**
      * Cancela una propuesta del lado del proponente. Libera el compromisedCount.
      */
-    // @Transactional // TODO: rehabilitar cuando Mongo corra como replica set
+    @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
+    @Transactional
     public void cancelProposal(String userId, String proposalId)
             throws UserNotFoundException, NotFoundException, OfferAlreadyProcessedException, ForbiddenException {
         TradeProposal proposal = findProposal(proposalId);

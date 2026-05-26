@@ -1,8 +1,11 @@
 package com.tacs.tp1c2026;
 
+import com.tacs.tp1c2026.entities.enums.UserRole;
+import com.tacs.tp1c2026.entities.user.User;
 import com.tacs.tp1c2026.support.IntegrationTestBase;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -34,5 +37,12 @@ public class UsersMongoTests extends IntegrationTestBase {
             .header("Authorization", "Bearer " + s.token()))
         .andExpect(status().isOk())
         .andExpect(content().json("[]"));
+  }
+
+  @Test
+  void registerCreaUserConRoleUser() throws Exception {
+    Session s = register("Nuevo", "nuevo@reg.com", "password123");
+    User u = userRepository.findById(s.userId()).orElseThrow();
+    assertEquals(UserRole.USER, u.getRole());
   }
 }

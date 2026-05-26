@@ -40,7 +40,7 @@ const existingUsers = db.users.countDocuments();
 if (existingUsers > 0) {
   print(`⚠️  Ya existen ${existingUsers} usuarios. Saltando.`);
 } else {
-  // password "1234" hasheada con BCrypt (rounds=10)
+  // password "123456" hasheada con BCrypt (rounds=10) — todos los users seedeados usan la misma
   // En producción la app lo hashea — este hash es solo para seed local
   // Pre-cargamos algunas cards en la colección y faltantes para que el usuario
   // pueda probar publicar / "ya la conseguí" sin tener que poblar a mano.
@@ -63,14 +63,16 @@ if (existingUsers > 0) {
     };
   };
 
-  const PASSWORD_HASH = "$2a$10$pHxMkuWMhtarNaCbjmQ7z.YrAVSkitQ0Y/EHyWsJeP/kIeG34osgS";
+  const PASSWORD_HASH = "$2a$10$tNRX2onk9NYyT./j1Q18.OyDr16Y8K0fDpgW2IIUrKS.NleG.ntHq";
 
   db.users.insertOne({
     _id: ObjectId("69e54c037de7f7e868da90f5"),
-    name: "Test User",
-    email: "user@test.com",
+    version: NumberLong(0),
+    name: "Pepe Racing",
+    email: "peperacing@gmail.com",
     passwordHash: PASSWORD_HASH,
     avatarId: "avatar_1",
+    role: "USER",
     rating: null,
     exchangesAmount: 0,
     lastLogin: null,
@@ -92,10 +94,12 @@ if (existingUsers > 0) {
   const PUBLISHER_ID = ObjectId("69e54c037de7f7e868da90f6");
   db.users.insertOne({
     _id: PUBLISHER_ID,
-    name: "Publisher User",
-    email: "publisher@test.com",
+    version: NumberLong(0),
+    name: "Moni Argento",
+    email: "moniargento@gmail.com",
     passwordHash: PASSWORD_HASH,
     avatarId: "avatar_2",
+    role: "USER",
     rating: 4.5,
     exchangesAmount: 0,
     lastLogin: null,
@@ -109,10 +113,30 @@ if (existingUsers > 0) {
     suggestionsIds: []
   });
 
+  // Admin: usuario regular con role=ADMIN. Login: admin@mail.com / 123456 (mismo hash).
+  // El admin NO debe aparecer en listas de candidatos para intercambio (ver filtros en services).
+  db.users.insertOne({
+    _id: ObjectId("69e54c037de7f7e868da90f7"),
+    version: NumberLong(0),
+    name: "Administrador",
+    email: "admin@mail.com",
+    passwordHash: PASSWORD_HASH,
+    avatarId: "avatar_1",
+    role: "ADMIN",
+    rating: null,
+    exchangesAmount: 0,
+    lastLogin: null,
+    creationDate: new Date(),
+    collection: [],
+    missingCards: [],
+    suggestionsIds: []
+  });
+
   const toPublication = (cardId, initial, remaining) => {
     const c = seedCard(cardId);
     return c && {
       _id: new ObjectId(),
+      version: NumberLong(0),
       publisherUser: PUBLISHER_ID,
       card: c._id,
       cardNumber: c.number,
@@ -141,9 +165,33 @@ if (existingUsers > 0) {
   db.publications.createIndex({ publisherUser: 1 }, { name: "idx_pub_publisher" });
   db.publications.createIndex({ status: 1 }, { name: "idx_pub_status" });
 
-  print("✅  Usuarios de prueba creados: user@test.com, publisher@test.com");
-  print("✅  Publicaciones de Publisher User creadas");
+  print("✅  Usuarios de prueba creados: peperacing@gmail.com, moniargento@gmail.com, admin@mail.com (role=ADMIN). Password de todos: 123456");
+  print("✅  Publicaciones de Moni Argento creadas");
   print("✅  Índices creados");
+}
+
+// ── Backfill de version
+// Idempotente: solo toca docs sin el campo. Necesario para que Spring Data Mongo detecte un UPDATE (no INSERT) al hacer save() sobre documentos pre-existentes
+[ "users", "publications", "auctions" ].forEach((coll) => {
+  const res = db[coll].updateMany(
+    { version: { $exists: false } },
+    { $set: { version: NumberLong(0) } }
+  );
+  if (res.modifiedCount > 0) {
+    print(`✅  Backfill ${coll}: ${res.modifiedCount} doc(s) recibieron version=0`);
+  }
+});
+
+// ── Backfill de role en users
+// Cualquier user pre-existente arranca como USER. El admin se siembra arriba con role=ADMIN
+{
+  const res = db.users.updateMany(
+    { role: { $exists: false } },
+    { $set: { role: "USER" } }
+  );
+  if (res.modifiedCount > 0) {
+    print(`✅  Backfill users.role: ${res.modifiedCount} doc(s) recibieron role=USER`);
+  }
 }
 
 // ── Resumen ───────────────────────────────────────────────────

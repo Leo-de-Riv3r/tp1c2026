@@ -52,7 +52,7 @@ public class TradeMapper {
         cardIds,
         cards,
         proposal.getRequestedCount(),
-        proposal.getProposerUser() != null ? proposal.getProposerUser().getId() : null,
+        proposal.getProposerUser() != null ? UserDto.from(proposal.getProposerUser()) : null,
         proposal.getReceiver() != null ? UserDto.from(proposal.getReceiver()) : null,
         proposal.getStatus(),
         proposal.getCreationDate()
