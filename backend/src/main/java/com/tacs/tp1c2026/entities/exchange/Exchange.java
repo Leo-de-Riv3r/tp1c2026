@@ -36,8 +36,8 @@ public class Exchange {
     private UserSnapshot userA;
     private UserSnapshot userB;
 
-    private List<CardSnapshot> figuritasDeA;
-    private List<CardSnapshot> figuritasDeB;
+    private List<CardSnapshot> cardsFromA;
+    private List<CardSnapshot> cardsFromB;
 
     private ExchangeStatus status = ExchangeStatus.CONCRETADO;
 
@@ -50,12 +50,12 @@ public class Exchange {
 
     private Exchange(ExchangeOrigin origin,
                      UserSnapshot userA, UserSnapshot userB,
-                     List<CardSnapshot> figuritasDeA, List<CardSnapshot> figuritasDeB) {
+                     List<CardSnapshot> cardsFromA, List<CardSnapshot> cardsFromB) {
         this.origin = origin;
         this.userA = userA;
         this.userB = userB;
-        this.figuritasDeA = figuritasDeA;
-        this.figuritasDeB = figuritasDeB;
+        this.cardsFromA = cardsFromA;
+        this.cardsFromB = cardsFromB;
     }
 
     /**

@@ -1,7 +1,7 @@
 package com.tacs.tp1c2026.services;
 
 import com.tacs.tp1c2026.entities.card.Card;
-import com.tacs.tp1c2026.entities.dto.trade.input.CreateTradeProposalDTO;
+import com.tacs.tp1c2026.entities.dto.trade.input.CreateTradeProposalDto;
 import com.tacs.tp1c2026.entities.enums.NotificationType;
 import com.tacs.tp1c2026.entities.enums.PublicationStatus;
 import com.tacs.tp1c2026.entities.enums.TradeProposalStatus;
@@ -58,7 +58,7 @@ public class ProposalService {
      */
     @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
     @Transactional
-    public TradeProposal createProposal(String userId, CreateTradeProposalDTO dto)
+    public TradeProposal createProposal(String userId, CreateTradeProposalDto dto)
             throws UserNotFoundException, NotFoundException, InsufficientCardException, MissingCardException, NoAvailableSlotsException {
         TradePublication publication = publicationService.findPublication(dto.publicationId());
         if (!publication.isActive()) {
@@ -174,10 +174,7 @@ public class ProposalService {
 
         // Proponente cede las N offered cards (1 por aparición)
         for (Card c : offeredCards) {
-            proposer.findCollectionItem(c.getId()).ifPresent(item -> {
-                item.release(1);
-                item.decrement(1);
-            });
+            proposer.releaseAndDecrement(c.getId(), 1);
         }
         // Publicante recibe las N offered cards
         for (Card c : offeredCards) {
@@ -188,11 +185,8 @@ public class ProposalService {
                 publisher.addToCollection(CollectionCard.fromCatalog(c));
             }
         }
-        // Publicante cede M unidades de la card publicada (release + decrement por M)
-        publisher.findCollectionItem(publishedCard.getId()).ifPresent(item -> {
-            item.release(requested);
-            item.decrement(requested);
-        });
+        // Publicante cede M unidades de la card publicada (release + decrement + remove si quantity=0)
+        publisher.releaseAndDecrement(publishedCard.getId(), requested);
         // Proponente recibe M unidades de la card publicada
         CollectionCard proposerItem = proposer.findCollectionItem(publishedCard.getId()).orElse(null);
         if (proposerItem != null) {

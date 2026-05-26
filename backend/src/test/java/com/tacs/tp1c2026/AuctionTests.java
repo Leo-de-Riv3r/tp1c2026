@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.jayway.jsonpath.JsonPath;
 import com.tacs.tp1c2026.entities.dto.auction.input.AuctionConditionDto;
-import com.tacs.tp1c2026.entities.dto.auction.input.CreateAuctionDTO;
+import com.tacs.tp1c2026.entities.dto.auction.input.CreateAuctionDto;
 import com.tacs.tp1c2026.entities.exchange.Exchange;
 import com.tacs.tp1c2026.repositories.ExchangeRepository;
 import com.tacs.tp1c2026.services.AuctionService;
@@ -177,7 +177,7 @@ public class AuctionTests extends IntegrationTestBase {
   // ===== Helpers exclusivos de AuctionTests (no incluidos en IntegrationTestBase) =====
 
   private String createAuctionBody(String cardId, Integer auctionDurationHours, List<AuctionConditionDto> conditions) throws JsonProcessingException {
-    CreateAuctionDTO dto = new CreateAuctionDTO();
+    CreateAuctionDto dto = new CreateAuctionDto();
     dto.setCardId(cardId);
     dto.setAuctionDurationHours(auctionDurationHours);
     dto.setConditions(conditions);

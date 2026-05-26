@@ -14,7 +14,7 @@ import java.util.List;
  * - {@code requestedCount}: cantidad de unidades del card publicado que pide el bidder.
  *   Tiene que cumplir 1 ≤ requestedCount ≤ publication.remainingCount.
  */
-public record CreateTradeProposalDTO(
+public record CreateTradeProposalDto(
     @NotBlank(message = "publicationId es requerido")
     String publicationId,
 

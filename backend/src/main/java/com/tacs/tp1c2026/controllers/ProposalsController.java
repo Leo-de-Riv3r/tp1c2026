@@ -1,7 +1,7 @@
 package com.tacs.tp1c2026.controllers;
 
 import com.tacs.tp1c2026.entities.dto.common.ApiResponse;
-import com.tacs.tp1c2026.entities.dto.trade.input.CreateTradeProposalDTO;
+import com.tacs.tp1c2026.entities.dto.trade.input.CreateTradeProposalDto;
 import com.tacs.tp1c2026.entities.dto.trade.output.TradeProposalDto;
 import com.tacs.tp1c2026.entities.enums.TradeProposalStatus;
 import com.tacs.tp1c2026.entities.exchange.TradeProposal;
@@ -33,7 +33,7 @@ public class ProposalsController {
   @PostMapping
   public ResponseEntity<ApiResponse<TradeProposalDto>> createProposal(
       @RequestAttribute("userId") String userId,
-      @Valid @RequestBody CreateTradeProposalDTO body
+      @Valid @RequestBody CreateTradeProposalDto body
   ) throws UserNotFoundException, NotFoundException, InsufficientCardException, MissingCardException, NoAvailableSlotsException {
     TradeProposal proposal = proposalService.createProposal(userId, body);
     TradeProposalDto dto = tradeMapper.mapProposal(proposal);

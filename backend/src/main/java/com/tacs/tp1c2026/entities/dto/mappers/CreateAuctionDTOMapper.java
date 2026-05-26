@@ -7,7 +7,6 @@ import com.tacs.tp1c2026.entities.auction.conditions.MinimalCategory;
 import com.tacs.tp1c2026.entities.auction.conditions.MinimalExchanges;
 import com.tacs.tp1c2026.entities.auction.conditions.MinimalReputation;
 import com.tacs.tp1c2026.entities.dto.auction.input.AuctionConditionDto;
-import com.tacs.tp1c2026.entities.dto.auction.input.MinimalCardCountDTO;
 
 import com.tacs.tp1c2026.exceptions.BadInputException;
 import java.util.List;
@@ -16,7 +15,7 @@ import java.util.stream.Collectors;
 /**
  * Mapper utilities to convert input DTOs to domain objects.
  */
-public class CreateAuctionDTOMapper {
+public class CreateAuctionDtoMapper {
 
     public static List<AuctionCondition> toDomainConditions(List<AuctionConditionDto> dtos) {
         if (dtos == null) return List.of();
@@ -37,4 +36,3 @@ public class CreateAuctionDTOMapper {
         }).collect(Collectors.toList());
     }
 }
-

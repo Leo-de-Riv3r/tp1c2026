@@ -1,8 +1,8 @@
 package com.tacs.tp1c2026;
 
 import com.tacs.tp1c2026.entities.auction.Auction;
-import com.tacs.tp1c2026.entities.dto.auction.input.CreateAuctionDTO;
-import com.tacs.tp1c2026.entities.dto.auction.input.CreationAuctionOfferDTO;
+import com.tacs.tp1c2026.entities.dto.auction.input.CreateAuctionDto;
+import com.tacs.tp1c2026.entities.dto.auction.input.CreationAuctionOfferDto;
 import com.tacs.tp1c2026.entities.exchange.TradePublication;
 import com.tacs.tp1c2026.services.AuctionService;
 import com.tacs.tp1c2026.services.ProposalService;
@@ -44,7 +44,7 @@ public class ConcurrencyTests extends IntegrationTestBase {
         Session seller = register("Seller", "seller@conc.com", "pass123");
         addToCollection(seller.userId(), "card_001", seller.token());
 
-        CreateAuctionDTO createDto = new CreateAuctionDTO();
+        CreateAuctionDto createDto = new CreateAuctionDto();
         createDto.setCardId("card_001");
         createDto.setAuctionDurationHours(24);
         createDto.setConditions(List.of());
@@ -134,10 +134,10 @@ public class ConcurrencyTests extends IntegrationTestBase {
             "remainingCount debe ser 0 — ambas accepts decrementaron sin lost update");
     }
 
-    private CreationAuctionOfferDTO buildOffer(String auctionId, String cardId, int amount) {
-        return new CreationAuctionOfferDTO(
+    private CreationAuctionOfferDto buildOffer(String auctionId, String cardId, int amount) {
+        return new CreationAuctionOfferDto(
             auctionId,
-            List.of(new CreationAuctionOfferDTO.Item(cardId, amount))
+            List.of(new CreationAuctionOfferDto.Item(cardId, amount))
         );
     }
 }

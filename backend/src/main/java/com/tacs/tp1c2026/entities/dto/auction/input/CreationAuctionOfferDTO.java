@@ -5,12 +5,9 @@ import java.util.List;
 /**
  * DTO for creating an auction offer. Contains auctionId and a list of offered items with quantities.
  */
-public record CreationAuctionOfferDTO(
+public record CreationAuctionOfferDto(
     String auctionId,
     List<Item> items
 ) {
     public static record Item(String cardId, Integer amount) {}
 }
-
-
-

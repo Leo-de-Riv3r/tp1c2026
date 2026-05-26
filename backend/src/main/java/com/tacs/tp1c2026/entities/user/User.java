@@ -116,6 +116,27 @@ public class User {
         }
     }
 
+    /**
+     * Tras un trade (auction award o proposal accept), libera el compromise del item,
+     * decrementa su quantity y elimina la entry del array `collection` si quantity llega a 0.
+     * No-op silencioso si la card no está en collection — los callers asumen que estaba
+     * (porque sus cards venían de un offer/proposal previo donde se habían comprometido)
+     */
+    public void releaseAndDecrement(String cardId, int amount) {
+        findCollectionItem(cardId).ifPresent(item -> {
+            item.release(amount);
+            try {
+                item.decrement(amount);
+            } catch (InsufficientCardException ignored) {
+                // No debería pasar — el compromise garantiza disponibilidad
+            }
+            if (item.getQuantity() == 0) {
+                this.collection.remove(item);
+                this.vectorProfile.removeCard(cardId);
+            }
+        });
+    }
+
     public int getAvailableQuantity(String cardId) {
         return findCollectionItem(cardId).map(CollectionCard::getAvailable).orElse(0);
     }

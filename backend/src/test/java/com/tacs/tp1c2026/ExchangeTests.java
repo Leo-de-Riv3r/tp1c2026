@@ -68,8 +68,8 @@ public class ExchangeTests extends IntegrationTestBase {
     String body = res.getResponse().getContentAsString();
     assertEquals(s.alice().userId(), JsonPath.read(body, "$.userA.userId"));
     assertEquals(s.bob().userId(), JsonPath.read(body, "$.userB.userId"));
-    assertEquals(1, ((java.util.List<?>) JsonPath.read(body, "$.figuritasDeA")).size());
-    assertEquals(1, ((java.util.List<?>) JsonPath.read(body, "$.figuritasDeB")).size());
+    assertEquals(1, ((java.util.List<?>) JsonPath.read(body, "$.cardsFromA")).size());
+    assertEquals(1, ((java.util.List<?>) JsonPath.read(body, "$.cardsFromB")).size());
   }
 
   @Test
