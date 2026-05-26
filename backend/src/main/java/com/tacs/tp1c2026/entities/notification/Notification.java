@@ -25,6 +25,9 @@ public class Notification {
   private NotificationStatus status = NotificationStatus.UNREAD;
 
   private String referenceId;
+
+  private String message;
+
   @Builder.Default
   private LocalDateTime creationDate = LocalDateTime.now();
 

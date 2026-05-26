@@ -26,4 +26,5 @@ public class AuctionDto {
   private String publisherAvatarId;
   // Lista completa de ofertas en la subasta
   private List<AuctionOfferDto> offers;
+  private List<AuctionConditionOutputDto> conditions;
 }

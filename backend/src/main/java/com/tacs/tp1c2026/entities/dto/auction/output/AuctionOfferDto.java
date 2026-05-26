@@ -12,7 +12,9 @@ public record AuctionOfferDto(
     String bidderUserName,
     List<ItemDetailDto> offeredItems,
     AuctionOfferStatus status,
-    LocalDateTime bidDate
+    LocalDateTime bidDate,
+    Double bidderRating,
+    String bidderAvatarId
 ) {
   public record ItemDetailDto(
       String cardId,

@@ -1,6 +1,8 @@
 package com.tacs.tp1c2026;
 
 import com.jayway.jsonpath.JsonPath;
+import com.tacs.tp1c2026.entities.enums.UserRole;
+import com.tacs.tp1c2026.entities.user.User;
 import com.tacs.tp1c2026.support.IntegrationTestBase;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
@@ -30,13 +32,20 @@ public class UsersTests extends IntegrationTestBase {
 
   @Test
   void getAllUsersReturnsRegisteredList() throws Exception {
-    Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
+    register("Pepe Argento", "peperacing@gmail.com", "password123");
     register("Moni Argento", "moniargento@gmail.com", "password123");
+    // GET /api/users es ADMIN-only. Promovemos a un user a admin y re-logueamos para JWT con role=ADMIN
+    register("Admin", "admin@test.com", "password123");
+    User adminUser = userRepository.findByEmail("admin@test.com").orElseThrow();
+    adminUser.setRole(UserRole.ADMIN);
+    userRepository.save(adminUser);
+    Session admin = login("admin@test.com", "password123");
 
     String body = mockMvc.perform(get("/api/users")
-            .header("Authorization", "Bearer " + pepe.token()))
+            .header("Authorization", "Bearer " + admin.token()))
         .andExpect(status().isOk())
         .andReturn().getResponse().getContentAsString();
+    // El admin se filtra del response (UserService.getAll excluye admins)
     assertEquals(2, ((List<?>) JsonPath.read(body, "$")).size());
   }
 
