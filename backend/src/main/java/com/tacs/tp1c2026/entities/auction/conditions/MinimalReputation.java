@@ -12,6 +12,8 @@ public class MinimalReputation extends AuctionCondition{
     this.reputation = quantity;
   }
 
+  public Integer getReputation() { return reputation; }
+
   @Override
   public boolean canOffer(User user, AuctionOffer offer) {
     return user.getRating() >= this.reputation;

@@ -17,6 +17,7 @@ import com.tacs.tp1c2026.entities.dto.mappers.AuctionMapper;
 import com.tacs.tp1c2026.entities.dto.mappers.CreateAuctionDtoMapper;
 import com.tacs.tp1c2026.entities.enums.AuctionOfferStatus;
 import com.tacs.tp1c2026.entities.enums.AuctionStatus;
+import com.tacs.tp1c2026.entities.enums.NotificationType;
 import com.tacs.tp1c2026.entities.user.User;
 import com.tacs.tp1c2026.entities.user.embedded.CollectionCard;
 import com.tacs.tp1c2026.events.CardAvailableEvent;
@@ -45,6 +46,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuctionService {
   @Autowired
   private ApplicationEventPublisher eventPublisher;
+  @Autowired
+  private NotificationService notificationService;
     private final UserRepository userRepository;
     private final UserService userService;
     private final CardService cardService;
@@ -122,6 +125,12 @@ public class AuctionService {
         auction.addOffer(offer);
         this.auctionRepository.save(auction);
         this.userRepository.save(proposer);
+        notificationService.createNotification(
+            auction.getPublisherUser(),
+            NotificationType.AUCTION_OFFER_RECEIVED,
+            auction.getId(),
+            "Recibiste una nueva oferta en tu subasta de #" + auction.getCardNumber()
+        );
         return offer;
     }
 
@@ -146,7 +155,7 @@ public class AuctionService {
       user.findCollectionItem(auction.getCard().getId()).ifPresent(item -> item.release(1));
       this.userRepository.save(user);
 
-      // Libera las unidades comprometidas de cada postor
+      // Libera las unidades comprometidas de cada postor y notifica
       // Re-fetch por bidderId: @DocumentReference no hidrata bien en subdocs embebidos
       for (AuctionOffer offer : auction.getOffers()) {
         User bidder = userRepository.findById(offer.getBidderId())
@@ -155,6 +164,12 @@ public class AuctionService {
           bidder.findCollectionItem(oi.getCard().getId()).ifPresent(item -> item.release(oi.getAmount()));
         }
         userRepository.save(bidder);
+        notificationService.createNotification(
+            bidder,
+            NotificationType.AUCTION_CANCELLED,
+            auction.getId(),
+            "La subasta donde ofertaste fue cancelada."
+        );
       }
     }
 
@@ -275,6 +290,12 @@ public class AuctionService {
         bidder.findCollectionItem(oi.getCard().getId()).ifPresent(item -> item.release(oi.getAmount()));
       }
       userRepository.save(bidder);
+      notificationService.createNotification(
+          bidder,
+          NotificationType.AUCTION_OFFER_REJECTED,
+          auctionId,
+          "Tu oferta en la subasta de #" + auction.getCardNumber() + " fue rechazada."
+      );
     }
 
     /**
@@ -346,6 +367,12 @@ public class AuctionService {
                 }
                 userRepository.save(bidder);
                 other.reject();
+                notificationService.createNotification(
+                    bidder,
+                    NotificationType.AUCTION_OFFER_REJECTED,
+                    auction.getId(),
+                    "Tu oferta en la subasta de #" + auction.getCardNumber() + " fue rechazada."
+                );
             }
         }
 
@@ -353,6 +380,12 @@ public class AuctionService {
         winner.incrementExchangesAmount();
         userRepository.save(winner);
         userRepository.save(publisher);
+        notificationService.createNotification(
+            winner,
+            NotificationType.AUCTION_OFFER_ACCEPTED,
+            auction.getId(),
+            "Tu oferta en la subasta de #" + auction.getCardNumber() + " fue aceptada."
+        );
 
         List<Card> offeredCardsExpanded = winningOffer.getOfferedItems().stream()
             .flatMap(oi -> java.util.Collections.nCopies(oi.getAmount(), oi.getCard()).stream())
