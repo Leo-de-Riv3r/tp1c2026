@@ -88,6 +88,21 @@ public class User {
         this.exchangesAmount = (this.exchangesAmount == null ? 0 : this.exchangesAmount) + 1;
     }
 
+    /**
+     * Recalcula el rating del usuario como promedio de los scores recibidos.
+     * Lo llama {@code ExchangeService.addFeedback} cada vez que el otro lado deja un feedback.
+     */
+    public void recalculateRating(List<Integer> receivedScores) {
+        if (receivedScores == null || receivedScores.isEmpty()) {
+            this.rating = null;
+            return;
+        }
+        this.rating = receivedScores.stream()
+            .mapToInt(Integer::intValue)
+            .average()
+            .orElse(0.0);
+    }
+
     public boolean hasInCollection(String cardId) {
         return this.collection.stream().anyMatch(c -> c.isOf(cardId));
     }

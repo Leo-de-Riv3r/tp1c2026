@@ -233,6 +233,23 @@ public class AuctionTests extends IntegrationTestBase {
     return null;
   }
 
+  /** Devuelve la cantidad de {@code cardId} en la colección del usuario, o 0 si no la tiene. */
+  private int quantityInCollection(String userId, String cardId, String token) throws Exception {
+    MvcResult res = mockMvc.perform(get("/api/users/" + userId + "/collection")
+        .header("Authorization", "Bearer " + token))
+        .andReturn();
+    String body = res.getResponse().getContentAsString();
+    List<?> all = JsonPath.read(body, "$");
+    for (int i = 0; i < all.size(); i++) {
+      String cid = JsonPath.read(body, "$[" + i + "].cardId");
+      if (cardId.equals(cid)) {
+        Integer qty = JsonPath.read(body, "$[" + i + "].quantity");
+        return qty == null ? 0 : qty;
+      }
+    }
+    return 0;
+  }
+
   private void registrarUsuario(String name, String email, String password, String avatarId) throws Exception {
     String body = "{ \"name\": \"" + name + "\", \"email\": \"" + email
         + "\", \"password\": \"" + password + "\", \"avatarId\": \"" + avatarId + "\" }";
@@ -282,6 +299,35 @@ public class AuctionTests extends IntegrationTestBase {
 
     assertEquals(1, userRepository.findById(seller.userId()).get().getExchangesAmount());
     assertEquals(1, userRepository.findById(bidder.userId()).get().getExchangesAmount());
+  }
+
+  /**
+   * Regresión BE: al aceptar una oferta de subasta, las cantidades en las colecciones
+   * de ambos lados se deben actualizar. El bug original (causa: @DocumentReference no hidrata
+   * dentro de subdocs embebidos) dejaba la card ofrecida intacta en la colección del bidder.
+   */
+  @Test
+  void acceptAuctionOfferTransfersCardsBetweenCollections() throws Exception {
+    Session seller = register("seller", "seller@java.com", "password123");
+    addToCollection(seller.userId(), "card_021", seller.token());
+    String auctionId = createAuctionAndGetId(seller.token(), "card_021");
+
+    Session bidder = register("bidder", "bidder@java.com", "password123");
+    addToCollection(bidder.userId(), "card_050", bidder.token());
+    placeBid(bidder.token(), auctionId, "card_050", 1);
+    String offerId = firstOfferId(auctionId, seller.token());
+
+    mockMvc.perform(put("/api/auctions/" + auctionId + "/offers/" + offerId + "/accept")
+        .header("Authorization", "Bearer " + seller.token()))
+        .andExpect(status().isOk());
+
+    // Bidder pierde la ofrecida y recibe la subastada
+    assertEquals(0, quantityInCollection(bidder.userId(), "card_050", bidder.token()));
+    assertEquals(1, quantityInCollection(bidder.userId(), "card_021", bidder.token()));
+
+    // Seller pierde la subastada y recibe la ofrecida
+    assertEquals(0, quantityInCollection(seller.userId(), "card_021", seller.token()));
+    assertEquals(1, quantityInCollection(seller.userId(), "card_050", seller.token()));
   }
 
   @Test

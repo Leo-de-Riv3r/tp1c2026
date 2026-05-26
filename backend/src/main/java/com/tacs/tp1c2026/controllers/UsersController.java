@@ -137,7 +137,8 @@ public class UsersController {
     /**
      * Returns the exchange suggestions for a user.
      * Suggestions are computed periodically by the scheduled SuggestionGenerator.
-     * Each suggestion indicates another user whose available cards match this user's missing cards.
+     * Each suggestion points to a specific active publication or auction (from another user
+     * with similar profile) whose card matches one of this user's missing cards.
      * @param id the user's ID
      * @return list of {@link SuggestionResult}
      */

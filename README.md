@@ -52,6 +52,7 @@ Todos los users del seed comparten el mismo password: **`123456`**
 |--------------------------|-------|------------------------------------------------------------------------|
 | `peperacing@gmail.com`   | USER  | Tiene cards en colección (3x card_001, 2x card_005, 1x card_010) y missing cards |
 | `moniargento@gmail.com`  | USER  | Tiene 2 publicaciones activas (card_003 y card_004)            |
+| `dfuseneco@outlook.com`  | USER  | Usuario "vacío" — sin colección, faltantes, publicaciones ni propuestas. Para probar empty states |
 | `admin@mail.com`         | ADMIN | Usuario de administración. Filtrado de listas de candidatos a trading  |
 
 ## Levantar Mongo localmente (sin Docker)
