@@ -2,12 +2,14 @@ package com.tacs.tp1c2026.controllers;
 
 import com.tacs.tp1c2026.entities.dto.user.input.*;
 import com.tacs.tp1c2026.entities.dto.user.output.CollectionCardResult;
+import com.tacs.tp1c2026.entities.dto.common.output.PaginationDtoOutput;
 import com.tacs.tp1c2026.entities.dto.user.output.NotificationDto;
 import com.tacs.tp1c2026.entities.dto.user.output.SuggestionResult;
 import com.tacs.tp1c2026.entities.dto.user.output.UserDto;
 import com.tacs.tp1c2026.entities.user.embedded.CollectionCard;
 import com.tacs.tp1c2026.entities.user.embedded.MissingCard;
 import com.tacs.tp1c2026.config.RequiresRole;
+import com.tacs.tp1c2026.entities.notification.Notification;
 import com.tacs.tp1c2026.exceptions.ForbiddenException;
 import com.tacs.tp1c2026.exceptions.InsufficientCardException;
 import com.tacs.tp1c2026.exceptions.MissingCardException;
@@ -20,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import java.util.List;
+import org.springframework.data.domain.Page;
 
 @RestController
 @RequestMapping("/users")
@@ -161,13 +164,15 @@ public class UsersController {
     /* Notification endpoints */
 
     @GetMapping("/{userId}/notifications")
-    public ResponseEntity<List<NotificationDto>> getNotifications(
+    public ResponseEntity<PaginationDtoOutput<NotificationDto>> getNotifications(
             @PathVariable String userId,
-            @RequestAttribute("userId") String jwtUserId) {
+            @RequestAttribute("userId") String jwtUserId,
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "20") Integer per_page) {
         if (!jwtUserId.equals(userId)) throw new ForbiddenException("No podés ver notificaciones de otro usuario");
-        List<NotificationDto> dtos = notificationService.getNotificationsForUser(userId)
-            .stream().map(NotificationDto::from).toList();
-        return ResponseEntity.ok(dtos);
+        Page<Notification> result = notificationService.getNotificationsForUser(userId, page, per_page);
+        List<NotificationDto> dtos = result.getContent().stream().map(NotificationDto::from).toList();
+        return ResponseEntity.ok(new PaginationDtoOutput<>(dtos, result.getNumber() + 1, result.getTotalPages()));
     }
 
     @PutMapping("/{userId}/notifications/read")
@@ -176,6 +181,16 @@ public class UsersController {
             @RequestAttribute("userId") String jwtUserId) {
         if (!jwtUserId.equals(userId)) throw new ForbiddenException("No podés marcar notificaciones de otro usuario");
         notificationService.markAllAsRead(userId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{userId}/notifications/{notificationId}/read")
+    public ResponseEntity<Void> markNotificationAsRead(
+            @PathVariable String userId,
+            @PathVariable String notificationId,
+            @RequestAttribute("userId") String jwtUserId) {
+        if (!jwtUserId.equals(userId)) throw new ForbiddenException("No podés marcar notificaciones de otro usuario");
+        notificationService.markAsRead(notificationId, userId);
         return ResponseEntity.noContent().build();
     }
 }

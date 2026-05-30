@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 
 public interface NotificationRepository extends Repository<Notification, String> {
   Page<Notification> findByReceiverIdAndStatus(String userId, NotificationStatus status, Pageable pageable);
+  Page<Notification> findByReceiverId(String userId, Pageable pageable);
   List<Notification> findByReceiverId(String userId);
   List<Notification> findByReceiverIdAndStatus(String userId, NotificationStatus status);
 }
