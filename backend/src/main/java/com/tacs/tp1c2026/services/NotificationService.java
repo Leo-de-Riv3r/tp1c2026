@@ -69,12 +69,16 @@ public class NotificationService {
       return notificationRepository.findByReceiverId(userId);
     }
 
+    public Page<Notification> getNotificationsForUser(String userId, Integer page, Integer perPage) {
+      Pageable pageable = pageableGenerator.buildPageable(page, perPage, 20, Sort.by("creationDate").descending());
+      return notificationRepository.findByReceiverId(userId, pageable);
+    }
+
     public Page<Notification> getNotificationsForUser(String userId, NotificationStatus status, Integer page, Integer perPage) {
       Pageable pageable = pageableGenerator.buildPageable(page, perPage, 20, Sort.by("creationDate").descending());
       return notificationRepository.findByReceiverIdAndStatus(userId, status, pageable);
     }
 
-    @Transactional
   public void checkEndingAuctions() {
     LocalDateTime now = LocalDateTime.now();
     LocalDateTime inTwoHour = now.plusHours(2);
