@@ -9,6 +9,7 @@ import com.tacs.tp1c2026.entities.dto.user.output.UserDto;
 import com.tacs.tp1c2026.entities.user.embedded.CollectionCard;
 import com.tacs.tp1c2026.entities.user.embedded.MissingCard;
 import com.tacs.tp1c2026.config.RequiresRole;
+import com.tacs.tp1c2026.entities.enums.NotificationStatus;
 import com.tacs.tp1c2026.entities.notification.Notification;
 import com.tacs.tp1c2026.exceptions.ForbiddenException;
 import com.tacs.tp1c2026.exceptions.InsufficientCardException;
@@ -168,9 +169,11 @@ public class UsersController {
             @PathVariable String userId,
             @RequestAttribute("userId") String jwtUserId,
             @RequestParam(defaultValue = "1") Integer page,
-            @RequestParam(defaultValue = "20") Integer per_page) {
+            @RequestParam(defaultValue = "20") Integer per_page,
+            @RequestParam(required = true) NotificationStatus status) {
         if (!jwtUserId.equals(userId)) throw new ForbiddenException("No podés ver notificaciones de otro usuario");
-        Page<Notification> result = notificationService.getNotificationsForUser(userId, page, per_page);
+        Page<Notification> result;
+        result = notificationService.getNotificationsForUser(userId, status, page, per_page);
         List<NotificationDto> dtos = result.getContent().stream().map(NotificationDto::from).toList();
         return ResponseEntity.ok(new PaginationDtoOutput<>(dtos, result.getNumber() + 1, result.getTotalPages()));
     }
