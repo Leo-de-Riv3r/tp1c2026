@@ -1,5 +1,6 @@
 package com.tacs.tp1c2026;
 
+import com.tacs.tp1c2026.config.OwnerOrAdminInterceptor;
 import com.tacs.tp1c2026.config.RoleInterceptor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,9 +16,11 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebConfig implements WebMvcConfigurer {
 
     private final RoleInterceptor roleInterceptor;
+    private final OwnerOrAdminInterceptor ownerOrAdminInterceptor;
 
-    public WebConfig(RoleInterceptor roleInterceptor) {
+    public WebConfig(RoleInterceptor roleInterceptor, OwnerOrAdminInterceptor ownerOrAdminInterceptor) {
         this.roleInterceptor = roleInterceptor;
+        this.ownerOrAdminInterceptor = ownerOrAdminInterceptor;
     }
 
     @Override
@@ -29,5 +32,6 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(roleInterceptor);
+        registry.addInterceptor(ownerOrAdminInterceptor);
     }
 }

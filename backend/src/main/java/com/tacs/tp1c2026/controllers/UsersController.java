@@ -7,8 +7,8 @@ import com.tacs.tp1c2026.entities.dto.user.output.SuggestionResult;
 import com.tacs.tp1c2026.entities.dto.user.output.UserDto;
 import com.tacs.tp1c2026.entities.user.embedded.CollectionCard;
 import com.tacs.tp1c2026.entities.user.embedded.MissingCard;
+import com.tacs.tp1c2026.config.RequiresOwnerOrAdmin;
 import com.tacs.tp1c2026.config.RequiresRole;
-import com.tacs.tp1c2026.exceptions.ForbiddenException;
 import com.tacs.tp1c2026.exceptions.InsufficientCardException;
 import com.tacs.tp1c2026.exceptions.MissingCardException;
 import com.tacs.tp1c2026.exceptions.NotFoundException;
@@ -46,11 +46,12 @@ public class UsersController {
     }
 
     /**
-     * Returns a user by their MongoDB ID
+     * Returns a user by their MongoDB ID. Solo accesible para el propio user o ADMIN
      * @param id the user's ID
      * @return the user as {@link UserDto}, or 404 if not found
      */
     @GetMapping("/{id}")
+    @RequiresOwnerOrAdmin
     public ResponseEntity<UserDto> getById(@PathVariable String id) throws UserNotFoundException {
         return ResponseEntity.ok(UserDto.from(userService.getById(id)));
     }
@@ -63,6 +64,7 @@ public class UsersController {
      * @return list of cards in the user's collection
      */
     @GetMapping("/{id}/collection")
+    @RequiresOwnerOrAdmin
     public ResponseEntity<List<CollectionCard>> getCollection(@PathVariable String id) throws UserNotFoundException {
         return ResponseEntity.ok(userService.getUserCardCollection(id));
     }
@@ -75,11 +77,11 @@ public class UsersController {
      * @return the updated {@link CollectionCard} entry
      */
     @PostMapping("/{id}/collection")
+    @RequiresOwnerOrAdmin
     public ResponseEntity<CollectionCard> addToCollection(
             @PathVariable String id,
-            @RequestAttribute("userId") String userId,
             @Valid @RequestBody AddToCollectionRequest request) throws MissingCardException, NotFoundException, UserNotFoundException {
-        CollectionCardResult result = userService.addCardToUserCollection(userId, request.cardId());
+        CollectionCardResult result = userService.addCardToUserCollection(id, request.cardId());
         return ResponseEntity
             .status(result.created() ? HttpStatus.CREATED : HttpStatus.OK)
             .body(result.card());
@@ -92,6 +94,7 @@ public class UsersController {
      * @param cardId the card ID to decrement
      */
     @PatchMapping("/{id}/collection/{cardId}")
+    @RequiresOwnerOrAdmin
     public ResponseEntity<Void> decrementFromCollection(
             @PathVariable String id,
             @PathVariable String cardId) throws InsufficientCardException, MissingCardException, NotFoundException, UserNotFoundException {
@@ -107,6 +110,7 @@ public class UsersController {
      * @return list of missing cards
      */
     @GetMapping("/{id}/missing-cards")
+    @RequiresOwnerOrAdmin
     public ResponseEntity<List<MissingCard>> getMissingCards(@PathVariable String id) throws UserNotFoundException {
         return ResponseEntity.ok(userService.getUserMissingCards(id));
     }
@@ -118,6 +122,7 @@ public class UsersController {
      * @return 201 with the created {@link MissingCard} entry
      */
     @PostMapping("/{id}/missing-cards")
+    @RequiresOwnerOrAdmin
     public ResponseEntity<MissingCard> addMissingCard(
             @PathVariable String id,
             @Valid @RequestBody AddMissingCardRequest request) throws NotFoundException, UserNotFoundException {
@@ -132,6 +137,7 @@ public class UsersController {
      * @param cardId the card ID to remove
      */
     @DeleteMapping("/{id}/missing-cards/{cardId}")
+    @RequiresOwnerOrAdmin
     public ResponseEntity<Void> removeMissingCard(
             @PathVariable String id,
             @PathVariable String cardId) throws NotFoundException, UserNotFoundException {
@@ -150,6 +156,7 @@ public class UsersController {
      * @return list of {@link SuggestionResult}
      */
     @GetMapping("/{id}/suggestions")
+    @RequiresOwnerOrAdmin
     public ResponseEntity<List<SuggestionResult>> getSuggestions(@PathVariable String id) throws UserNotFoundException {
         return ResponseEntity.ok(
             userService.getUserSuggestions(id).stream()
@@ -160,22 +167,18 @@ public class UsersController {
 
     /* Notification endpoints */
 
-    @GetMapping("/{userId}/notifications")
-    public ResponseEntity<List<NotificationDto>> getNotifications(
-            @PathVariable String userId,
-            @RequestAttribute("userId") String jwtUserId) {
-        if (!jwtUserId.equals(userId)) throw new ForbiddenException("No podés ver notificaciones de otro usuario");
-        List<NotificationDto> dtos = notificationService.getNotificationsForUser(userId)
+    @GetMapping("/{id}/notifications")
+    @RequiresOwnerOrAdmin
+    public ResponseEntity<List<NotificationDto>> getNotifications(@PathVariable String id) {
+        List<NotificationDto> dtos = notificationService.getNotificationsForUser(id)
             .stream().map(NotificationDto::from).toList();
         return ResponseEntity.ok(dtos);
     }
 
-    @PutMapping("/{userId}/notifications/read")
-    public ResponseEntity<Void> markAllNotificationsAsRead(
-            @PathVariable String userId,
-            @RequestAttribute("userId") String jwtUserId) {
-        if (!jwtUserId.equals(userId)) throw new ForbiddenException("No podés marcar notificaciones de otro usuario");
-        notificationService.markAllAsRead(userId);
+    @PutMapping("/{id}/notifications/read")
+    @RequiresOwnerOrAdmin
+    public ResponseEntity<Void> markAllNotificationsAsRead(@PathVariable String id) {
+        notificationService.markAllAsRead(id);
         return ResponseEntity.noContent().build();
     }
 }
