@@ -2,6 +2,7 @@ package com.tacs.tp1c2026.controllers;
 
 import com.tacs.tp1c2026.entities.dto.user.input.*;
 import com.tacs.tp1c2026.entities.dto.user.output.CollectionCardResult;
+import com.tacs.tp1c2026.entities.dto.common.output.PaginationDtoOutput;
 import com.tacs.tp1c2026.entities.dto.user.output.NotificationDto;
 import com.tacs.tp1c2026.entities.dto.user.output.SuggestionResult;
 import com.tacs.tp1c2026.entities.dto.user.output.UserDto;
@@ -9,12 +10,15 @@ import com.tacs.tp1c2026.entities.user.embedded.CollectionCard;
 import com.tacs.tp1c2026.entities.user.embedded.MissingCard;
 import com.tacs.tp1c2026.config.RequiresOwnerOrAdmin;
 import com.tacs.tp1c2026.config.RequiresRole;
+import com.tacs.tp1c2026.entities.enums.NotificationStatus;
+import com.tacs.tp1c2026.entities.notification.Notification;
 import com.tacs.tp1c2026.exceptions.InsufficientCardException;
 import com.tacs.tp1c2026.exceptions.MissingCardException;
 import com.tacs.tp1c2026.exceptions.NotFoundException;
 import com.tacs.tp1c2026.exceptions.UserNotFoundException;
 import com.tacs.tp1c2026.services.NotificationService;
 import com.tacs.tp1c2026.services.UserService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -169,16 +173,29 @@ public class UsersController {
 
     @GetMapping("/{id}/notifications")
     @RequiresOwnerOrAdmin
-    public ResponseEntity<List<NotificationDto>> getNotifications(@PathVariable String id) {
-        List<NotificationDto> dtos = notificationService.getNotificationsForUser(id)
-            .stream().map(NotificationDto::from).toList();
-        return ResponseEntity.ok(dtos);
+    public ResponseEntity<PaginationDtoOutput<NotificationDto>> getNotifications(
+            @PathVariable String id,
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "20") Integer per_page,
+            @RequestParam(required = true) NotificationStatus status) {
+        Page<Notification> result = notificationService.getNotificationsForUser(id, status, page, per_page);
+        List<NotificationDto> dtos = result.getContent().stream().map(NotificationDto::from).toList();
+        return ResponseEntity.ok(new PaginationDtoOutput<>(dtos, result.getNumber() + 1, result.getTotalPages()));
     }
 
     @PutMapping("/{id}/notifications/read")
     @RequiresOwnerOrAdmin
     public ResponseEntity<Void> markAllNotificationsAsRead(@PathVariable String id) {
         notificationService.markAllAsRead(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}/notifications/{notificationId}/read")
+    @RequiresOwnerOrAdmin
+    public ResponseEntity<Void> markNotificationAsRead(
+            @PathVariable String id,
+            @PathVariable String notificationId) {
+        notificationService.markAsRead(notificationId, id);
         return ResponseEntity.noContent().build();
     }
 }

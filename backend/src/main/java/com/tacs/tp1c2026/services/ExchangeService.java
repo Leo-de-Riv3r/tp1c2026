@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -71,7 +72,7 @@ public class ExchangeService {
 
     /**
      * Registra el feedback del reviewer sobre el otro lado del intercambio y
-     * recalcula el rating del usuario reviewado a partir de todos sus scores recibidos.
+     * recalcula el rating del usuario reviewado a partir de los últimos 21 scores recibidos.
      * El reviewer queda implícito por el slot A/B del exchange.
      */
     @Transactional
@@ -99,16 +100,22 @@ public class ExchangeService {
     }
 
     /**
-     * Recolecta todos los scores recibidos por un usuario.
+     * Recolecta los últimos 21 scores recibidos por un usuario,
+     * ordenados por fecha de creación descendente (más recientes primero).
      * Un usuario recibe score cuando fue A y feedbackFromB != null,
      * o cuando fue B y feedbackFromA != null.
      */
     private List<Integer> getReceivedScores(String userId) {
-        List<Integer> scores = new ArrayList<>();
+        List<Feedback> feedbacks = new ArrayList<>();
         exchangeRepository.findByUserAUserIdAndFeedbackFromBNotNull(userId)
-            .forEach(e -> scores.add(e.getFeedbackFromB().getScore()));
+            .forEach(e -> feedbacks.add(e.getFeedbackFromB()));
         exchangeRepository.findByUserBUserIdAndFeedbackFromANotNull(userId)
-            .forEach(e -> scores.add(e.getFeedbackFromA().getScore()));
-        return scores;
+            .forEach(e -> feedbacks.add(e.getFeedbackFromA()));
+
+        return feedbacks.stream()
+            .sorted(Comparator.comparing(Feedback::getCreatedAt).reversed())
+            .limit(21)
+            .map(Feedback::getScore)
+            .toList();
     }
 }

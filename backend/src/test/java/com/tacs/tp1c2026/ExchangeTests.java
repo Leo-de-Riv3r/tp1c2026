@@ -212,6 +212,45 @@ public class ExchangeTests extends IntegrationTestBase {
     assertEquals(5.0, ((Number) JsonPath.read(aliceBody, "$.rating")).doubleValue(), 0.001);
   }
 
+  @Test
+  void ratingUsesOnlyLast21Feedbacks() throws Exception {
+    Session bob = register("Bob", "bob22@test.com", "password123");
+
+    // Crear 22 exchanges donde Bob es el "reviewed" (proposer = B).
+    // El primero con score=1 (antiguo), los siguientes 21 con score=5.
+    for (int i = 1; i <= 22; i++) {
+      Session publisher = register("Publisher" + i, "pub" + i + "@test.com", "password123");
+      String cardForPublisher = "card_" + String.format("%03d", i);
+      String cardForBob = "card_" + String.format("%03d", i + 22);
+      addToCollection(publisher.userId(), cardForPublisher, publisher.token());
+      addToCollection(bob.userId(), cardForBob, bob.token());
+
+      String pubId = idFromCreated(publish(publisher.token(), cardForPublisher, 1), "publicationId");
+      String proposalId = idFromCreated(propose(bob.token(), pubId, List.of(cardForBob), 1), "proposalId");
+      acceptProposal(publisher.token(), proposalId);
+
+      // Obtener exchangeId
+      MvcResult res = mockMvc.perform(get("/api/exchanges")
+              .header("Authorization", "Bearer " + publisher.token()))
+          .andExpect(status().isOk())
+          .andReturn();
+      String exchangeId = JsonPath.read(res.getResponse().getContentAsString(), "$.data[0].id");
+
+      int score = (i == 1) ? 1 : 5;
+      mockMvc.perform(post("/api/exchanges/" + exchangeId + "/feedback")
+              .contentType(MediaType.APPLICATION_JSON)
+              .header("Authorization", "Bearer " + publisher.token())
+              .content("{ \"score\": " + score + ", \"comment\": \"test\" }"))
+          .andExpect(status().isCreated());
+    }
+
+    // Solo los últimos 21 (score=5) se usan → rating = 5.0
+    String bobBody = mockMvc.perform(get("/api/users/" + bob.userId())
+            .header("Authorization", "Bearer " + bob.token()))
+        .andReturn().getResponse().getContentAsString();
+    assertEquals(5.0, ((Number) JsonPath.read(bobBody, "$.rating")).doubleValue(), 0.001);
+  }
+
   // ───────────────── Inválidos: permisos ─────────────────
 
   @Test
