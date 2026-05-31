@@ -77,10 +77,12 @@ public class UsersTests extends IntegrationTestBase {
 
   @Test
   void getUserByIdNotFoundReturns404() throws Exception {
-    Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
+    // Usamos admin: GET /users/{id} está protegido por @RequiresOwnerOrAdmin, un user normal
+    // pegando a un id que no es el suyo recibe 403 antes de llegar al handler. Admin bypassa el guard
+    Session admin = registerAdmin("Admin", "admin@test.com", "password123");
 
     mockMvc.perform(get("/api/users/no-existe-este-id")
-            .header("Authorization", "Bearer " + pepe.token()))
+            .header("Authorization", "Bearer " + admin.token()))
         .andExpect(status().isNotFound());
   }
 

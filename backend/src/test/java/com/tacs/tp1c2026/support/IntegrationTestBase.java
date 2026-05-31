@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
 import com.tacs.tp1c2026.entities.card.Card;
+import com.tacs.tp1c2026.entities.enums.UserRole;
+import com.tacs.tp1c2026.entities.user.User;
 import com.tacs.tp1c2026.repositories.AuctionRepository;
 import com.tacs.tp1c2026.repositories.CardRepository;
 import com.tacs.tp1c2026.repositories.NotificationRepository;
@@ -17,6 +19,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -77,6 +80,21 @@ public abstract class IntegrationTestBase {
             .contentType(MediaType.APPLICATION_JSON)
             .content(body))
         .andExpect(status().is2xxSuccessful());
+    return login(email, password);
+  }
+
+  /**
+   * Crea un user con role ADMIN directamente en BD (sin pasar por /api/auth/register, que solo emite USER)
+   * y devuelve la session ya logueada. El JWT trae el claim {@code role=ADMIN}, lo que activa el bypass de {@link com.tacs.tp1c2026.config.OwnerOrAdminInterceptor} en endpoints de otros users
+   */
+  protected Session registerAdmin(String name, String email, String password) throws Exception {
+    User admin = new User();
+    admin.setName(name);
+    admin.setEmail(email.toLowerCase());
+    admin.setAvatarId("avatar_1");
+    admin.setPasswordHash(new BCryptPasswordEncoder().encode(password));
+    admin.setRole(UserRole.ADMIN);
+    userRepository.save(admin);
     return login(email, password);
   }
 

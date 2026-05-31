@@ -5,6 +5,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -19,9 +20,11 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   private final AuthService authService;
+  private final ApiErrorResponseWriter errorWriter;
 
-  public JwtAuthenticationFilter(AuthService authService) {
+  public JwtAuthenticationFilter(AuthService authService, ApiErrorResponseWriter errorWriter) {
     this.authService = authService;
+    this.errorWriter = errorWriter;
   }
 
   @Override
@@ -43,20 +46,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     String header = request.getHeader("Authorization");
     if (header == null || !header.startsWith("Bearer ")) {
-      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      errorWriter.write(response, HttpStatus.UNAUTHORIZED, "Token de autenticación no provisto");
       return;
     }
 
     try {
       String token = header.substring(7);
       if (!authService.isTokenValid(token)) {
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        errorWriter.write(response, HttpStatus.UNAUTHORIZED, "Token de autenticación inválido");
         return;
       }
       request.setAttribute("userId", authService.extractUserId(token));
       request.setAttribute("role", authService.extractRole(token));
     } catch (Exception e) {
-      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      errorWriter.write(response, HttpStatus.UNAUTHORIZED, "Token de autenticación inválido");
       return;
     }
 
