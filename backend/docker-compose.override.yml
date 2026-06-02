@@ -1,6 +1,0 @@
-services:
-  frontend:
-    image: ""
-    build:
-      context: /home/jmartinez/facultad/tacs/tacs-2026-c1-FE
-      dockerfile: Dockerfile
