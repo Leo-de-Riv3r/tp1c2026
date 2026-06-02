@@ -355,17 +355,24 @@ public class AuctionService {
             transferCard(winner, publisher, oi.getCard(), oi.getAmount());
         }
 
+        // Cache para evitar cargar el mismo usuario varias veces: si el mismo bidder tiene
+        // múltiples ofertas perdedoras (o es el mismo que el winner/publisher), reusar la
+        // instancia ya cargada evita conflictos de optimistic locking al guardar.
+        java.util.Map<String, User> bidderCache = new java.util.HashMap<>();
+        bidderCache.put(publisher.getId(), publisher);
+        bidderCache.put(winner.getId(), winner);
+
         for (AuctionOffer other : auction.getOffers()) {
             // Comparar por id, no por referencia: Spring puede hidratar auction.bestOffer y
             // auction.offers[i] como instancias Java distintas del mismo offer lógico.
             if (Objects.equals(other.getId(), winningOffer.getId())) continue;
             if (other.getStatus() != AuctionOfferStatus.CANCELLED) {
-                User bidder = userRepository.findById(other.getBidderId())
-                    .orElseThrow(() -> new NotFoundException("Bidder not found: " + other.getBidderId()));
+                User bidder = bidderCache.computeIfAbsent(other.getBidderId(), id ->
+                    userRepository.findById(id)
+                        .orElseThrow(() -> new NotFoundException("Bidder not found: " + id)));
                 for (AuctionItem oi : other.getOfferedItems()) {
                     bidder.findCollectionItem(oi.getCard().getId()).ifPresent(item -> item.release(oi.getAmount()));
                 }
-                userRepository.save(bidder);
                 other.reject();
                 notificationService.createNotification(
                     bidder,
@@ -373,6 +380,13 @@ public class AuctionService {
                     auction.getId(),
                     "Tu oferta en la subasta de #" + auction.getCardNumber() + " fue rechazada."
                 );
+            }
+        }
+
+        // Guardar bidders que no son winner ni publisher (éstos se guardan abajo)
+        for (java.util.Map.Entry<String, User> entry : bidderCache.entrySet()) {
+            if (!entry.getKey().equals(winner.getId()) && !entry.getKey().equals(publisher.getId())) {
+                userRepository.save(entry.getValue());
             }
         }
 
