@@ -16,6 +16,7 @@ public class MinimalReputation extends AuctionCondition{
 
   @Override
   public boolean canOffer(User user, AuctionOffer offer) {
-    return user.getRating() >= this.reputation;
+    double userRating = user.getRating() != null ? user.getRating() : 0.0;
+    return userRating >= this.reputation;
   }
 }

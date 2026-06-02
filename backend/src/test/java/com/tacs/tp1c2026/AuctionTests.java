@@ -8,6 +8,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
+import com.tacs.tp1c2026.entities.user.User;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.jayway.jsonpath.JsonPath;
@@ -174,7 +178,228 @@ public class AuctionTests extends IntegrationTestBase {
         .andExpect(status().is2xxSuccessful());
   }
 
+  // ===== Tests de condiciones =====
+
+  @Test
+  void conditionsAreStoredAndReturnedInAuctionResponse() throws Exception {
+    Session seller = register("seller", "seller@java.com", "password123");
+    addToCollection(seller.userId(), "card_021", seller.token());
+
+    AuctionConditionDto repCond = AuctionConditionDto.builder().filterName("MIN_REPUTATION").quantity(3).build();
+    AuctionConditionDto exchCond = AuctionConditionDto.builder().filterName("MIN_EXCHANGES").quantity(2).build();
+
+    MvcResult created = mockMvc.perform(post("/api/auctions")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Authorization", "Bearer " + seller.token())
+            .content(createAuctionBody("card_021", 24, List.of(repCond, exchCond))))
+        .andExpect(status().is2xxSuccessful())
+        .andReturn();
+
+    String auctionId = JsonPath.read(created.getResponse().getContentAsString(), "$.data.id");
+
+    MvcResult detail = mockMvc.perform(get("/api/auctions/" + auctionId)
+            .header("Authorization", "Bearer " + seller.token()))
+        .andExpect(status().isOk())
+        .andReturn();
+
+    String body = detail.getResponse().getContentAsString();
+    List<?> conditions = JsonPath.read(body, "$.conditions");
+    assertEquals(2, conditions.size());
+    assertEquals("MIN_REPUTATION", JsonPath.read(body, "$.conditions[0].filterName"));
+    assertEquals(3, (Integer) JsonPath.read(body, "$.conditions[0].quantity"));
+    assertEquals("MIN_EXCHANGES", JsonPath.read(body, "$.conditions[1].filterName"));
+    assertEquals(2, (Integer) JsonPath.read(body, "$.conditions[1].quantity"));
+  }
+
+  @Test
+  void auctionWithoutConditionsAllowsAnyBidder() throws Exception {
+    Session seller = register("seller", "seller@java.com", "password123");
+    addToCollection(seller.userId(), "card_021", seller.token());
+    String auctionId = createAuctionAndGetId(seller.token(), "card_021");
+
+    Session bidder = register("bidder", "bidder@java.com", "password123");
+    addToCollection(bidder.userId(), "card_003", bidder.token());
+
+    mockMvc.perform(post("/api/auctions/" + auctionId + "/offers")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Authorization", "Bearer " + bidder.token())
+            .content("{ \"auctionId\": \"%s\", \"items\": [ { \"cardId\": \"card_003\", \"amount\": 1 } ] }".formatted(auctionId)))
+        .andExpect(status().is2xxSuccessful());
+  }
+
+  @Test
+  void minReputationBlocksBidderWithNullRating() throws Exception {
+    Session seller = register("seller", "seller@java.com", "password123");
+    addToCollection(seller.userId(), "card_021", seller.token());
+
+    String auctionId = createAuctionWithConditionsAndGetId(seller.token(), "card_021",
+        List.of(AuctionConditionDto.builder().filterName("MIN_REPUTATION").quantity(3).build()));
+
+    Session bidder = register("bidder", "bidder@java.com", "password123");
+    addToCollection(bidder.userId(), "card_003", bidder.token());
+
+    mockMvc.perform(post("/api/auctions/" + auctionId + "/offers")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Authorization", "Bearer " + bidder.token())
+            .content("{ \"auctionId\": \"%s\", \"items\": [ { \"cardId\": \"card_003\", \"amount\": 1 } ] }".formatted(auctionId)))
+        .andExpect(status().isUnprocessableEntity());
+  }
+
+  @Test
+  void minReputationAllowsBidderWithSufficientRating() throws Exception {
+    Session seller = register("seller", "seller@java.com", "password123");
+    addToCollection(seller.userId(), "card_021", seller.token());
+
+    String auctionId = createAuctionWithConditionsAndGetId(seller.token(), "card_021",
+        List.of(AuctionConditionDto.builder().filterName("MIN_REPUTATION").quantity(3).build()));
+
+    Session bidder = register("bidder", "bidder@java.com", "password123");
+    addToCollection(bidder.userId(), "card_003", bidder.token());
+    setUserRating(bidder.userId(), 4.0);
+
+    mockMvc.perform(post("/api/auctions/" + auctionId + "/offers")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Authorization", "Bearer " + bidder.token())
+            .content("{ \"auctionId\": \"%s\", \"items\": [ { \"cardId\": \"card_003\", \"amount\": 1 } ] }".formatted(auctionId)))
+        .andExpect(status().is2xxSuccessful());
+  }
+
+  @Test
+  void minExchangesBlocksBidderWithZeroExchanges() throws Exception {
+    Session seller = register("seller", "seller@java.com", "password123");
+    addToCollection(seller.userId(), "card_021", seller.token());
+
+    String auctionId = createAuctionWithConditionsAndGetId(seller.token(), "card_021",
+        List.of(AuctionConditionDto.builder().filterName("MIN_EXCHANGES").quantity(2).build()));
+
+    Session bidder = register("bidder", "bidder@java.com", "password123");
+    addToCollection(bidder.userId(), "card_003", bidder.token());
+
+    mockMvc.perform(post("/api/auctions/" + auctionId + "/offers")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Authorization", "Bearer " + bidder.token())
+            .content("{ \"auctionId\": \"%s\", \"items\": [ { \"cardId\": \"card_003\", \"amount\": 1 } ] }".formatted(auctionId)))
+        .andExpect(status().isUnprocessableEntity());
+  }
+
+  @Test
+  void minExchangesAllowsBidderWithSufficientExchanges() throws Exception {
+    Session seller = register("seller", "seller@java.com", "password123");
+    addToCollection(seller.userId(), "card_021", seller.token());
+
+    String auctionId = createAuctionWithConditionsAndGetId(seller.token(), "card_021",
+        List.of(AuctionConditionDto.builder().filterName("MIN_EXCHANGES").quantity(2).build()));
+
+    Session bidder = register("bidder", "bidder@java.com", "password123");
+    addToCollection(bidder.userId(), "card_003", bidder.token());
+    setUserExchangesAmount(bidder.userId(), 3);
+
+    mockMvc.perform(post("/api/auctions/" + auctionId + "/offers")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Authorization", "Bearer " + bidder.token())
+            .content("{ \"auctionId\": \"%s\", \"items\": [ { \"cardId\": \"card_003\", \"amount\": 1 } ] }".formatted(auctionId)))
+        .andExpect(status().is2xxSuccessful());
+  }
+
+  @Test
+  void minCardCountBlocksBidderOfferingTooFewCards() throws Exception {
+    Session seller = register("seller", "seller@java.com", "password123");
+    addToCollection(seller.userId(), "card_021", seller.token());
+
+    String auctionId = createAuctionWithConditionsAndGetId(seller.token(), "card_021",
+        List.of(AuctionConditionDto.builder().filterName("MIN_CARD_COUNT").quantity(3).build()));
+
+    Session bidder = register("bidder", "bidder@java.com", "password123");
+    addToCollectionN(bidder.userId(), "card_003", 3, bidder.token());
+
+    mockMvc.perform(post("/api/auctions/" + auctionId + "/offers")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Authorization", "Bearer " + bidder.token())
+            .content("{ \"auctionId\": \"%s\", \"items\": [ { \"cardId\": \"card_003\", \"amount\": 1 } ] }".formatted(auctionId)))
+        .andExpect(status().isUnprocessableEntity());
+  }
+
+  @Test
+  void minCardCountAllowsBidderOfferingEnoughCards() throws Exception {
+    Session seller = register("seller", "seller@java.com", "password123");
+    addToCollection(seller.userId(), "card_021", seller.token());
+
+    String auctionId = createAuctionWithConditionsAndGetId(seller.token(), "card_021",
+        List.of(AuctionConditionDto.builder().filterName("MIN_CARD_COUNT").quantity(3).build()));
+
+    Session bidder = register("bidder", "bidder@java.com", "password123");
+    addToCollectionN(bidder.userId(), "card_003", 3, bidder.token());
+
+    mockMvc.perform(post("/api/auctions/" + auctionId + "/offers")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Authorization", "Bearer " + bidder.token())
+            .content("{ \"auctionId\": \"%s\", \"items\": [ { \"cardId\": \"card_003\", \"amount\": 3 } ] }".formatted(auctionId)))
+        .andExpect(status().is2xxSuccessful());
+  }
+
+  @Test
+  void minCategoryBlocksBidderOfferingCommonWhenEpicRequired() throws Exception {
+    Session seller = register("seller", "seller@java.com", "password123");
+    addToCollection(seller.userId(), "card_021", seller.token());
+
+    String auctionId = createAuctionWithConditionsAndGetId(seller.token(), "card_021",
+        List.of(AuctionConditionDto.builder().filterName("MIN_CATEGORY").value(com.tacs.tp1c2026.entities.enums.Category.fromValue("EPICO")).build()));
+
+    Session bidder = register("bidder", "bidder@java.com", "password123");
+    addToCollection(bidder.userId(), "card_003", bidder.token()); // COMUN
+
+    mockMvc.perform(post("/api/auctions/" + auctionId + "/offers")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Authorization", "Bearer " + bidder.token())
+            .content("{ \"auctionId\": \"%s\", \"items\": [ { \"cardId\": \"card_003\", \"amount\": 1 } ] }".formatted(auctionId)))
+        .andExpect(status().isUnprocessableEntity());
+  }
+
+  @Test
+  void minCategoryAllowsBidderOfferingEpicOrHigher() throws Exception {
+    Session seller = register("seller", "seller@java.com", "password123");
+    addToCollection(seller.userId(), "card_021", seller.token());
+
+    String auctionId = createAuctionWithConditionsAndGetId(seller.token(), "card_021",
+        List.of(AuctionConditionDto.builder().filterName("MIN_CATEGORY").value(com.tacs.tp1c2026.entities.enums.Category.fromValue("EPICO")).build()));
+
+    Session bidder = register("bidder", "bidder@java.com", "password123");
+    addToCollection(bidder.userId(), "card_001", bidder.token()); // EPICO
+
+    mockMvc.perform(post("/api/auctions/" + auctionId + "/offers")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Authorization", "Bearer " + bidder.token())
+            .content("{ \"auctionId\": \"%s\", \"items\": [ { \"cardId\": \"card_001\", \"amount\": 1 } ] }".formatted(auctionId)))
+        .andExpect(status().is2xxSuccessful());
+  }
+
   // ===== Helpers exclusivos de AuctionTests (no incluidos en IntegrationTestBase) =====
+
+  private String createAuctionWithConditionsAndGetId(String token, String cardId, List<AuctionConditionDto> conditions) throws Exception {
+    MvcResult res = mockMvc.perform(post("/api/auctions")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Authorization", "Bearer " + token)
+            .content(createAuctionBody(cardId, 24, conditions)))
+        .andExpect(status().is2xxSuccessful())
+        .andReturn();
+    return JsonPath.read(res.getResponse().getContentAsString(), "$.data.id");
+  }
+
+  private void setUserRating(String userId, double rating) {
+    mongoTemplate.updateFirst(
+        Query.query(Criteria.where("_id").is(userId)),
+        new Update().set("rating", rating),
+        User.class
+    );
+  }
+
+  private void setUserExchangesAmount(String userId, int amount) {
+    mongoTemplate.updateFirst(
+        Query.query(Criteria.where("_id").is(userId)),
+        new Update().set("exchangesAmount", amount),
+        User.class
+    );
+  }
 
   private String createAuctionBody(String cardId, Integer auctionDurationHours, List<AuctionConditionDto> conditions) throws JsonProcessingException {
     CreateAuctionDto dto = new CreateAuctionDto();
