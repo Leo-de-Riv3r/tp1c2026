@@ -77,13 +77,19 @@ if (existingUsers > 0) {
   const DARDO_ID     = ObjectId(DARDO_ID_HEX);
 
   // IDs predefinidos para los sources de las sugerencias precargadas de Pepe
-  // (publicación + subasta de Moni con cards faltantes de Pepe)
+  // (publicaciones + subasta de Moni con cards faltantes de Pepe)
   const MONI_PUB_002_ID_HEX     = "69e54c037de7f7e868da9100";
   const MONI_AUCTION_007_ID_HEX = "69e54c037de7f7e868da9101";
+  const MONI_PUB_003_ID_HEX     = "69e54c037de7f7e868da9102";
+  const MONI_PUB_004_ID_HEX     = "69e54c037de7f7e868da9103";
   const MONI_PUB_002_ID     = ObjectId(MONI_PUB_002_ID_HEX);
   const MONI_AUCTION_007_ID = ObjectId(MONI_AUCTION_007_ID_HEX);
+  const MONI_PUB_003_ID     = ObjectId(MONI_PUB_003_ID_HEX);
+  const MONI_PUB_004_ID     = ObjectId(MONI_PUB_004_ID_HEX);
 
   const card_002 = seedCard("card_002");
+  const card_003 = seedCard("card_003");
+  const card_004 = seedCard("card_004");
   const card_007 = seedCard("card_007");
 
   db.users.insertOne({
@@ -105,10 +111,12 @@ if (existingUsers > 0) {
     ].filter(Boolean),
     missingCards: [
       toMissing("card_002"),
+      toMissing("card_003"),
+      toMissing("card_004"),
       toMissing("card_007")
     ].filter(Boolean),
-    // Sugerencias precargadas: apuntan a la publicación + subasta de Moni que matchean las missing
-    // de Pepe (card_002 y card_007). Permite probar el flow del home sin esperar al cron
+    // Sugerencias precargadas: apuntan a las publications + subasta de Moni que matchean las
+    // missing de Pepe. Permite probar el flow del home sin esperar al cron horario
     suggestions: [
       card_002 && {
         sourceType: "PUBLICATION",
@@ -119,6 +127,34 @@ if (existingUsers > 0) {
         cardCountry: card_002.country,
         cardTeam: card_002.team,
         cardCategory: card_002.category,
+        publisherUserId: PUBLISHER_ID_HEX,
+        publisherName: "Moni Argento",
+        publisherAvatarId: "avatar_2",
+        generatedAt: new Date()
+      },
+      card_003 && {
+        sourceType: "PUBLICATION",
+        sourceId: MONI_PUB_003_ID_HEX,
+        cardId: card_003._id,
+        cardNumber: card_003.number,
+        cardDescription: card_003.description,
+        cardCountry: card_003.country,
+        cardTeam: card_003.team,
+        cardCategory: card_003.category,
+        publisherUserId: PUBLISHER_ID_HEX,
+        publisherName: "Moni Argento",
+        publisherAvatarId: "avatar_2",
+        generatedAt: new Date()
+      },
+      card_004 && {
+        sourceType: "PUBLICATION",
+        sourceId: MONI_PUB_004_ID_HEX,
+        cardId: card_004._id,
+        cardNumber: card_004.number,
+        cardDescription: card_004.description,
+        cardCountry: card_004.country,
+        cardTeam: card_004.team,
+        cardCategory: card_004.category,
         publisherUserId: PUBLISHER_ID_HEX,
         publisherName: "Moni Argento",
         publisherAvatarId: "avatar_2",
@@ -226,8 +262,8 @@ if (existingUsers > 0) {
     };
   };
   const pubs = [
-    toPublication(new ObjectId(), "card_003", 2, 2),  // 2 disponibles
-    toPublication(new ObjectId(), "card_004", 3, 1),  // ya cedió 2 vía aceptaciones; queda 1 (compromised=1)
+    toPublication(MONI_PUB_003_ID, "card_003", 2, 2),  // 2 disponibles — referenciada por sugerencia de Pepe
+    toPublication(MONI_PUB_004_ID, "card_004", 3, 1),  // ya cedió 2 vía aceptaciones; queda 1 (compromised=1) — referenciada por sugerencia de Pepe
     toPublication(MONI_PUB_002_ID, "card_002", 1, 1)  // referenciada por la sugerencia precargada de Pepe
   ].filter(Boolean);
   if (pubs.length) db.publications.insertMany(pubs);

@@ -38,3 +38,7 @@ build/
 .env
 .env.*
 !.env.example
+
+# Local docker compose overrides (cada dev tiene los suyos)
+docker-compose.override.yml
+docker-compose.override.yaml

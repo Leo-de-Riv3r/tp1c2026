@@ -3,6 +3,7 @@ package com.tacs.tp1c2026.entities.auction;
 
 import com.tacs.tp1c2026.entities.enums.AuctionOfferStatus;
 import com.tacs.tp1c2026.entities.user.User;
+import com.tacs.tp1c2026.exceptions.ForbiddenException;
 import lombok.Getter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
@@ -58,7 +59,7 @@ public class AuctionOffer {
 
   public void validateCreator(String userId) {
     if (!this.bidder.getId().equals(userId))
-      throw new IllegalArgumentException("El usuario no es el dueño de la oferta");
+      throw new ForbiddenException("Solo el creador de la oferta puede realizar esta operación");
   }
 
   public void cancel() {
