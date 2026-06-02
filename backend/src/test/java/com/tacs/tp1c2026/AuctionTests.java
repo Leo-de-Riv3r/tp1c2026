@@ -413,6 +413,34 @@ public class AuctionTests extends IntegrationTestBase {
     assertEquals(0, compromisedCount(bidder.userId(), "card_050", bidder.token()));
   }
 
+  /**
+   * Regresión: cancelar una oferta de otro usuario debe devolver 403 con body ApiError.
+   * Antes daba 500 porque AuctionOffer.validateCreator tiraba IllegalArgumentException, que
+   * no extendía CustomException y caía en handleUnexpectedError.
+   */
+  @Test
+  void cancelOfferByNonCreatorReturnsForbidden() throws Exception {
+    Session seller = register("seller", "seller@java.com", "password123");
+    addToCollection(seller.userId(), "card_021", seller.token());
+    String auctionId = createAuctionAndGetId(seller.token(), "card_021");
+
+    Session bidder = register("bidder", "bidder@java.com", "password123");
+    addToCollection(bidder.userId(), "card_050", bidder.token());
+    placeBid(bidder.token(), auctionId, "card_050", 1);
+    String offerId = firstOfferId(auctionId, seller.token());
+
+    Session stranger = register("stranger", "stranger@java.com", "password123");
+
+    String body = mockMvc.perform(delete("/api/auctions/" + auctionId + "/offers/" + offerId)
+            .header("Authorization", "Bearer " + stranger.token()))
+        .andExpect(status().isForbidden())
+        .andReturn().getResponse().getContentAsString();
+
+    assertEquals(403, (int) JsonPath.read(body, "$.status"));
+    assertEquals("Forbidden", JsonPath.read(body, "$.error"));
+    assertEquals("Solo el creador de la oferta puede realizar esta operación", JsonPath.read(body, "$.message"));
+  }
+
   @Test
   void setBestOfferDoesNotCloseAuction() throws Exception {
     Session seller = register("seller", "seller@java.com", "password123");
