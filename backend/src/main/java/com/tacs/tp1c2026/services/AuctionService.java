@@ -20,7 +20,9 @@ import com.tacs.tp1c2026.entities.enums.AuctionStatus;
 import com.tacs.tp1c2026.entities.enums.NotificationType;
 import com.tacs.tp1c2026.entities.user.User;
 import com.tacs.tp1c2026.entities.user.embedded.CollectionCard;
+import com.tacs.tp1c2026.events.AuctionCreatedEvent;
 import com.tacs.tp1c2026.events.CardAvailableEvent;
+import com.tacs.tp1c2026.events.UserInterestedInActionEvent;
 import com.tacs.tp1c2026.exceptions.*;
 import com.tacs.tp1c2026.repositories.AuctionRepository;
 import com.tacs.tp1c2026.repositories.UserRepository;
@@ -93,6 +95,10 @@ public class AuctionService {
           "AUCTION"
       ));
 
+      eventPublisher.publishEvent(new AuctionCreatedEvent(
+          auction
+      ));
+
         return saved;
     }
 
@@ -125,7 +131,7 @@ public class AuctionService {
         auction.addOffer(offer);
         this.auctionRepository.save(auction);
         this.userRepository.save(proposer);
-        notificationService.createNotification(
+        notificationService.createUserNotification(
             auction.getPublisherUser(),
             NotificationType.AUCTION_OFFER_RECEIVED,
             auction.getId(),
@@ -164,7 +170,7 @@ public class AuctionService {
           bidder.findCollectionItem(oi.getCard().getId()).ifPresent(item -> item.release(oi.getAmount()));
         }
         userRepository.save(bidder);
-        notificationService.createNotification(
+        notificationService.createUserNotification(
             bidder,
             NotificationType.AUCTION_CANCELLED,
             auction.getId(),
@@ -212,6 +218,9 @@ public class AuctionService {
         Auction auction = this.getAuctionById(auctionId);
         auction.addInterestedUser(user);
         this.auctionRepository.save(auction);
+
+        eventPublisher.publishEvent(new UserInterestedInActionEvent(user, auction));
+
     }
 
     public List<Auction> getAuctions() {
@@ -290,7 +299,7 @@ public class AuctionService {
         bidder.findCollectionItem(oi.getCard().getId()).ifPresent(item -> item.release(oi.getAmount()));
       }
       userRepository.save(bidder);
-      notificationService.createNotification(
+      notificationService.createUserNotification(
           bidder,
           NotificationType.AUCTION_OFFER_REJECTED,
           auctionId,
@@ -374,7 +383,7 @@ public class AuctionService {
                     bidder.findCollectionItem(oi.getCard().getId()).ifPresent(item -> item.release(oi.getAmount()));
                 }
                 other.reject();
-                notificationService.createNotification(
+                notificationService.createUserNotification(
                     bidder,
                     NotificationType.AUCTION_OFFER_REJECTED,
                     auction.getId(),
@@ -394,7 +403,7 @@ public class AuctionService {
         winner.incrementExchangesAmount();
         userRepository.save(winner);
         userRepository.save(publisher);
-        notificationService.createNotification(
+        notificationService.createUserNotification(
             winner,
             NotificationType.AUCTION_OFFER_ACCEPTED,
             auction.getId(),

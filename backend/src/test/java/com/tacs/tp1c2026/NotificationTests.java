@@ -4,14 +4,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import com.tacs.tp1c2026.entities.enums.NotificationType;
 import com.tacs.tp1c2026.entities.notification.Notification;
+import com.tacs.tp1c2026.entities.notification.ScheduledNotification;
+import com.tacs.tp1c2026.entities.user.User;
 import com.tacs.tp1c2026.events.CardAvailableEvent;
 import com.tacs.tp1c2026.exceptions.ConflictException;
+import com.tacs.tp1c2026.repositories.ScheduledUserNotificationsRepository;
 import com.tacs.tp1c2026.services.NotificationService;
 import com.tacs.tp1c2026.support.IntegrationTestBase;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +23,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class NotificationTests extends IntegrationTestBase {
   @Autowired
   private NotificationService notificationService;
+
+  @Autowired
+  private ScheduledUserNotificationsRepository scheduledUserNotificationsRepository;
 
   @Test
   void shouldCreateNotificationWhenWantedCardIsPublishedInAuction() throws Exception {
@@ -31,13 +38,13 @@ public class NotificationTests extends IntegrationTestBase {
     notificationService.handleCardAvailableEvent(event);
 
     // 3. Verificación: Asegurarnos de que el usuario recibió su notificación
-    List<Notification> notifications = notificationRepository.findAll();
+    User refreshedUser = userRepository.findOrThrow(user1.userId());
+    List<Notification> notifications = refreshedUser.getNotifications();
     assertEquals(1, notifications.size(), "Debería haberse guardado exactamente 1 notificación");
 
     Notification notif = notifications.get(0);
-    assertEquals(user1.userId(), notif.getReceiverId());
-    assertEquals("auction_123", notif.getReferenceId());
-    assertEquals(NotificationType.WANTED_CARD_AVAILABLE_IN_AUCTION, notif.getType());
+    assertEquals("auction_123", notif.getData().getReferenceId());
+    assertEquals(NotificationType.WANTED_CARD_AVAILABLE_IN_AUCTION, notif.getData().getType());
     assertFalse(notif.isRead(), "La notificación debe nacer como NO leída");
   }
 
@@ -51,8 +58,8 @@ public class NotificationTests extends IntegrationTestBase {
     notificationService.handleCardAvailableEvent(event);
 
     // 3. Verificación: La BD de notificaciones debe seguir intacta (Short-circuit funciona)
-    List<Notification> notifications = notificationRepository.findAll();
-    assertTrue(notifications.isEmpty(), "No se deberían crear notificaciones si nadie busca la carta");
+    User refreshedUser = userRepository.findOrThrow(user1.userId());
+    assertTrue(refreshedUser.getNotifications().isEmpty(), "No se deberían crear notificaciones si nadie busca la carta");
   }
 
   @Test
@@ -70,13 +77,13 @@ public class NotificationTests extends IntegrationTestBase {
     notificationService.handleCardAvailableEvent(event);
 
     // 3. Verificación: Ambos deben tener su notificación en la base de datos (Bulk insert funciona)
-    List<Notification> notifications = notificationRepository.findAll();
-    assertEquals(2, notifications.size());
+    User refreshedUser1 = userRepository.findOrThrow(user1.userId());
+    User refreshedUser2 = userRepository.findOrThrow(user2.userId());
+    assertEquals(1, refreshedUser1.getNotifications().size());
+    assertEquals(1, refreshedUser2.getNotifications().size());
 
-    // Verificamos que ambos IDs estén entre los receptores
-    List<String> receiverIds = notifications.stream().map(Notification::getReceiverId).toList();
-    assertTrue(receiverIds.contains(user1.userId()));
-    assertTrue(receiverIds.contains(user2.userId()));
+    assertEquals(NotificationType.WANTED_CARD_AVAILABLE_IN_PUBLICATION, refreshedUser1.getNotifications().get(0).getData().getType());
+    assertEquals(NotificationType.WANTED_CARD_AVAILABLE_IN_PUBLICATION, refreshedUser2.getNotifications().get(0).getData().getType());
   }
 
   @Test
@@ -95,22 +102,100 @@ public class NotificationTests extends IntegrationTestBase {
     //propose
     propose(user2.token(), pubId, List.of(cardId2), 1);
     //now should crate notification
-    List<Notification> notifications = notificationRepository.findAll();
+    User refreshedUser = userRepository.findOrThrow(user1.userId());
+    List<Notification> notifications = refreshedUser.getNotifications();
     assertEquals(1, notifications.size());
     Notification notif = notifications.get(0);
-    assertEquals(user1.userId(), notif.getReceiverId());
-    assertEquals(NotificationType.TRADE_PROPOSAL_RECEIVED, notif.getType());
+    assertEquals(NotificationType.TRADE_PROPOSAL_RECEIVED, notif.getData().getType());
 
     //now check that i can mark as a read and if i do it again, should throw error
-    notificationService.markAsRead(notif.getId(), user1.userId());
-    assertTrue(notificationService.getByID(notif.getId()).isRead());
+    notificationService.markUserNotificationAsRead(notif.getId(), user1.userId());
+    Notification updatedNotification = userRepository.findOrThrow(user1.userId()).getNotifications().stream()
+        .filter(n -> n.getId().equals(notif.getId()))
+        .findFirst()
+        .orElseThrow(() -> new AssertionError("Notification not found after mark as read"));
+    assertTrue(updatedNotification.isRead());
     ConflictException exception = assertThrows(ConflictException.class, () -> {
       // Ponemos adentro de esta función lambda el código que DEBE explotar
-      notificationService.markAsRead(notif.getId(), user1.userId());
+      notificationService.markUserNotificationAsRead(notif.getId(), user1.userId());
     });
 
     // 3. (Opcional) Podemos verificar que el mensaje de error sea el correcto
     assertEquals("La notificación ya se encuentra leída", exception.getMessage());
+  }
+
+  @Test
+  void shouldDeleteScheduledNotificationsAfterExpiry() throws Exception {
+    Session user = register("scheduler1", "scheduler1@java.com", "pass123");
+    User receiver = userRepository.findOrThrow(user.userId());
+
+    ScheduledNotification scheduledNotification = ScheduledNotification.builder()
+        .scheduledTime(LocalDateTime.now().minusMinutes(1))
+        .notificationData(Notification.NotificationData.builder()
+            .type(NotificationType.AUCTION_ENDING_SOON)
+            .referenceId("auction_expired")
+            .message("Una subasta está por cerrar.")
+            .build())
+        .users(new ArrayList<>(List.of(receiver)))
+        .build();
+
+    notificationService.scheduleNotification(scheduledNotification);
+    assertEquals(1, scheduledUserNotificationsRepository.count());
+
+    notificationService.checkScheduledNotifications();
+
+    assertEquals(0, scheduledUserNotificationsRepository.count());
+  }
+
+  @Test
+  void shouldSendScheduledNotificationWhenDue() throws Exception {
+    Session user = register("scheduler2", "scheduler2@java.com", "pass123");
+    User receiver = userRepository.findOrThrow(user.userId());
+
+    ScheduledNotification scheduledNotification = ScheduledNotification.builder()
+        .scheduledTime(LocalDateTime.now().minusMinutes(1))
+        .notificationData(Notification.NotificationData.builder()
+            .type(NotificationType.AUCTION_ENDING_SOON)
+            .referenceId("auction_due")
+            .message("Una subasta está por cerrar.")
+            .build())
+        .users(new ArrayList<>(List.of(receiver)))
+        .build();
+
+    notificationService.scheduleNotification(scheduledNotification);
+    notificationService.checkScheduledNotifications();
+
+    User refreshedUser = userRepository.findOrThrow(user.userId());
+    assertEquals(1, refreshedUser.getNotifications().size());
+    Notification notif = refreshedUser.getNotifications().get(0);
+    assertEquals(NotificationType.AUCTION_ENDING_SOON, notif.getData().getType());
+    assertEquals("auction_due", notif.getData().getReferenceId());
+  }
+
+  @Test
+  void shouldNotifyInterestedUserAddedAfterScheduledTime() throws Exception {
+    Session user = register("scheduler3", "scheduler3@java.com", "pass123");
+    User receiver = userRepository.findOrThrow(user.userId());
+
+    ScheduledNotification scheduledNotification = ScheduledNotification.builder()
+        .scheduledTime(LocalDateTime.now().minusMinutes(1))
+        .notificationData(Notification.NotificationData.builder()
+            .type(NotificationType.AUCTION_ENDING_SOON)
+            .referenceId("auction_interest")
+            .message("Una subasta está por cerrar.")
+            .build())
+        .users(new ArrayList<>())
+        .build();
+
+    notificationService.scheduleNotification(scheduledNotification);
+    notificationService.addUserToScheduledNotification(receiver, "auction_interest");
+    notificationService.checkScheduledNotifications();
+
+    User refreshedUser = userRepository.findOrThrow(user.userId());
+    assertEquals(1, refreshedUser.getNotifications().size());
+    Notification notif = refreshedUser.getNotifications().get(0);
+    assertEquals("auction_interest", notif.getData().getReferenceId());
+    assertEquals(NotificationType.AUCTION_ENDING_SOON, notif.getData().getType());
   }
 
 }

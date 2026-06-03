@@ -2,135 +2,155 @@ package com.tacs.tp1c2026.services;
 
 
 import com.tacs.tp1c2026.entities.notification.Notification;
-import com.tacs.tp1c2026.entities.auction.Auction;
-import com.tacs.tp1c2026.entities.enums.AuctionStatus;
 import com.tacs.tp1c2026.entities.enums.NotificationStatus;
 import com.tacs.tp1c2026.entities.enums.NotificationType;
+import com.tacs.tp1c2026.entities.notification.ScheduledNotification;
 import com.tacs.tp1c2026.entities.user.User;
+import com.tacs.tp1c2026.events.AuctionCreatedEvent;
 import com.tacs.tp1c2026.events.CardAvailableEvent;
-import com.tacs.tp1c2026.exceptions.NotFoundException;
-import com.tacs.tp1c2026.repositories.AuctionRepository;
-import com.tacs.tp1c2026.repositories.NotificationRepository;
+import com.tacs.tp1c2026.events.UserInterestedInActionEvent;
+import com.tacs.tp1c2026.repositories.ScheduledUserNotificationsRepository;
 import com.tacs.tp1c2026.repositories.UserRepository;
 import com.tacs.tp1c2026.utils.PageableGenerator;
+
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class NotificationService {
-  @Autowired
-    private NotificationRepository notificationRepository;
-  @Autowired
-  private PageableGenerator pageableGenerator;
-  @Autowired
-  private AuctionRepository auctionRepository;
 
-  @Autowired
-  private UserRepository userRepository;
+    @Autowired
+    private ScheduledUserNotificationsRepository scheduledUserNotificationsRepository;
 
-    public void createNotification(User receiver, NotificationType type, String referenceId, String message) {
+    @Autowired
+    private PageableGenerator pageableGenerator;
+
+    @Autowired
+    private UserRepository userRepository;
+
+
+    public void createUserNotification(User receiver, NotificationType type, String referenceId, String message) {
         Notification notification = Notification.builder()
-                .receiverId(receiver.getId())
-                .type(type)
-                .referenceId(referenceId)
-                .message(message)
+                .data(Notification.NotificationData.builder().type(type).message(message).referenceId(referenceId).build())
                 .build();
-        notificationRepository.save(notification);
+        receiver.receiveNotification(notification);
+        userRepository.save(receiver);
     }
 
-    public void markAsRead(String notificationId, String userId) {
-      Notification notification = getByID(notificationId);
-      notification.validateOwner(userId);
-      notification.setAsRead();
-      notificationRepository.save(notification);
+    public void markUserNotificationAsRead(String notificationId, String userId) {
+        User receiver = userRepository.findOrThrow(userId);
+        receiver.saveNotificationById(notificationId);
+        userRepository.save(receiver);
     }
 
-    public void markAllAsRead(String userId) {
-      List<Notification> unread = notificationRepository.findByReceiverIdAndStatus(userId, NotificationStatus.UNREAD);
-      unread.forEach(Notification::setAsRead);
-      notificationRepository.saveAll(unread);
-    }
-
-    public Notification getByID(String notificationId) {
-      return notificationRepository.findById(notificationId)
-          .orElseThrow(() -> new NotFoundException("Notification not found"));
-    }
-
-    public List<Notification> getNotificationsForUser(String userId) {
-      return notificationRepository.findByReceiverId(userId);
-    }
-
-    public Page<Notification> getNotificationsForUser(String userId, Integer page, Integer perPage) {
-      Pageable pageable = pageableGenerator.buildPageable(page, perPage, 20, Sort.by("creationDate").descending());
-      return notificationRepository.findByReceiverId(userId, pageable);
+    public void markAllUserNotificationsAsRead(String userId) {
+        User receiver = userRepository.findOrThrow(userId);
+        receiver.readAllNotifications();
     }
 
     public Page<Notification> getNotificationsForUser(String userId, NotificationStatus status, Integer page, Integer perPage) {
-      Pageable pageable = pageableGenerator.buildPageable(page, perPage, 20, Sort.by("creationDate").descending());
-      return notificationRepository.findByReceiverIdAndStatus(userId, status, pageable);
+        Pageable pageable = pageableGenerator.buildPageable(page, perPage, 20, Sort.by("creationDate").descending());
+        User user = userRepository.findOrThrow(userId);
+        List<Notification> notifications = user.getNotifications().stream().filter(n -> n.getStatus() == status).toList();
+        return new PageImpl<>(notifications, pageable, notifications.size());
     }
 
-  public void checkEndingAuctions() {
-    LocalDateTime now = LocalDateTime.now();
-    LocalDateTime inTwoHour = now.plusHours(2);
-
-    List<Auction> endingSoon = auctionRepository.findByStatusAndCloseDateBetween(
-        AuctionStatus.ACTIVE,
-        now,
-        inTwoHour
-    );
-
-    List<Notification> notificationsToSave = new ArrayList<>();
-
-    for (Auction auction : endingSoon) {
-      List<User> interestedUsers = auction.getInterestedUsers();
-      for (User user : interestedUsers) {
-        Notification notification = Notification.builder()
-            .receiverId(user.getId())
-            .type(NotificationType.AUCTION_ENDING_SOON)
-            .referenceId(auction.getId())
-            .message("Una subasta que te interesa cierra en menos de 2 horas.")
-            .build();
-        notificationsToSave.add(notification);
-      }
+    public void scheduleNotification(ScheduledNotification scheduledNotification) {
+        scheduledUserNotificationsRepository.save(scheduledNotification);
     }
 
-    notificationRepository.saveAll(notificationsToSave);
-  }
-
-  @Async
-  @EventListener
-  public void handleCardAvailableEvent(CardAvailableEvent event) {
-    List<User> seekers = userRepository.findUsersSeekingCard(event.cardId());
-    if (seekers.isEmpty()) {
-      return;
+    public void addUserToScheduledNotification(User user, String referenceId) {
+        List<ScheduledNotification> sn = scheduledUserNotificationsRepository.findAll().stream().filter(
+                s -> s.hasReferenceId(referenceId)
+        ).toList();
+        sn.forEach(s -> s.addUser(user));
+        scheduledUserNotificationsRepository.saveAll(sn);
     }
-    NotificationType notificationType = event.sourceType().equals("AUCTION")
-        ? NotificationType.WANTED_CARD_AVAILABLE_IN_AUCTION
-        : NotificationType.WANTED_CARD_AVAILABLE_IN_PUBLICATION;
-    String message = event.sourceType().equals("AUCTION")
-        ? "Hay una figurita que buscás disponible en una subasta."
-        : "Hay una figurita que buscás disponible en una publicación.";
 
-    List<Notification> notificationList = new ArrayList<>();
-    for (User seeker : seekers) {
-      Notification notification = Notification.builder()
-          .receiverId(seeker.getId())
-          .type(notificationType)
-          .referenceId(event.referenceId())
-          .message(message)
-          .build();
-      notificationList.add(notification);
+    public void checkScheduledNotifications() {
+
+        LocalDateTime now = LocalDateTime.now();
+
+        List<ScheduledNotification> scheduledNotifications = scheduledUserNotificationsRepository.findAll().stream().filter(
+                sn -> sn.isDue(now)
+        ).toList();
+
+        scheduledUserNotificationsRepository.deleteAll(scheduledNotifications);
+
+        scheduledNotifications.forEach(
+                scheduledNotification -> {
+                    scheduledNotification.sendNotification();
+                    userRepository.saveAll(scheduledNotification.getUsers());
+                }
+        );
+
     }
-    notificationRepository.saveAll(notificationList);
-  }
+
+    @Async
+    @EventListener
+    public void handleAuctionCreatedEvent(AuctionCreatedEvent event) {
+
+        List<Integer> minutesBefore = List.of(5,15,30,60,24 * 60);
+
+        minutesBefore.forEach(mb -> {
+            this.scheduleNotification(
+                    ScheduledNotification.builder()
+                    .scheduledTime(event.auction().getCloseDate().minusMinutes(mb))
+                    .notificationData(
+                            Notification.NotificationData.builder()
+                                    .type(NotificationType.AUCTION_ENDING_SOON)
+                                    .referenceId(event.auction().getId())
+                                    .message("Una subasta que estás siguiendo está por cerrar.")
+                                    .build()
+                    ).build());
+        });
+
+
+    }
+
+    @Async
+    @EventListener
+    public void handleUserInterestedInAuctionEvent(UserInterestedInActionEvent event) {
+        this.addUserToScheduledNotification(event.user(), event.auction().getId());
+    }
+
+    @Async
+    @EventListener
+    public void handleCardAvailableEvent(CardAvailableEvent event) {
+
+        List<User> seekers = userRepository.findUsersSeekingCard(event.cardId());
+        if (seekers.isEmpty()) {
+            return;
+        }
+
+        NotificationType notificationType = event.sourceType().equals("AUCTION")
+                ? NotificationType.WANTED_CARD_AVAILABLE_IN_AUCTION
+                : NotificationType.WANTED_CARD_AVAILABLE_IN_PUBLICATION;
+
+        String message = event.sourceType().equals("AUCTION")
+                ? "Hay una figurita que buscás disponible en una subasta."
+                : "Hay una figurita que buscás disponible en una publicación.";
+
+        for (User seeker : seekers) {
+            Notification notification = Notification.builder()
+                    .data(Notification.NotificationData.builder()
+                            .type(notificationType)
+                            .referenceId(event.referenceId())
+                            .message(message).build())
+                    .build();
+            seeker.receiveNotification(notification);
+        }
+        userRepository.saveAll(seekers);
+    }
+
+
 }
