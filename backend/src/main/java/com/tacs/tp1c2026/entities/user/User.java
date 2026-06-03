@@ -1,6 +1,7 @@
 package com.tacs.tp1c2026.entities.user;
 
 import com.tacs.tp1c2026.entities.enums.UserRole;
+import com.tacs.tp1c2026.entities.notification.Notification;
 import com.tacs.tp1c2026.entities.profiles.Profile;
 import com.tacs.tp1c2026.entities.user.embedded.CollectionCard;
 import com.tacs.tp1c2026.entities.user.embedded.MissingCard;
@@ -76,7 +77,9 @@ public class User {
     @Getter
     private List<Suggestion> suggestions = new ArrayList<>();
 
-    @Transient
+    @Getter
+    private List<Notification> notifications = new ArrayList<>();
+
     private Profile vectorProfile = new Profile();
 
     public Profile getProfile() { return this.vectorProfile; }
@@ -182,10 +185,30 @@ public class User {
         return this.missingCards.stream().filter(mc -> other.hasInCollection(mc.getCardId())).toList();
     }
 
-    public void rebuildVectorProfile() {
+    public void receiveNotification(Notification notification) {
+        this.notifications.add(notification);
+    }
+
+    @PostConstruct
+    private void initializeVectorProfile() {
         this.vectorProfile = new Profile(
             this.collection.stream().map(CollectionCard::getCardId).toList(),
             this.missingCards.stream().map(MissingCard::getCardId).toList()
         );
     }
+
+    public void saveNotificationById(String notificationId) {
+        Notification notification = this.notifications.stream().filter(n -> n.getId().equals(notificationId)).findFirst()
+            .orElseThrow(() -> new IllegalArgumentException("Notification not found in user's notifications"));
+        notification.setAsRead();
+    }
+
+    public void readAllNotifications() {
+        this.notifications.forEach(n -> {
+            if (!n.isRead()) {
+                n.setAsRead();
+            }
+        });
+    }
+
 }

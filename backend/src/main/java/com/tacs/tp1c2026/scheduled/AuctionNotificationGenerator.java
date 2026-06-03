@@ -20,6 +20,6 @@ package com.tacs.tp1c2026.scheduled;// package com.tacs.tp1c2026.scheduled;
       */
      @Scheduled(fixedDelayString = "#{${app.scheduled.alert.delayMinutes:60} * 60000}")
      public void notifyInterestedUsers() {
-         notificationService.checkEndingAuctions();
+         notificationService.checkScheduledNotifications();
      }
  }

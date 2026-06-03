@@ -196,7 +196,7 @@ public class UsersController {
     @RequiresOwnerOrAdmin
     @ValidatesPathUser
     public ResponseEntity<Void> markAllNotificationsAsRead(@PathVariable String id) {
-        notificationService.markAllAsRead(id);
+        notificationService.markAllUserNotificationsAsRead(id);
         return ResponseEntity.noContent().build();
     }
 
@@ -206,7 +206,7 @@ public class UsersController {
     public ResponseEntity<Void> markNotificationAsRead(
             @PathVariable String id,
             @PathVariable String notificationId) {
-        notificationService.markAsRead(notificationId, id);
+        notificationService.markUserNotificationAsRead(notificationId, id);
         return ResponseEntity.noContent().build();
     }
 }

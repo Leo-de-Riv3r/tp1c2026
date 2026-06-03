@@ -9,10 +9,10 @@ import com.tacs.tp1c2026.entities.enums.UserRole;
 import com.tacs.tp1c2026.entities.user.User;
 import com.tacs.tp1c2026.repositories.AuctionRepository;
 import com.tacs.tp1c2026.repositories.CardRepository;
-import com.tacs.tp1c2026.repositories.NotificationRepository;
 import com.tacs.tp1c2026.repositories.PublicationRepository;
 import com.tacs.tp1c2026.repositories.ProposalRepository;
 import com.tacs.tp1c2026.repositories.UserRepository;
+import com.tacs.tp1c2026.repositories.ScheduledUserNotificationsRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -50,7 +50,7 @@ public abstract class IntegrationTestBase {
   @Autowired protected AuctionRepository auctionRepository;
   @Autowired protected PublicationRepository publicationRepository;
   @Autowired protected ProposalRepository proposalRepository;
-  @Autowired protected NotificationRepository notificationRepository;
+  @Autowired protected ScheduledUserNotificationsRepository scheduledUserNotificationsRepository;
   @Autowired protected MongoTemplate mongoTemplate;
 
   protected final ObjectMapper objectMapper = new ObjectMapper();
@@ -65,7 +65,7 @@ public abstract class IntegrationTestBase {
     userRepository.deleteAll();
     auctionRepository.deleteAll();
     publicationRepository.deleteAll();
-    notificationRepository.deleteAll();
+    scheduledUserNotificationsRepository.deleteAll();
     mongoTemplate.dropCollection("proposals");
     mongoTemplate.dropCollection("exchanges");
 
