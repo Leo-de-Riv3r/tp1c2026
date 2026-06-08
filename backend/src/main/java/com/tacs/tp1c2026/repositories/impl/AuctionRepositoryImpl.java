@@ -65,8 +65,8 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
 
   @Override
   public Page<Auction> findByPublisherUserId(String userId, Pageable pageable) {
-    // `publisherUser` está persistido como ObjectId vía @DocumentReference;
-    // matcheamos in(string, ObjectId) para tolerar cualquiera de las dos formas.
+    // `publisherUser` is persisted as ObjectId via @DocumentReference;
+    // match with in(string, ObjectId) to tolerate either form.
     Query query = new Query(Criteria.where("publisherUser").in(userId, new ObjectId(userId)));
     query.with(pageable);
     List<Auction> results = mongoTemplate.find(query, Auction.class);
@@ -79,7 +79,7 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
 
   @Override
   public List<Auction> findByOffersBidderId(String userId) {
-    // Match directo contra el campo denormalizado offers[].bidderId (String plano).
+    // Direct match against the denormalized field offers[].bidderId (plain String).
     Query query = new Query(Criteria.where("offers.bidderId").is(userId));
     return mongoTemplate.find(query, Auction.class);
   }

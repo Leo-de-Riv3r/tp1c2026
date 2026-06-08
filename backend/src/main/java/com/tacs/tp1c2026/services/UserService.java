@@ -10,7 +10,6 @@ import com.tacs.tp1c2026.exceptions.ConflictException;
 import com.tacs.tp1c2026.exceptions.InsufficientCardException;
 import com.tacs.tp1c2026.exceptions.MissingCardException;
 import com.tacs.tp1c2026.exceptions.NotFoundException;
-import com.tacs.tp1c2026.exceptions.UserNotFoundException;
 import com.tacs.tp1c2026.entities.dto.user.output.CollectionCardResult;
 import com.tacs.tp1c2026.repositories.UserRepository;
 import org.springframework.stereotype.Service;
@@ -42,12 +41,12 @@ public class UserService {
      * Returns a user by ID, or throws if not found
      * @param userId the user's MongoDB ID
      * @return the {@link User} entity
-     * @throws UserNotFoundException if no user exists with that ID
+     * @throws NotFoundException if no user exists with that ID
      */
-    public User getById(String userId) throws UserNotFoundException {
+    public User getById(String userId) throws NotFoundException {
         return userRepository
             .findById(userId)
-            .orElseThrow(() -> new UserNotFoundException("No se encontró al usuario con id: " + userId));
+            .orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
     }
 
     /* Collection */
@@ -57,7 +56,7 @@ public class UserService {
      * @param userId the user's ID
      * @return list of {@link CollectionCard} entries
      */
-    public List<CollectionCard> getUserCardCollection(String userId) throws UserNotFoundException {
+    public List<CollectionCard> getUserCardCollection(String userId) throws NotFoundException {
         return getById(userId).getCollection();
     }
 
@@ -69,7 +68,7 @@ public class UserService {
      * @param cardId the card's catalog ID (e.g. "card_042")
      * @return the updated {@link CollectionCard} entry wrapped in a {@link CollectionCardResult}
      */
-    public CollectionCardResult addCardToUserCollection(String userId, String cardId) throws NotFoundException, UserNotFoundException {
+    public CollectionCardResult addCardToUserCollection(String userId, String cardId) throws NotFoundException, NotFoundException {
         Card card = cardService.getById(cardId);
         User user = getById(userId);
         boolean created = !user.hasInCollection(cardId);
@@ -86,7 +85,7 @@ public class UserService {
      * @param userId the user's ID
      * @param cardId the card's catalog ID
      */
-    public void decrementFromCollection(String userId, String cardId) throws InsufficientCardException, MissingCardException, NotFoundException, UserNotFoundException {
+    public void decrementFromCollection(String userId, String cardId) throws InsufficientCardException, MissingCardException, NotFoundException, NotFoundException {
         // Validate card exists in catalog
         cardService.getById(cardId);
         User user = getById(userId);
@@ -101,7 +100,7 @@ public class UserService {
      * @param userId the user's ID
      * @return list of {@link MissingCard} entries
      */
-    public List<MissingCard> getUserMissingCards(String userId) throws UserNotFoundException {
+    public List<MissingCard> getUserMissingCards(String userId) throws NotFoundException {
         return getById(userId).getMissingCards();
     }
 
@@ -112,11 +111,11 @@ public class UserService {
      * @param cardId the card's catalog ID (e.g. "card_042")
      * @return the {@link MissingCard} that was added (or that already existed)
      */
-    public MissingCard addMissingCard(String userId, String cardId) throws NotFoundException, UserNotFoundException {
+    public MissingCard addMissingCard(String userId, String cardId) throws NotFoundException, NotFoundException {
         Card card = cardService.getById(cardId);
         User user = getById(userId);
         if (user.hasInCollection(cardId)) {
-            throw new ConflictException("La figurita #" + card.getNumber() + " (" + card.getDescription() + ") ya está en tu colección");
+            throw new ConflictException("Card #" + card.getNumber() + " (" + card.getDescription() + ") is already in your collection");
         }
         MissingCard mc = MissingCard.fromCatalog(card);
         user.addToMissingCards(mc);
@@ -130,7 +129,7 @@ public class UserService {
      * @param userId the user's ID
      * @param cardId the card's catalog ID
      */
-    public void removeFromMissingCards(String userId, String cardId) throws NotFoundException, UserNotFoundException {
+    public void removeFromMissingCards(String userId, String cardId) throws NotFoundException, NotFoundException {
         cardService.getById(cardId);
         User user = getById(userId);
         user.removeFromMissingCards(cardId);
@@ -144,7 +143,7 @@ public class UserService {
      * @param userId the user's ID
      * @return list of {@link Suggestion} entities
      */
-    public List<Suggestion> getUserSuggestions(String userId) throws UserNotFoundException {
+    public List<Suggestion> getUserSuggestions(String userId) throws NotFoundException {
         return getById(userId).getSuggestions();
     }
 

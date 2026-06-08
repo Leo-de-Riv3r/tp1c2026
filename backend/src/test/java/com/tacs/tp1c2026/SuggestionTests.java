@@ -62,7 +62,7 @@ public class SuggestionTests extends IntegrationTestBase {
         Session sessionB = register("UserB", "userb@test.com", "pass123");
 
         addToCollection(sessionB.userId(), "card_001", sessionB.token());
-        String pubId = idFromCreated(publish(sessionB.token(), "card_001", 1), "publicationId");
+        String pubId = idFromCreated(publish(sessionB.token(), "card_001", 1), "id");
 
         addMissingCard(sessionA.userId(), "card_001", sessionA.token());
 
@@ -146,8 +146,8 @@ public class SuggestionTests extends IntegrationTestBase {
         // UserB publica dos cards: card_001 (la que UserA busca) y card_003 (que no busca)
         addToCollection(sessionB.userId(), "card_001", sessionB.token());
         addToCollection(sessionB.userId(), "card_003", sessionB.token());
-        String pubId001 = idFromCreated(publish(sessionB.token(), "card_001", 1), "publicationId");
-        idFromCreated(publish(sessionB.token(), "card_003", 1), "publicationId");
+        String pubId001 = idFromCreated(publish(sessionB.token(), "card_001", 1), "id");
+        idFromCreated(publish(sessionB.token(), "card_003", 1), "id");
 
         addMissingCard(sessionA.userId(), "card_001", sessionA.token());
 
@@ -173,7 +173,7 @@ public class SuggestionTests extends IntegrationTestBase {
         Session sessionB = register("UserB", "userbe@test.com", "pass123");
 
         addToCollection(sessionB.userId(), "card_001", sessionB.token());
-        idFromCreated(publish(sessionB.token(), "card_001", 1), "publicationId");
+        idFromCreated(publish(sessionB.token(), "card_001", 1), "id");
 
         // UserA no tiene missing cards
 

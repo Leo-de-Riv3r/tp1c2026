@@ -17,7 +17,6 @@ public class ExchangeMapper {
         exchange.getUserB(),
         exchange.getCardsFromA(),
         exchange.getCardsFromB(),
-        exchange.getStatus(),
         exchange.getCreatedAt(),
         exchange.getFeedbackFromA(),
         exchange.getFeedbackFromB()

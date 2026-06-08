@@ -10,12 +10,12 @@ import com.tacs.tp1c2026.entities.user.embedded.CollectionCard;
 import com.tacs.tp1c2026.entities.user.embedded.MissingCard;
 import com.tacs.tp1c2026.config.RequiresOwnerOrAdmin;
 import com.tacs.tp1c2026.config.RequiresRole;
+import com.tacs.tp1c2026.config.ValidatesPathUser;
 import com.tacs.tp1c2026.entities.enums.NotificationStatus;
 import com.tacs.tp1c2026.entities.notification.Notification;
 import com.tacs.tp1c2026.exceptions.InsufficientCardException;
 import com.tacs.tp1c2026.exceptions.MissingCardException;
 import com.tacs.tp1c2026.exceptions.NotFoundException;
-import com.tacs.tp1c2026.exceptions.UserNotFoundException;
 import com.tacs.tp1c2026.services.NotificationService;
 import com.tacs.tp1c2026.services.UserService;
 import org.springframework.data.domain.Page;
@@ -56,7 +56,8 @@ public class UsersController {
      */
     @GetMapping("/{id}")
     @RequiresOwnerOrAdmin
-    public ResponseEntity<UserDto> getById(@PathVariable String id) throws UserNotFoundException {
+    @ValidatesPathUser
+    public ResponseEntity<UserDto> getById(@PathVariable String id) throws NotFoundException {
         return ResponseEntity.ok(UserDto.from(userService.getById(id)));
     }
 
@@ -69,7 +70,8 @@ public class UsersController {
      */
     @GetMapping("/{id}/collection")
     @RequiresOwnerOrAdmin
-    public ResponseEntity<List<CollectionCard>> getCollection(@PathVariable String id) throws UserNotFoundException {
+    @ValidatesPathUser
+    public ResponseEntity<List<CollectionCard>> getCollection(@PathVariable String id) throws NotFoundException {
         return ResponseEntity.ok(userService.getUserCardCollection(id));
     }
 
@@ -82,9 +84,10 @@ public class UsersController {
      */
     @PostMapping("/{id}/collection")
     @RequiresOwnerOrAdmin
+    @ValidatesPathUser
     public ResponseEntity<CollectionCard> addToCollection(
             @PathVariable String id,
-            @Valid @RequestBody AddToCollectionRequest request) throws MissingCardException, NotFoundException, UserNotFoundException {
+            @Valid @RequestBody AddToCollectionRequest request) throws MissingCardException, NotFoundException, NotFoundException {
         CollectionCardResult result = userService.addCardToUserCollection(id, request.cardId());
         return ResponseEntity
             .status(result.created() ? HttpStatus.CREATED : HttpStatus.OK)
@@ -99,9 +102,10 @@ public class UsersController {
      */
     @PatchMapping("/{id}/collection/{cardId}")
     @RequiresOwnerOrAdmin
+    @ValidatesPathUser
     public ResponseEntity<Void> decrementFromCollection(
             @PathVariable String id,
-            @PathVariable String cardId) throws InsufficientCardException, MissingCardException, NotFoundException, UserNotFoundException {
+            @PathVariable String cardId) throws InsufficientCardException, MissingCardException, NotFoundException, NotFoundException {
         userService.decrementFromCollection(id, cardId);
         return ResponseEntity.noContent().build();
     }
@@ -115,7 +119,8 @@ public class UsersController {
      */
     @GetMapping("/{id}/missing-cards")
     @RequiresOwnerOrAdmin
-    public ResponseEntity<List<MissingCard>> getMissingCards(@PathVariable String id) throws UserNotFoundException {
+    @ValidatesPathUser
+    public ResponseEntity<List<MissingCard>> getMissingCards(@PathVariable String id) throws NotFoundException {
         return ResponseEntity.ok(userService.getUserMissingCards(id));
     }
 
@@ -127,9 +132,10 @@ public class UsersController {
      */
     @PostMapping("/{id}/missing-cards")
     @RequiresOwnerOrAdmin
+    @ValidatesPathUser
     public ResponseEntity<MissingCard> addMissingCard(
             @PathVariable String id,
-            @Valid @RequestBody AddMissingCardRequest request) throws NotFoundException, UserNotFoundException {
+            @Valid @RequestBody AddMissingCardRequest request) throws NotFoundException, NotFoundException {
         return ResponseEntity
             .status(HttpStatus.CREATED)
             .body(userService.addMissingCard(id, request.cardId()));
@@ -142,9 +148,10 @@ public class UsersController {
      */
     @DeleteMapping("/{id}/missing-cards/{cardId}")
     @RequiresOwnerOrAdmin
+    @ValidatesPathUser
     public ResponseEntity<Void> removeMissingCard(
             @PathVariable String id,
-            @PathVariable String cardId) throws NotFoundException, UserNotFoundException {
+            @PathVariable String cardId) throws NotFoundException, NotFoundException {
         userService.removeFromMissingCards(id, cardId);
         return ResponseEntity.noContent().build();
     }
@@ -161,7 +168,8 @@ public class UsersController {
      */
     @GetMapping("/{id}/suggestions")
     @RequiresOwnerOrAdmin
-    public ResponseEntity<List<SuggestionResult>> getSuggestions(@PathVariable String id) throws UserNotFoundException {
+    @ValidatesPathUser
+    public ResponseEntity<List<SuggestionResult>> getSuggestions(@PathVariable String id) throws NotFoundException {
         return ResponseEntity.ok(
             userService.getUserSuggestions(id).stream()
                 .map(SuggestionResult::from)
@@ -173,6 +181,7 @@ public class UsersController {
 
     @GetMapping("/{id}/notifications")
     @RequiresOwnerOrAdmin
+    @ValidatesPathUser
     public ResponseEntity<PaginationDtoOutput<NotificationDto>> getNotifications(
             @PathVariable String id,
             @RequestParam(defaultValue = "1") Integer page,
@@ -185,6 +194,7 @@ public class UsersController {
 
     @PutMapping("/{id}/notifications/read")
     @RequiresOwnerOrAdmin
+    @ValidatesPathUser
     public ResponseEntity<Void> markAllNotificationsAsRead(@PathVariable String id) {
         notificationService.markAllAsRead(id);
         return ResponseEntity.noContent().build();
@@ -192,6 +202,7 @@ public class UsersController {
 
     @PutMapping("/{id}/notifications/{notificationId}/read")
     @RequiresOwnerOrAdmin
+    @ValidatesPathUser
     public ResponseEntity<Void> markNotificationAsRead(
             @PathVariable String id,
             @PathVariable String notificationId) {

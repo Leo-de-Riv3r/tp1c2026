@@ -16,6 +16,7 @@ import com.tacs.tp1c2026.exceptions.UnprocessableException;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
@@ -26,6 +27,7 @@ import java.util.List;
 
 @Document(collection = "auctions")
 @Getter
+@TypeAlias("auction")
 public class Auction {
 
   @Id
@@ -47,7 +49,7 @@ public class Auction {
   @DocumentReference
   private User publisherUser;
 
-  // Snapshot del publisher (denormalizado) — evita join al leer
+  // Snapshot of publisher (denormalized) — avoids join on read
   private String publisherName;
   private String publisherAvatarId;
 
@@ -95,7 +97,7 @@ public class Auction {
   public boolean checkConditions(AuctionOffer auctionOffer) {
     for (AuctionCondition condition : conditions) {
       if (!condition.canOffer(auctionOffer.getBidder(), auctionOffer)) {
-        throw new UnprocessableException("No cumples las condiciones minimas para ofertar");
+        throw new UnprocessableException("You do not meet the minimum conditions to bid");
       }
     }
     return true;
@@ -144,14 +146,29 @@ public class Auction {
     return this.status != AuctionStatus.CANCELLED;
   }
 
-  public void cancel() throws AuctionClosedException {
+  public void cancel(User publisher, List<User> bidders) {
     if (this.status != AuctionStatus.ACTIVE) {
-      throw new AuctionClosedException("Solo se puede cancelar una subasta activa");
+      throw new AuctionClosedException("Only an active auction can be cancelled");
+    }
+    if (isExpired()) {
+      throw new AuctionClosedException("The auction has already expired");
     }
     this.status = AuctionStatus.CANCELLED;
-    this.offers.stream()
-        .filter(AuctionOffer::isPending)
-        .forEach(AuctionOffer::reject);
+
+    publisher.findCollectionItem(this.card.getId()).ifPresent(item -> item.release(1));
+
+    for (AuctionOffer offer : this.offers) {
+      if (!offer.isPending()) continue;
+      offer.reject();
+      bidders.stream()
+          .filter(b -> b.getId().equals(offer.getBidderId()))
+          .findFirst()
+          .ifPresent(bidder -> {
+            for (AuctionItem oi : offer.getOfferedItems()) {
+              bidder.findCollectionItem(oi.getCard().getId()).ifPresent(item -> item.release(oi.getAmount()));
+            }
+          });
+    }
   }
 
   public boolean isExpired() {
@@ -160,19 +177,19 @@ public class Auction {
 
   public void validateOwner(User user) {
     if (!this.publisherUser.getId().equals(user.getId())) {
-      throw new ForbiddenException("El usuario no es el dueño de la subasta");
+      throw new ForbiddenException("The user is not the owner of the auction");
     }
   }
 
   public AuctionOffer findOfferById(String offerId) {
     return this.offers.stream()
         .filter(offer -> offer.getId().equals(offerId))
-        .findFirst().orElseThrow(() -> new UnprocessableException("Oferta no encontrada"));
+        .findFirst().orElseThrow(() -> new UnprocessableException("Offer not found"));
   }
 
   public void changeBestOffer(AuctionOffer offer) {
     if (offer.getStatus().equals(AuctionOfferStatus.REJECTED)) {
-      throw new UnprocessableException("No se puede establecer una oferta rechazada como mejor oferta");
+      throw new UnprocessableException("Cannot set a rejected offer as the best offer");
     }
     this.setBestOffer(offer);
   }

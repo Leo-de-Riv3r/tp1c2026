@@ -15,9 +15,9 @@ import java.io.IOException;
 import java.util.Map;
 
 /**
- * Chequea la anotación {@link RequiresOwnerOrAdmin} en el handler method
- * Si está presente: extrae el path variable indicado por {@link RequiresOwnerOrAdmin#value()}, lo compara con el {@code userId} del JWT (puesto por {@link JwtAuthenticationFilter}) y permite el acceso si matchean. Bypass si el role del JWT es {@code ADMIN}
- * No matchea ni es ADMIN → 403 Forbidden con body {@link com.tacs.tp1c2026.entities.dto.common.ApiError}
+ * Checks the {@link RequiresOwnerOrAdmin} annotation on the handler method.
+ * If present: extracts the path variable indicated by {@link RequiresOwnerOrAdmin#value()}, compares it with the JWT {@code userId} (set by {@link JwtAuthenticationFilter}) and allows access if they match. Bypass if the JWT role is {@code ADMIN}.
+ * No match and not ADMIN → 403 Forbidden with body {@link com.tacs.tp1c2026.entities.dto.common.ApiError}
  */
 @Component
 public class OwnerOrAdminInterceptor implements HandlerInterceptor {
@@ -47,16 +47,16 @@ public class OwnerOrAdminInterceptor implements HandlerInterceptor {
 
         String pathUserId = extractPathVariable(request, required.value());
         if (pathUserId == null) {
-            // Error de configuración: el endpoint declara @RequiresOwnerOrAdmin pero no tiene el path variable esperado
+            // Configuration error: the endpoint declares @RequiresOwnerOrAdmin but does not have the expected path variable
             log.error("@RequiresOwnerOrAdmin on {} expects path variable '{}' which is not present", hm.getMethod(), required.value());
-            errorWriter.write(response, HttpStatus.FORBIDDEN, "No autorizado");
+            errorWriter.write(response, HttpStatus.FORBIDDEN, "Not authorized");
             return false;
         }
 
         String jwtUserId = (String) request.getAttribute("userId");
         if (!pathUserId.equals(jwtUserId)) {
             log.warn("Cross-user access denied: caller userId={} attempted to access resource of userId={}", jwtUserId, pathUserId);
-            errorWriter.write(response, HttpStatus.FORBIDDEN, "No podés acceder a recursos de otro usuario");
+            errorWriter.write(response, HttpStatus.FORBIDDEN, "You cannot access another user's resources");
             return false;
         }
 

@@ -4,19 +4,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tacs.tp1c2026.entities.enums.UserRole;
 import com.tacs.tp1c2026.entities.user.User;
-import com.tacs.tp1c2026.repositories.AuctionRepository;
-import com.tacs.tp1c2026.repositories.CardRepository;
-import com.tacs.tp1c2026.repositories.PublicationRepository;
-import com.tacs.tp1c2026.repositories.UserRepository;
 import com.tacs.tp1c2026.services.AuthService;
-import org.junit.jupiter.api.BeforeEach;
+import com.tacs.tp1c2026.support.IntegrationTestBase;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -24,41 +16,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-public class AuthMongoTests {
-  @Autowired
-  private MockMvc mockMvc;
-
-  @Autowired
-  private UserRepository userRepository;
-
-  @Autowired
-  private CardRepository cardRepository;
-
-  @Autowired
-  private AuctionRepository auctionRepository;
-
-  @Autowired
-  private PublicationRepository publicationRepository;
-
-  @Autowired
-  private MongoTemplate mongoTemplate;
-
+public class AuthMongoTests extends IntegrationTestBase {
   @Autowired
   private AuthService authService;
 
   private final ObjectMapper objectMapper = new ObjectMapper();
-
-  @BeforeEach
-  void setUp() {
-    userRepository.deleteAll();
-    cardRepository.deleteAll();
-    auctionRepository.deleteAll();
-    publicationRepository.deleteAll();
-    mongoTemplate.dropCollection("proposals");
-    mongoTemplate.dropCollection("exchanges");
-  }
 
   @Test
   void registerUsuarioDevuelveOkYUsuario() throws Exception {

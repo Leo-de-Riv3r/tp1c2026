@@ -7,12 +7,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.index.Indexed;
 
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@TypeAlias("missing_card")
 public class MissingCard {
   @Indexed
     private String cardId;

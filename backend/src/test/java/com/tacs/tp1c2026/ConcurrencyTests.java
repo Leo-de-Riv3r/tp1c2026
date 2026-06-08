@@ -62,14 +62,14 @@ public class ConcurrencyTests extends IntegrationTestBase {
         Future<Throwable> f1 = pool.submit(() -> {
             start.await();
             try {
-                auctionService.createAuctionOffer(b1.userId(), buildOffer(auctionId, "card_002", 1));
+                auctionService.createAuctionOffer(b1.userId(), auctionId, buildOffer("card_002", 1));
                 return (Throwable) null;
             } catch (Throwable t) { return t; }
         });
         Future<Throwable> f2 = pool.submit(() -> {
             start.await();
             try {
-                auctionService.createAuctionOffer(b2.userId(), buildOffer(auctionId, "card_002", 1));
+                auctionService.createAuctionOffer(b2.userId(), auctionId, buildOffer("card_002", 1));
                 return (Throwable) null;
             } catch (Throwable t) { return t; }
         });
@@ -95,7 +95,7 @@ public class ConcurrencyTests extends IntegrationTestBase {
     void twoConcurrentAcceptsDecrementRemainingCorrectly() throws Exception {
         Session alice = register("Alice", "alice@conc.com", "pass123");
         addToCollectionN(alice.userId(), "card_001", 2, alice.token());
-        String pubId = idFromCreated(publish(alice.token(), "card_001", 2), "publicationId");
+        String pubId = idFromCreated(publish(alice.token(), "card_001", 2), "id");
 
         Session bob = register("Bob", "bob@conc.com", "pass123");
         addToCollection(bob.userId(), "card_002", bob.token());
@@ -134,9 +134,8 @@ public class ConcurrencyTests extends IntegrationTestBase {
             "remainingCount debe ser 0 — ambas accepts decrementaron sin lost update");
     }
 
-    private CreationAuctionOfferDto buildOffer(String auctionId, String cardId, int amount) {
+    private CreationAuctionOfferDto buildOffer(String cardId, int amount) {
         return new CreationAuctionOfferDto(
-            auctionId,
             List.of(new CreationAuctionOfferDto.Item(cardId, amount))
         );
     }

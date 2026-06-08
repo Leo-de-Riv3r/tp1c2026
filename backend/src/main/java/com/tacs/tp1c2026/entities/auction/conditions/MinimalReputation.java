@@ -2,7 +2,9 @@ package com.tacs.tp1c2026.entities.auction.conditions;
 
 import com.tacs.tp1c2026.entities.auction.AuctionOffer;
 import com.tacs.tp1c2026.entities.user.User;
+import org.springframework.data.annotation.TypeAlias;
 
+@TypeAlias("minimal_reputation")
 public class MinimalReputation extends AuctionCondition{
   private Integer reputation;
 

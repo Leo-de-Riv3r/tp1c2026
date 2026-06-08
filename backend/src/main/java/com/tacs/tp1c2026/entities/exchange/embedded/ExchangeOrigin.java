@@ -3,10 +3,12 @@ package com.tacs.tp1c2026.entities.exchange.embedded;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.TypeAlias;
 
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@TypeAlias("exchange_origin")
 public class ExchangeOrigin {
 
     public enum Type { PROPUESTA, SUBASTA }

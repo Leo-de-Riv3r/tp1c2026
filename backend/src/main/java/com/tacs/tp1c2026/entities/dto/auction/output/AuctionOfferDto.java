@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public record AuctionOfferDto(
-    String offerId,
+    String id,
     String auctionId,
     String bidderUserId,
     String bidderUserName,

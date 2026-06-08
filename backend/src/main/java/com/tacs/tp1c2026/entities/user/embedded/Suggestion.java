@@ -4,6 +4,7 @@ import com.tacs.tp1c2026.entities.auction.Auction;
 import com.tacs.tp1c2026.entities.enums.Category;
 import com.tacs.tp1c2026.entities.exchange.TradePublication;
 import lombok.Getter;
+import org.springframework.data.annotation.TypeAlias;
 
 import java.time.LocalDateTime;
 
@@ -17,6 +18,7 @@ import java.time.LocalDateTime;
  * en cada lectura. El `generatedAt` permite saber qué tan vieja es la sugerencia
  */
 @Getter
+@TypeAlias("suggestion")
 public class Suggestion {
 
     public enum SourceType {

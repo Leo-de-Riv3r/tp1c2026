@@ -3,9 +3,10 @@ package com.tacs.tp1c2026.entities.auction;
 import com.tacs.tp1c2026.entities.card.Card;
 import lombok.Getter;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
-
+@TypeAlias("auction_item")
 @Getter
 public class AuctionItem {
 

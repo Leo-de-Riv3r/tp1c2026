@@ -28,7 +28,7 @@ public class ExchangeTests extends IntegrationTestBase {
   private Setup setupAcceptedExchange() throws Exception {
     Session alice = register("Alice", "alice@test.com", "password123");
     addToCollection(alice.userId(), "card_001", alice.token());
-    String pubId = idFromCreated(publish(alice.token(), "card_001", 1), "publicationId");
+    String pubId = idFromCreated(publish(alice.token(), "card_001", 1), "id");
 
     Session bob = register("Bob", "bob@test.com", "password123");
     addToCollection(bob.userId(), "card_002", bob.token());
@@ -138,7 +138,7 @@ public class ExchangeTests extends IntegrationTestBase {
     addToCollectionN(pepe.userId(), "card_001", 2, pepe.token());
 
     // Exchange 1: proposal
-    String pubId = idFromCreated(publish(pepe.token(), "card_001", 1), "publicationId");
+    String pubId = idFromCreated(publish(pepe.token(), "card_001", 1), "id");
     Session moni = register("Moni Argento", "moniargento@gmail.com", "password123");
     addToCollection(moni.userId(), "card_002", moni.token());
     String propId = idFromCreated(propose(moni.token(), pubId, List.of("card_002"), 1), "proposalId");
@@ -225,7 +225,7 @@ public class ExchangeTests extends IntegrationTestBase {
       addToCollection(publisher.userId(), cardForPublisher, publisher.token());
       addToCollection(bob.userId(), cardForBob, bob.token());
 
-      String pubId = idFromCreated(publish(publisher.token(), cardForPublisher, 1), "publicationId");
+      String pubId = idFromCreated(publish(publisher.token(), cardForPublisher, 1), "id");
       String proposalId = idFromCreated(propose(bob.token(), pubId, List.of(cardForBob), 1), "proposalId");
       acceptProposal(publisher.token(), proposalId);
 
@@ -350,7 +350,7 @@ public class ExchangeTests extends IntegrationTestBase {
     String aucBody = mockMvc.perform(get("/api/auctions/" + auctionId)
             .header("Authorization", "Bearer " + publisher.token()))
         .andReturn().getResponse().getContentAsString();
-    String offerId = JsonPath.read(aucBody, "$.offers[0].offerId");
+    String offerId = JsonPath.read(aucBody, "$.offers[0].id");
 
     mockMvc.perform(put("/api/auctions/" + auctionId + "/offers/" + offerId + "/best")
             .header("Authorization", "Bearer " + publisher.token()))

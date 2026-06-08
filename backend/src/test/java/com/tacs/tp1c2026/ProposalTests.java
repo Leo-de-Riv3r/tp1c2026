@@ -18,10 +18,10 @@ import org.springframework.http.MediaType;
 
 public class ProposalTests extends IntegrationTestBase {
 
-  /** Crea publi de Alice ofreciendo `card_001` x{publishQty}. Devuelve publicationId. */
+  /** Crea publi de Alice ofreciendo `card_001` x{publishQty}. Devuelve id. */
   private String publisherSetup(Session alice, int publishQty) throws Exception {
     addToCollectionN(alice.userId(), "card_001", publishQty, alice.token());
-    return idFromCreated(publish(alice.token(), "card_001", publishQty), "publicationId");
+    return idFromCreated(publish(alice.token(), "card_001", publishQty), "id");
   }
 
   /** Setup proposer Bob con 3 cards card_002 disponibles. */
@@ -104,7 +104,7 @@ public class ProposalTests extends IntegrationTestBase {
     //   - Moni.card_001: nueva entrada con quantity=1 (recibida)
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
     addToCollectionN(pepe.userId(), "card_001", 2, pepe.token());
-    String pubId = idFromCreated(publish(pepe.token(), "card_001", 2), "publicationId");
+    String pubId = idFromCreated(publish(pepe.token(), "card_001", 2), "id");
 
     Session moni = register("Moni Argento", "moniargento@gmail.com", "password123");
     addToCollectionN(moni.userId(), "card_002", 3, moni.token());
@@ -142,29 +142,29 @@ public class ProposalTests extends IntegrationTestBase {
   }
 
   @Test
-  void acceptProposalThatExhaustsRemainingFinalizesAndCancelsPending() throws Exception {
+  void acceptProposalLeavesOtherPendingAndPubActive() throws Exception {
+    // Alice publica 2 de card_001. Carol propone pidiendo 1 → pendingCount=1.
+    // Bob propone pidiendo 1 → available=2-1=1 ≥ 1, entra. Se acepta a Bob.
+    // Publi: remaining=1, sigue ACTIVE. Carol sigue PENDING.
     Session alice = register("Alice", "alice@test.com", "password123");
-    String pubId = publisherSetup(alice, 2);   // initial=2
+    String pubId = publisherSetup(alice, 2);
     Session carol = register("Carol", "carol@test.com", "password123");
     addToCollection(carol.userId(), "card_003", carol.token());
-
-    // Carol pide 1 primero. Después Bob pide 2 (entra porque pendingRequested=1 < remaining=2).
-    // Al aceptar a Bob, remaining→0 ⇒ publi FINALIZED ⇒ Carol cancelada en cascada.
     String carolProposal = idFromCreated(propose(carol.token(), pubId, List.of("card_003"), 1), "proposalId");
+
     Session bob = proposerSetup();
-    String bobProposal = idFromCreated(propose(bob.token(), pubId, List.of("card_002"), 2), "proposalId");
+    String bobProposal = idFromCreated(propose(bob.token(), pubId, List.of("card_002"), 1), "proposalId");
 
     acceptProposal(alice.token(), bobProposal);
 
-    // Publi finalizada
     MvcResult pub = mockMvc.perform(get("/api/publications/" + pubId)
             .header("Authorization", "Bearer " + alice.token())).andReturn();
-    assertEquals("FINALIZED", JsonPath.read(pub.getResponse().getContentAsString(), "$.status"));
+    assertEquals(1, (Integer) JsonPath.read(pub.getResponse().getContentAsString(), "$.remainingCount"));
+    assertEquals("ACTIVE", JsonPath.read(pub.getResponse().getContentAsString(), "$.status"));
 
-    // Carol's proposal cancelada en cascada
     MvcResult prop = mockMvc.perform(get("/api/proposals/" + carolProposal)
             .header("Authorization", "Bearer " + alice.token())).andReturn();
-    assertEquals("CANCELLED", JsonPath.read(prop.getResponse().getContentAsString(), "$.status"));
+    assertEquals("PENDING", JsonPath.read(prop.getResponse().getContentAsString(), "$.status"));
   }
 
   @Test
@@ -202,7 +202,7 @@ public class ProposalTests extends IntegrationTestBase {
   void proposeOneCardCommitsOne() throws Exception {
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
     addToCollectionN(pepe.userId(), "card_001", 2, pepe.token());
-    String pubId = idFromCreated(publish(pepe.token(), "card_001", 2), "publicationId");
+    String pubId = idFromCreated(publish(pepe.token(), "card_001", 2), "id");
 
     Session moni = register("Moni Argento", "moniargento@gmail.com", "password123");
     addToCollectionN(moni.userId(), "card_002", 2, moni.token());
@@ -224,7 +224,7 @@ public class ProposalTests extends IntegrationTestBase {
   void proposeTwoDifferentCardsCommitsBoth() throws Exception {
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
     addToCollection(pepe.userId(), "card_001", pepe.token());
-    String pubId = idFromCreated(publish(pepe.token(), "card_001", 1), "publicationId");
+    String pubId = idFromCreated(publish(pepe.token(), "card_001", 1), "id");
 
     Session moni = register("Moni Argento", "moniargento@gmail.com", "password123");
     addToCollection(moni.userId(), "card_002", moni.token());
@@ -245,7 +245,7 @@ public class ProposalTests extends IntegrationTestBase {
     // Repetir el mismo cardId en cardIds equivale a ofrecer N unidades de esa figurita.
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
     addToCollection(pepe.userId(), "card_001", pepe.token());
-    String pubId = idFromCreated(publish(pepe.token(), "card_001", 1), "publicationId");
+    String pubId = idFromCreated(publish(pepe.token(), "card_001", 1), "id");
 
     Session moni = register("Moni Argento", "moniargento@gmail.com", "password123");
     addToCollectionN(moni.userId(), "card_002", 2, moni.token());
@@ -268,7 +268,7 @@ public class ProposalTests extends IntegrationTestBase {
     // card_003 compromised=0. Más realista que cancelar y quedar todo en 0.
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
     addToCollection(pepe.userId(), "card_001", pepe.token());
-    String pubId = idFromCreated(publish(pepe.token(), "card_001", 1), "publicationId");
+    String pubId = idFromCreated(publish(pepe.token(), "card_001", 1), "id");
 
     Session moni = register("Moni Argento", "moniargento@gmail.com", "password123");
     addToCollectionN(moni.userId(), "card_002", 3, moni.token());
@@ -297,7 +297,7 @@ public class ProposalTests extends IntegrationTestBase {
     // Coqui intenta proponer y debe fallar.
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
     addToCollection(pepe.userId(), "card_001", pepe.token());
-    String pubId = idFromCreated(publish(pepe.token(), "card_001", 1), "publicationId");
+    String pubId = idFromCreated(publish(pepe.token(), "card_001", 1), "id");
 
     Session moni = register("Moni Argento", "moniargento@gmail.com", "password123");
     addToCollection(moni.userId(), "card_002", moni.token());
@@ -321,13 +321,13 @@ public class ProposalTests extends IntegrationTestBase {
   void proposeOnCancelledPublicationFails() throws Exception {
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
     addToCollection(pepe.userId(), "card_001", pepe.token());
-    String pubId = idFromCreated(publish(pepe.token(), "card_001", 1), "publicationId");
+    String pubId = idFromCreated(publish(pepe.token(), "card_001", 1), "id");
     cancelPublication(pepe.token(), pubId);
 
     Session moni = register("Moni Argento", "moniargento@gmail.com", "password123");
     addToCollection(moni.userId(), "card_002", moni.token());
     String body = objectMapper.writeValueAsString(Map.of(
-        "publicationId", pubId,
+        "id", pubId,
         "cardIds", List.of("card_002"),
         "requestedCount", 1));
     mockMvc.perform(post("/api/proposals")
@@ -343,12 +343,12 @@ public class ProposalTests extends IntegrationTestBase {
   void proposeCardNotInOwnCollectionFails() throws Exception {
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
     addToCollection(pepe.userId(), "card_001", pepe.token());
-    String pubId = idFromCreated(publish(pepe.token(), "card_001", 1), "publicationId");
+    String pubId = idFromCreated(publish(pepe.token(), "card_001", 1), "id");
 
     Session moni = register("Moni Argento", "moniargento@gmail.com", "password123");
     // Moni NO tiene card_002 en su colección
     String body = objectMapper.writeValueAsString(Map.of(
-        "publicationId", pubId,
+        "id", pubId,
         "cardIds", List.of("card_002"),
         "requestedCount", 1));
     mockMvc.perform(post("/api/proposals")
@@ -363,12 +363,12 @@ public class ProposalTests extends IntegrationTestBase {
     // Moni tiene 1× card_002, propone ["card_002", "card_002"] → segundo commit falla.
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
     addToCollection(pepe.userId(), "card_001", pepe.token());
-    String pubId = idFromCreated(publish(pepe.token(), "card_001", 1), "publicationId");
+    String pubId = idFromCreated(publish(pepe.token(), "card_001", 1), "id");
 
     Session moni = register("Moni Argento", "moniargento@gmail.com", "password123");
     addToCollection(moni.userId(), "card_002", moni.token());
     String body = objectMapper.writeValueAsString(Map.of(
-        "publicationId", pubId,
+        "id", pubId,
         "cardIds", List.of("card_002", "card_002"),
         "requestedCount", 1));
     mockMvc.perform(post("/api/proposals")
@@ -384,7 +384,7 @@ public class ProposalTests extends IntegrationTestBase {
   void getProposalByIdReturnsDetail() throws Exception {
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
     addToCollection(pepe.userId(), "card_001", pepe.token());
-    String pubId = idFromCreated(publish(pepe.token(), "card_001", 1), "publicationId");
+    String pubId = idFromCreated(publish(pepe.token(), "card_001", 1), "id");
 
     Session moni = register("Moni Argento", "moniargento@gmail.com", "password123");
     addToCollection(moni.userId(), "card_002", moni.token());
@@ -413,7 +413,7 @@ public class ProposalTests extends IntegrationTestBase {
     // (CANCELLED). Filter por status devuelve solo las matcheantes.
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
     addToCollectionN(pepe.userId(), "card_001", 2, pepe.token());
-    String pubId = idFromCreated(publish(pepe.token(), "card_001", 2), "publicationId");
+    String pubId = idFromCreated(publish(pepe.token(), "card_001", 2), "id");
 
     Session moni = register("Moni Argento", "moniargento@gmail.com", "password123");
     addToCollection(moni.userId(), "card_002", moni.token());
@@ -445,12 +445,12 @@ public class ProposalTests extends IntegrationTestBase {
   @Test
   void listProposalsFilteredByPublicationId() throws Exception {
     // Pepe arma 2 publis distintas. Moni propone en una sola.
-    // Filter por publicationId devuelve solo las de esa publi.
+    // Filter por id devuelve solo las de esa publi.
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
     addToCollection(pepe.userId(), "card_001", pepe.token());
     addToCollection(pepe.userId(), "card_005", pepe.token());
-    String pubA = idFromCreated(publish(pepe.token(), "card_001", 1), "publicationId");
-    String pubB = idFromCreated(publish(pepe.token(), "card_005", 1), "publicationId");
+    String pubA = idFromCreated(publish(pepe.token(), "card_001", 1), "id");
+    String pubB = idFromCreated(publish(pepe.token(), "card_005", 1), "id");
 
     Session moni = register("Moni Argento", "moniargento@gmail.com", "password123");
     addToCollection(moni.userId(), "card_002", moni.token());
@@ -475,7 +475,7 @@ public class ProposalTests extends IntegrationTestBase {
   void proposeEmptyCardListFails() throws Exception {
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
     addToCollection(pepe.userId(), "card_001", pepe.token());
-    String pubId = idFromCreated(publish(pepe.token(), "card_001", 1), "publicationId");
+    String pubId = idFromCreated(publish(pepe.token(), "card_001", 1), "id");
 
     Session moni = register("Moni Argento", "moniargento@gmail.com", "password123");
     String body = objectMapper.writeValueAsString(Map.of(

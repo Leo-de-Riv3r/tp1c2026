@@ -32,9 +32,22 @@ public class AuthService {
   private final PasswordEncoder passwordEncoder;
 
   public AuthService(UserRepository userRepository,
-                     @Value("${jwt.secret}") String jwtSecret,
+                     @Value("${jwt.secret:}") String jwtSecret,
                      @Value("${jwt.expiration}") long jwtExpirationMs) {
     this.userRepository = userRepository;
+
+    if (jwtSecret == null || jwtSecret.length() < 32) {
+      throw new IllegalStateException(
+          """
+          JWT_SECRET is not configured or is too short.
+
+          Create a .env file at the project root with:
+            JWT_SECRET=a-key-at-least-32-characters-long
+
+          Or export it as an environment variable on your system.
+          """);
+    }
+
     this.jwtSecretKey = Keys.hmacShaKeyFor(jwtSecret.getBytes());
     this.jwtExpirationMs = jwtExpirationMs;
     this.passwordEncoder = new BCryptPasswordEncoder();
@@ -44,7 +57,7 @@ public class AuthService {
     String email = dto.getEmail().trim().toLowerCase();
 
     if (userRepository.existsByEmail(email)) {
-      throw new ConflictException("El email ya se encuentra registrado");
+      throw new ConflictException("Email is already registered");
     }
 
     User user = new User();
@@ -59,18 +72,18 @@ public class AuthService {
   }
 
   /**
-   * Endpoint único de login. Busca al user por email en Mongo, valida la password y arma el JWT con el rol real del User como claim
-   * Admin y User comparten el flow — la diferencia vive solo en {@link User#getRole()} (sembrado como {@link UserRole#ADMIN} en {@code seed.js})
+   * Single login endpoint. Finds the user by email in Mongo, validates the password and builds the JWT with the actual User role as a claim.
+    * Admin and User share the same flow — the difference lives only in {@link User#getRole()} (seeded as {@link UserRole#ADMIN} in {@code seed.js})
    */
   public LoginResponseDto login(LoginDTO dto) {
     if (dto == null || isBlank(dto.getEmail()) || isBlank(dto.getPassword())) {
-      throw new BadInputException("Email y password son obligatorios");
+      throw new BadInputException("Email and password are required");
     }
     String email = dto.getEmail().trim().toLowerCase();
     User user = userRepository.findByEmail(email)
-        .orElseThrow(() -> new UnauthorizedException("Credenciales inválidas"));
+        .orElseThrow(() -> new UnauthorizedException("Invalid credentials"));
     if (user.getPasswordHash() == null || !passwordEncoder.matches(dto.getPassword(), user.getPasswordHash())) {
-      throw new UnauthorizedException("Credenciales inválidas");
+      throw new UnauthorizedException("Invalid credentials");
     }
     user.setLastLogin(LocalDateTime.now());
     userRepository.save(user);
@@ -91,11 +104,11 @@ public class AuthService {
     try {
       String subject = parseClaims(token).getSubject();
       if (subject == null || subject.trim().isEmpty()) {
-        throw new UnauthorizedException("Token inválido");
+        throw new UnauthorizedException("Invalid token");
       }
       return subject;
     } catch (JwtException e) {
-      throw new UnauthorizedException("Token inválido");
+      throw new UnauthorizedException("Invalid token");
     }
   }
 
@@ -104,7 +117,7 @@ public class AuthService {
       String role = parseClaims(token).get("role", String.class);
       return isBlank(role) ? "USER" : role;
     } catch (JwtException e) {
-      throw new UnauthorizedException("Token inválido");
+      throw new UnauthorizedException("Invalid token");
     }
   }
 

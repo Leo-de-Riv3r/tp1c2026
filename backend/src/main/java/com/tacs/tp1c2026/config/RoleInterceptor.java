@@ -10,8 +10,8 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import java.io.IOException;
 
 /**
- * Chequea la anotación {@link RequiresRole} en el handler method y, si está presente, valida que el role del request attribute (puesto por {@link JwtAuthenticationFilter}) matchee
- * No matchea → 403 Forbidden con body {@link com.tacs.tp1c2026.entities.dto.common.ApiError}
+ * Checks the {@link RequiresRole} annotation on the handler method and, if present, validates that the role from the request attribute (set by {@link JwtAuthenticationFilter}) matches.
+ * No match → 403 Forbidden with body {@link com.tacs.tp1c2026.entities.dto.common.ApiError}
  */
 @Component
 public class RoleInterceptor implements HandlerInterceptor {
@@ -33,7 +33,7 @@ public class RoleInterceptor implements HandlerInterceptor {
     }
     Object role = request.getAttribute("role");
     if (role == null || !required.value().equals(role.toString())) {
-      errorWriter.write(response, HttpStatus.FORBIDDEN, "No tenés permisos para acceder a este recurso");
+      errorWriter.write(response, HttpStatus.FORBIDDEN, "You do not have permission to access this resource");
       return false;
     }
     return true;

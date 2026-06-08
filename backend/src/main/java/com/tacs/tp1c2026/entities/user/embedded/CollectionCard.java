@@ -8,12 +8,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.index.Indexed;
 
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@TypeAlias("collection_card")
 public class CollectionCard {
     @Indexed
     private String cardId;
