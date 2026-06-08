@@ -41,7 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Import({TestAsyncConfig.class, FlapdoodleMongoConfig.class})
+@Import({TestAsyncConfig.class, TestcontainersMongoConfig.class})
 public abstract class IntegrationTestBase {
 
   @Autowired protected MockMvc mockMvc;
@@ -58,20 +58,25 @@ public abstract class IntegrationTestBase {
   /** Wrapper simple del par token + userId del usuario logueado. */
   public static record Session(String token, String userId) {}
 
+  private static boolean seeded = false;
+
   @BeforeEach
   void cleanAndSeed() throws Exception {
     userRepository.deleteAll();
-    cardRepository.deleteAll();
     auctionRepository.deleteAll();
     publicationRepository.deleteAll();
     notificationRepository.deleteAll();
     mongoTemplate.dropCollection("proposals");
     mongoTemplate.dropCollection("exchanges");
-    try (InputStream stream = getClass().getResourceAsStream("/catalog.json")) {
-      if (stream != null) {
-        List<Card> cards = objectMapper.readValue(stream, new TypeReference<List<Card>>() {});
-        cardRepository.saveAll(cards);
+
+    if (!seeded) {
+      try (InputStream stream = getClass().getResourceAsStream("/catalog.json")) {
+        if (stream != null) {
+          List<Card> cards = objectMapper.readValue(stream, new TypeReference<List<Card>>() {});
+          cardRepository.saveAll(cards);
+        }
       }
+      seeded = true;
     }
   }
 
