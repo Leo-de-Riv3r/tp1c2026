@@ -174,6 +174,6 @@ Y reemplazá el servicio `frontend` en `backend/docker-compose.yml` por:
 | SPRING_MONGODB_URI   | —                                     | ✅        | URI de conexión a Mongo (ej: `mongodb://mongo:27017/tacs_db`) |
 | JWT_SECRET           | —                                     | ✅        | Secreto para firmar JWTs (mínimo 32 caracteres)       |
 | JWT_EXPIRATION       | 31536000000 (1 año)                   | ❌        | Duración del token en ms                              |
-| FRONTEND_URI         | `*`                                   | ❌        | Origen(es) CORS permitidos (separados por coma)       |
+| FRONTEND_URI         | —                                     | ✅        | Origen(es) CORS permitidos (separados por coma)       |
 
 > **Importante:** `JWT_SECRET` ya no tiene un valor por defecto de desarrollo. El backend falla al iniciar si no se configura. Creá un archivo `.env` en `backend/` basado en [`backend/.env.example`](backend/.env.example) antes de levantar el stack.
