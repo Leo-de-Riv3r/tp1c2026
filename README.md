@@ -12,18 +12,20 @@ Desde dentro de `backend/`:
 docker compose up -d --build
 ```
 
-Eso levanta los 4 servicios en orden:
+Eso levanta los 5 servicios en orden:
 
 1. **Mongo** — espera healthcheck
-2. **mongo-seed** — corre el script de seed (catálogo + usuario de prueba). Termina y sale
-3. **Backend** — espera a que el seed termine OK
-4. **Frontend** — pullea la imagen publicada en GHCR (no hace falta clonar el repo)
+2. **mongo-init** — inicializa el replica set (espera a que Mongo esté listo, ejecuta `rs.initiate()` y termina)
+3. **mongo-seed** — corre el script de seed (catálogo + usuarios de prueba). Termina y sale
+4. **Backend** — espera a que el seed termine OK
+5. **Frontend** — pullea la imagen publicada en GHCR (no hace falta clonar el repo)
 
 | Servicio  | URL                                          |
 |-----------|----------------------------------------------|
 | Frontend  | http://localhost (puerto 80, default HTTP)   |
 | Backend   | http://localhost:8080                        |
 | MongoDB   | localhost:27018                              |
+| Health    | http://localhost:8080/actuator/health        |
 
 Para apagar todo:
 
@@ -40,9 +42,13 @@ docker compose up -d --build
 
 ## Estado actual del proyecto
 
-**Catálogo**: todavía no encontramos una API pública que devuelva las figuritas del Mundial. Hay una con información de los jugadores y es posible encontrar el listado de las +900 figuritas — estamos evaluando combinar esta api y el listado para armar una propia. Mientras tanto, generamos un catálogo de 500 figuritas en [`backend/seed/catalog.json`](backend/seed/catalog.json) que el contenedor `mongo-seed` inserta automáticamente en la colección `cards` al levantar el stack, junto con usuarios de prueba en la colección `users`
+**Catálogo**: catálogo generado de 500 figuritas en [`backend/seed/catalog.json`](backend/seed/catalog.json) que el contenedor `mongo-seed` inserta automáticamente en la colección `cards` al levantar el stack, junto con usuarios de prueba en la colección `users`
 
-**Autenticación**: integrada vía JWT. Único endpoint `POST /api/auth/login` que detecta admin vs user según el `role` del User en Mongo (no hay endpoint admin separado). El FE decodifica el claim `role` del JWT para decidir qué UI mostrar
+**Autenticación**: integrada vía JWT. Único endpoint `POST /api/auth/login` que detecta admin vs user según el `role` del User en Mongo (no hay endpoint admin separado). Todas las respuestas del API están en **inglés**. El filtro JWT valida además que el usuario del token siga existiendo en la base (`JwtAuthenticationFilter.java:53`).
+
+**Interceptor de usuario**: `@ValidatesPathUser` en endpoints que reciben un `userId` como path variable — valida que el usuario exista antes de llegar al handler.
+
+**Endpoints públicos**: `/api/auth*` y `/actuator*` no requieren token. El resto de los endpoints requieren un Bearer token válido.
 
 ## Usuarios de prueba
 
@@ -51,9 +57,9 @@ Todos los users del seed comparten el mismo password: **`123456`**
 | Email                    | Rol   | Notas                                                                  |
 |--------------------------|-------|------------------------------------------------------------------------|
 | `peperacing@gmail.com`   | USER  | Tiene cards en colección (3x card_001, 2x card_005, 1x card_010) y missing cards |
-| `moniargento@gmail.com`  | USER  | Tiene 2 publicaciones activas (card_003 y card_004)            |
-| `dfuseneco@outlook.com`  | USER  | Usuario "vacío" — sin colección, faltantes, publicaciones ni propuestas. Para probar empty states |
-| `admin@mail.com`         | ADMIN | Usuario de administración. Filtrado de listas de candidatos a trading  |
+| `moniargento@gmail.com`  | USER  | Tiene 2 publicaciones activas (card_003 y card_004)                    |
+| `dfuseneco@outlook.com`  | USER  | Usuario "vacío" — sin colección, faltantes, publicaciones ni propuestas |
+| `admin@mail.com`         | ADMIN | Usuario de administración                                              |
 
 ## Levantar Mongo localmente (sin Docker)
 
@@ -78,7 +84,7 @@ mongosh "mongodb://localhost:27017/tacs_db?directConnection=true" --file backend
 
 # 5. Levantar el BE apuntando a esa Mongo
 cd backend
-export SPRING_DATA_MONGODB_URI="mongodb://localhost:27017/tacs_db?directConnection=true"
+export SPRING_MONGODB_URI="mongodb://localhost:27017/tacs_db?directConnection=true"
 ./mvnw spring-boot:run
 ```
 
@@ -99,7 +105,7 @@ mongosh "mongodb://localhost:27017/tacs_db?directConnection=true" --file backend
 
 # 5. Levantar el BE apuntando a esa Mongo
 cd backend
-$env:SPRING_DATA_MONGODB_URI = "mongodb://localhost:27017/tacs_db?directConnection=true"
+$env:SPRING_MONGODB_URI = "mongodb://localhost:27017/tacs_db?directConnection=true"
 .\mvnw.cmd spring-boot:run
 ```
 
@@ -133,7 +139,7 @@ La base se llama `tacs_db`.
 
 ## Sobre el frontend
 
-El servicio `frontend` del compose **no buildea desde código local**: pullea la imagen publicada en GHCR ([`ghcr.io/salometredici/tacs-2026-c1-fe:latest`](https://github.com/salometredici/tacs-2026-c1-FE/pkgs/container/tacs-2026-c1-fe)) (Si dejamos latest, será la imagen correspondiente al tag de la Entrega actual, no vamos a generar una imagen sobre código posterior a la misma hasta recibir la corrección, sino, vamos a dejar explícita la imagen en el docker-compose). Se pueden generar las imágenes desde un workflow en el repositorio del FE de forma manual de ser necesario
+El servicio `frontend` del compose **no buildea desde código local**: pullea la imagen publicada en GHCR ([`ghcr.io/salometredici/tacs-2026-c1-fe@sha256:...`](https://github.com/salometredici/tacs-2026-c1-FE/pkgs/container/tacs-2026-c1-fe)). Se pueden generar las imágenes desde un workflow en el repositorio del FE de forma manual de ser necesario
 
 Por eso, para correr el stack **no hace falta tener el frontend clonado**
 
@@ -163,7 +169,11 @@ Y reemplazá el servicio `frontend` en `backend/docker-compose.yml` por:
 
 ## Variables de entorno (backend)
 
-| Variable                    | Valor por defecto                     | Descripción                |
-|-----------------------------|---------------------------------------|----------------------------|
-| SPRING_DATA_MONGODB_URI     | mongodb://mongo:27017/tacs_db         | URI de conexión a Mongo    |
-| MONGO_DATABASE              | tacs_db                               | Nombre de la base          |
+| Variable             | Por defecto                          | Requerida | Descripción                                           |
+|----------------------|--------------------------------------|-----------|-------------------------------------------------------|
+| SPRING_MONGODB_URI   | —                                     | ✅        | URI de conexión a Mongo (ej: `mongodb://mongo:27017/tacs_db`) |
+| JWT_SECRET           | —                                     | ✅        | Secreto para firmar JWTs (mínimo 32 caracteres)       |
+| JWT_EXPIRATION       | 31536000000 (1 año)                   | ❌        | Duración del token en ms                              |
+| FRONTEND_URI         | `*`                                   | ❌        | Origen(es) CORS permitidos (separados por coma)       |
+
+> **Importante:** `JWT_SECRET` ya no tiene un valor por defecto de desarrollo. El backend falla al iniciar si no se configura. Creá un archivo `.env` en `backend/` basado en [`backend/.env.example`](backend/.env.example) antes de levantar el stack.
