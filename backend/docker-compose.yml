@@ -58,6 +58,7 @@ services:
       SPRING_MONGODB_URI: ${SPRING_MONGODB_URI}
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRATION: ${JWT_EXPIRATION}
+      FRONTEND_URI: ${FRONTEND_URI}
     networks:
       - tacs-network
     healthcheck:
