@@ -22,7 +22,7 @@ import com.tacs.tp1c2026.entities.user.User;
 import com.tacs.tp1c2026.entities.user.embedded.CollectionCard;
 import com.tacs.tp1c2026.events.AuctionCreatedEvent;
 import com.tacs.tp1c2026.events.CardAvailableEvent;
-import com.tacs.tp1c2026.events.UserInterestedInActionEvent;
+import com.tacs.tp1c2026.events.UserInterestedInAuctionEvent;
 import com.tacs.tp1c2026.exceptions.*;
 import com.tacs.tp1c2026.repositories.AuctionRepository;
 import com.tacs.tp1c2026.repositories.UserRepository;
@@ -223,7 +223,7 @@ public class AuctionService {
         auction.addInterestedUser(user);
         this.auctionRepository.save(auction);
 
-        eventPublisher.publishEvent(new UserInterestedInActionEvent(user, auction));
+        eventPublisher.publishEvent(new UserInterestedInAuctionEvent(user, auction));
 
     }
 

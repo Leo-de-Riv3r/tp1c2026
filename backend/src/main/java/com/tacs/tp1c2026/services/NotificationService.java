@@ -11,7 +11,7 @@ import com.tacs.tp1c2026.entities.notification.UserNotification;
 import com.tacs.tp1c2026.entities.user.User;
 import com.tacs.tp1c2026.events.AuctionCreatedEvent;
 import com.tacs.tp1c2026.events.CardAvailableEvent;
-import com.tacs.tp1c2026.events.UserInterestedInActionEvent;
+import com.tacs.tp1c2026.events.UserInterestedInAuctionEvent;
 import com.tacs.tp1c2026.repositories.GlobalNotificationRepository;
 import com.tacs.tp1c2026.repositories.ScheduledUserNotificationsRepository;
 import com.tacs.tp1c2026.repositories.UserRepository;
@@ -179,7 +179,7 @@ public class NotificationService {
 
   @Async
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-  public void handleUserInterestedInAuctionEvent(UserInterestedInActionEvent event) {
+  public void handleUserInterestedInAuctionEvent(UserInterestedInAuctionEvent event) {
     addUserToScheduledNotifications(event.user().getId(), event.auction().getId());
   }
 
