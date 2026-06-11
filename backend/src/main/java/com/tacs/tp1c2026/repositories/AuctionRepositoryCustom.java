@@ -12,6 +12,6 @@ public interface AuctionRepositoryCustom {
 
   Page<Auction> findByPublisherUserId(String userId, Pageable pageable);
 
-  /** Subastas donde el usuario tiene al menos una oferta. */
+  /** Auctions where the user has at least one offer. */
   List<Auction> findByOffersBidderId(String userId);
 }

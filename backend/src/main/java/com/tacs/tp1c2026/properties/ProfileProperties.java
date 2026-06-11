@@ -11,22 +11,22 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "app.profile")
 public class ProfileProperties {
 
-    /** Cuántos grupos de perfil (los más similares al user) se exploran para armar el pool de candidatos. */
+    /** How many profile groups (the most similar to the user) are explored to build the candidate pool. */
     private int profileGroupsToCheck = 1;
 
-    /** Máximo de grupos en los que un user puede estar asignado simultáneamente (al actualizar grupos del user). */
+    /** Maximum number of groups a user can be assigned to simultaneously (when updating user groups). */
     private int maximumNumberOfGroupsUserCanBeIn = 2;
 
-    /** Total de cards en el catálogo (dimensión del vector de perfil). */
+    /** Total cards in the catalog (profile vector dimension). */
     private int totalNumberOfCards = 10000;
 
-    /** Cuántos candidatos se evalúan por batch al generar sugerencias para un user. */
+    /** How many candidates are evaluated per batch when generating suggestions for a user. */
     private int candidatesPerBatch = 50;
 
-    /** Máximo de batches que se intentan si el primero no produce sugerencias (1 batch + retries). */
+    /** Maximum batches to attempt if the first one does not produce suggestions (1 batch + retries). */
     private int maxBatches = 2;
 
-    /** Cap final de sugerencias por user en el documento `User.suggestions`. */
+    /** Final cap of suggestions per user in the `User.suggestions` document. */
     private int maxSuggestionsPerUser = 10;
 
 }

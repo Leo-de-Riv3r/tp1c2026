@@ -110,7 +110,7 @@ public class NotificationTests extends IntegrationTestBase {
     });
 
     // 3. (Opcional) Podemos verificar que el mensaje de error sea el correcto
-    assertEquals("La notificación ya se encuentra leída", exception.getMessage());
+    assertEquals("Notification already read", exception.getMessage());
   }
 
 }

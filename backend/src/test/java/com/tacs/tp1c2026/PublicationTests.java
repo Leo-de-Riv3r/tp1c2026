@@ -90,7 +90,7 @@ public class PublicationTests extends IntegrationTestBase {
   void cancelPublicationByOtherUserFails() throws Exception {
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
     addToCollection(pepe.userId(), "card_001", pepe.token());
-    String pubId = idFromCreated(publish(pepe.token(), "card_001", 1), "publicationId");
+    String pubId = idFromCreated(publish(pepe.token(), "card_001", 1), "id");
 
     Session moni = register("Moni Argento", "moniargento@gmail.com", "password123");
     mockMvc.perform(delete("/api/publications/" + pubId)
@@ -102,7 +102,7 @@ public class PublicationTests extends IntegrationTestBase {
   void cancelAlreadyCancelledPublicationFails() throws Exception {
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
     addToCollection(pepe.userId(), "card_001", pepe.token());
-    String pubId = idFromCreated(publish(pepe.token(), "card_001", 1), "publicationId");
+    String pubId = idFromCreated(publish(pepe.token(), "card_001", 1), "id");
 
     cancelPublication(pepe.token(), pubId);
 
@@ -116,7 +116,7 @@ public class PublicationTests extends IntegrationTestBase {
     // Pepe publica 1, Moni propone 1, Pepe acepta → publi FINALIZED. Cancelar debe fallar.
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
     addToCollection(pepe.userId(), "card_001", pepe.token());
-    String pubId = idFromCreated(publish(pepe.token(), "card_001", 1), "publicationId");
+    String pubId = idFromCreated(publish(pepe.token(), "card_001", 1), "id");
 
     Session moni = register("Moni Argento", "moniargento@gmail.com", "password123");
     addToCollection(moni.userId(), "card_002", moni.token());
@@ -136,7 +136,7 @@ public class PublicationTests extends IntegrationTestBase {
     addToCollectionN(pepe.userId(), "card_001", 2, pepe.token());
 
     MvcResult res = publish(pepe.token(), "card_001", 1);
-    String pubId = idFromCreated(res, "publicationId");
+    String pubId = idFromCreated(res, "id");
     assertTrue(pubId.length() > 0);
 
     String coll = mockMvc.perform(get("/api/users/" + pepe.userId() + "/collection")
@@ -158,7 +158,7 @@ public class PublicationTests extends IntegrationTestBase {
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
     addToCollectionN(pepe.userId(), "card_001", 3, pepe.token());
 
-    String pubId = idFromCreated(publish(pepe.token(), "card_001", 2), "publicationId");
+    String pubId = idFromCreated(publish(pepe.token(), "card_001", 2), "id");
 
     String coll = mockMvc.perform(get("/api/users/" + pepe.userId() + "/collection")
             .header("Authorization", "Bearer " + pepe.token()))
@@ -179,7 +179,7 @@ public class PublicationTests extends IntegrationTestBase {
   void cancelPublicationReleasesCommittedCards() throws Exception {
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
     addToCollectionN(pepe.userId(), "card_001", 3, pepe.token());
-    String pubId = idFromCreated(publish(pepe.token(), "card_001", 2), "publicationId");
+    String pubId = idFromCreated(publish(pepe.token(), "card_001", 2), "id");
 
     cancelPublication(pepe.token(), pubId);
 
@@ -197,7 +197,7 @@ public class PublicationTests extends IntegrationTestBase {
     // Pepe cancela → 3 propuestas CANCELLED + commit liberado en cada proponente.
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
     addToCollectionN(pepe.userId(), "card_001", 3, pepe.token());
-    String pubId = idFromCreated(publish(pepe.token(), "card_001", 3), "publicationId");
+    String pubId = idFromCreated(publish(pepe.token(), "card_001", 3), "id");
 
     Session moni = register("Moni Argento", "moniargento@gmail.com", "password123");
     addToCollectionN(moni.userId(), "card_002", 2, moni.token());
@@ -242,7 +242,7 @@ public class PublicationTests extends IntegrationTestBase {
     // Pepe cancela → libera SOLO el remaining (2), no los 3 originales.
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
     addToCollectionN(pepe.userId(), "card_001", 3, pepe.token());
-    String pubId = idFromCreated(publish(pepe.token(), "card_001", 3), "publicationId");
+    String pubId = idFromCreated(publish(pepe.token(), "card_001", 3), "id");
 
     Session moni = register("Moni Argento", "moniargento@gmail.com", "password123");
     addToCollection(moni.userId(), "card_002", moni.token());
@@ -271,7 +271,7 @@ public class PublicationTests extends IntegrationTestBase {
     // Publi activa aparece en el search; tras cancelar deja de aparecer.
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
     addToCollection(pepe.userId(), "card_001", pepe.token());
-    String pubId = idFromCreated(publish(pepe.token(), "card_001", 1), "publicationId");
+    String pubId = idFromCreated(publish(pepe.token(), "card_001", 1), "id");
 
     List<String> activeIds = readActiveIds(pepe.token());
     assertTrue(activeIds.contains(pubId), "Una publi activa debería aparecer en el search");
@@ -306,7 +306,7 @@ public class PublicationTests extends IntegrationTestBase {
     // Pepe publica card_001 ("Copa del Mundo FIFA 2026", country=null, EPICO).
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
     addToCollection(pepe.userId(), "card_001", pepe.token());
-    String pubId = idFromCreated(publish(pepe.token(), "card_001", 1), "publicationId");
+    String pubId = idFromCreated(publish(pepe.token(), "card_001", 1), "id");
 
     // Filter by name (regex case-insensitive contra cardDescription)
     assertTrue(readActiveIds(pepe.token(), "name", "Copa").contains(pubId));
@@ -325,13 +325,13 @@ public class PublicationTests extends IntegrationTestBase {
   void getPublicationByIdReturnsDetail() throws Exception {
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
     addToCollectionN(pepe.userId(), "card_001", 2, pepe.token());
-    String pubId = idFromCreated(publish(pepe.token(), "card_001", 1), "publicationId");
+    String pubId = idFromCreated(publish(pepe.token(), "card_001", 1), "id");
 
     String body = mockMvc.perform(get("/api/publications/" + pubId)
             .header("Authorization", "Bearer " + pepe.token()))
         .andExpect(status().isOk())
         .andReturn().getResponse().getContentAsString();
-    assertEquals(pubId, JsonPath.read(body, "$.publicationId"));
+    assertEquals(pubId, JsonPath.read(body, "$.id"));
     assertEquals(1, (Integer) JsonPath.read(body, "$.initialCount"));
     assertEquals(1, (Integer) JsonPath.read(body, "$.remainingCount"));
   }
@@ -362,6 +362,6 @@ public class PublicationTests extends IntegrationTestBase {
     String body = mockMvc.perform(req)
         .andExpect(status().isOk())
         .andReturn().getResponse().getContentAsString();
-    return (List<String>) JsonPath.read(body, "$.data[*].publicationId");
+    return (List<String>) JsonPath.read(body, "$.data[*].id");
   }
 }

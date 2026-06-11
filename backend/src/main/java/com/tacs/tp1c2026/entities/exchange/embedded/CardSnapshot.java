@@ -4,10 +4,12 @@ import com.tacs.tp1c2026.entities.card.Card;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.TypeAlias;
 
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@TypeAlias("card_snapshot")
 public class CardSnapshot {
 
     private String cardId;

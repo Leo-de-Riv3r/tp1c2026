@@ -1,7 +1,6 @@
 package com.tacs.tp1c2026.entities.exchange;
 
 import com.tacs.tp1c2026.entities.card.Card;
-import com.tacs.tp1c2026.entities.enums.ExchangeStatus;
 import com.tacs.tp1c2026.entities.exchange.embedded.CardSnapshot;
 import com.tacs.tp1c2026.entities.exchange.embedded.ExchangeOrigin;
 import com.tacs.tp1c2026.entities.exchange.embedded.Feedback;
@@ -19,9 +18,9 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Registro histórico de un intercambio concretado entre dos usuarios.
- * Se crea al aceptarse una propuesta o adjudicarse una subasta. Es la fuente de verdad
- * para el histórico, las estadísticas y los feedbacks recibidos.
+ * Historical record of a completed exchange between two users.
+ * Created when a proposal is accepted or an auction is awarded. It is the source of truth
+ * for history, statistics, and received feedback.
  */
 @Document(collection = "exchanges")
 @TypeAlias("exchange")
@@ -38,8 +37,6 @@ public class Exchange {
 
     private List<CardSnapshot> cardsFromA;
     private List<CardSnapshot> cardsFromB;
-
-    private ExchangeStatus status = ExchangeStatus.CONCRETADO;
 
     private LocalDateTime createdAt = LocalDateTime.now();
 
@@ -59,8 +56,8 @@ public class Exchange {
     }
 
     /**
-     * Construye un Exchange a partir de una propuesta aceptada.
-     * Convención: A = publicante (cede la card de la publicación), B = proponente (cede las offered cards).
+     * Builds an Exchange from an accepted proposal.
+     * Convention: A = publisher (gives the publication card), B = proposer (gives the offered cards).
      */
     public static Exchange fromAcceptedProposal(String proposalId,
                                                 User publisher, User proposer,
@@ -75,8 +72,8 @@ public class Exchange {
     }
 
     /**
-     * Construye un Exchange a partir de una subasta adjudicada.
-     * Convención: A = subastante (cede la card subastada), B = postor ganador (cede las offered cards).
+     * Builds an Exchange from an awarded auction.
+     * Convention: A = auctioneer (gives the auctioned card), B = winning bidder (gives the offered cards).
      */
     public static Exchange fromAcceptedAuction(String auctionId,
                                                 User publisher, User winner,
@@ -99,18 +96,18 @@ public class Exchange {
     }
 
     /**
-     * Registra un feedback de uno de los dos lados. Falla si ese lado ya calificó
-     * o si el usuario no participó del intercambio.
+     * Records feedback from one of the two sides. Fails if that side already rated
+     * or if the user did not participate in the exchange.
      */
     public void leaveFeedback(String reviewerUserId, Feedback feedback) {
         if (!involves(reviewerUserId)) {
-            throw new ForbiddenException("El usuario no participó de este intercambio");
+            throw new ForbiddenException("The user did not participate in this exchange");
         }
         if (isUserA(reviewerUserId)) {
-            if (feedbackFromA != null) throw new ConflictException("El usuario ya dejó feedback en este intercambio");
+            if (feedbackFromA != null) throw new ConflictException("The user has already left feedback on this exchange");
             this.feedbackFromA = feedback;
         } else {
-            if (feedbackFromB != null) throw new ConflictException("El usuario ya dejó feedback en este intercambio");
+            if (feedbackFromB != null) throw new ConflictException("The user has already left feedback on this exchange");
             this.feedbackFromB = feedback;
         }
     }

@@ -28,26 +28,26 @@ public class ProposalsController {
   }
 
   /**
-   * Crea una propuesta sobre una publicación. {@code publicationId} en el body.
+   * Creates a proposal on a publication. {@code id} in the body.
    */
   @PostMapping
   public ResponseEntity<ApiResponse<TradeProposalDto>> createProposal(
       @RequestAttribute("userId") String userId,
       @Valid @RequestBody CreateTradeProposalDto body
-  ) throws UserNotFoundException, NotFoundException, InsufficientCardException, MissingCardException, NoAvailableSlotsException {
+  ) throws NotFoundException, NotFoundException, InsufficientCardException, MissingCardException, NoAvailableSlotsException {
     TradeProposal proposal = proposalService.createProposal(userId, body);
     TradeProposalDto dto = tradeMapper.mapProposal(proposal);
     return ResponseEntity
         .created(URI.create("/api/proposals/" + proposal.getId()))
-        .body(ApiResponse.of("Propuesta enviada con éxito", dto));
+        .body(ApiResponse.of("Proposal sent successfully", dto));
   }
 
   /**
-   * Lista propuestas del usuario actual (o de {@code userId} si se pasa).
+   * Lists proposals for the current user (or {@code userId} if provided).
    * {@code role}:
-   *   - "proposer" (default): propuestas que el usuario hizo (enviadas)
-   *   - "publisher" / "receiver": propuestas recibidas (sobre publicaciones del usuario)
-   * Filtros opcionales: {@code status}, {@code publicationId}.
+   *   - "proposer" (default): proposals the user made (sent)
+   *   - "publisher" / "receiver": proposals received (on the user's publications)
+   * Optional filters: {@code status}, {@code id}.
    */
   @GetMapping
   public ResponseEntity<List<TradeProposalDto>> listProposals(
@@ -71,7 +71,7 @@ public class ProposalsController {
   }
 
   /**
-   * Detalle de una propuesta.
+   * Proposal detail.
    */
   @GetMapping("/{proposalId}")
   public ResponseEntity<TradeProposalDto> getProposal(
@@ -82,39 +82,39 @@ public class ProposalsController {
   }
 
   /**
-   * Aceptar una propuesta. Dispara el flujo bilateral completo y crea el Exchange histórico.
-   * El {@code exchangeId} devuelto permite al FE redirigir al detalle del Exchange sin un GET extra.
+   * Accepts a proposal. Triggers the full bilateral flow and creates the historical Exchange.
+   * The returned {@code exchangeId} allows the FE to redirect to the Exchange detail without an extra GET.
    */
   @PutMapping("/{proposalId}/accept")
   public ResponseEntity<ApiResponse<String>> acceptProposal(
       @PathVariable String proposalId,
       @RequestAttribute("userId") String userId
-  ) throws UserNotFoundException, NotFoundException, ProposalNotInPublicationException, OfferAlreadyProcessedException, ForbiddenException, MissingCardException, InsufficientCardException {
+  ) throws NotFoundException, NotFoundException, ProposalNotInPublicationException, OfferAlreadyProcessedException, ForbiddenException, MissingCardException, InsufficientCardException {
     String exchangeId = proposalService.acceptProposal(userId, proposalId);
-    return ResponseEntity.ok(ApiResponse.of("Propuesta aceptada con éxito", exchangeId));
+    return ResponseEntity.ok(ApiResponse.of("Proposal accepted successfully", exchangeId));
   }
 
   /**
-   * Rechazar una propuesta. Libera el compromisedCount del proponente.
+   * Rejects a proposal. Releases the proposer's compromisedCount.
    */
   @PutMapping("/{proposalId}/reject")
   public ResponseEntity<ApiResponse<Void>> rejectProposal(
       @PathVariable String proposalId,
       @RequestAttribute("userId") String userId
-  ) throws UserNotFoundException, NotFoundException, ProposalNotInPublicationException, OfferAlreadyProcessedException, ForbiddenException {
+  ) throws NotFoundException, NotFoundException, ProposalNotInPublicationException, OfferAlreadyProcessedException, ForbiddenException {
     proposalService.rejectProposal(userId, proposalId);
-    return ResponseEntity.ok(ApiResponse.of("Propuesta rechazada"));
+    return ResponseEntity.ok(ApiResponse.of("Proposal rejected"));
   }
 
   /**
-   * Cancelar una propuesta del lado del proponente.
+   * Cancels a proposal from the proposer side.
    */
   @PutMapping("/{proposalId}/cancel")
   public ResponseEntity<ApiResponse<Void>> cancelProposal(
       @PathVariable String proposalId,
       @RequestAttribute("userId") String userId
-  ) throws UserNotFoundException, NotFoundException, OfferAlreadyProcessedException, ForbiddenException {
+  ) throws NotFoundException, NotFoundException, OfferAlreadyProcessedException, ForbiddenException {
     proposalService.cancelProposal(userId, proposalId);
-    return ResponseEntity.ok(ApiResponse.of("Propuesta cancelada"));
+    return ResponseEntity.ok(ApiResponse.of("Proposal cancelled"));
   }
 }

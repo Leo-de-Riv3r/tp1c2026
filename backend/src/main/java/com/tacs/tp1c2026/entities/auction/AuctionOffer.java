@@ -6,6 +6,7 @@ import com.tacs.tp1c2026.entities.user.User;
 import com.tacs.tp1c2026.exceptions.ForbiddenException;
 import lombok.Getter;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
 import java.time.LocalDateTime;
@@ -13,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-
+@TypeAlias("auction_offer")
 @Getter
 public class AuctionOffer {
   @Id
@@ -22,7 +23,7 @@ public class AuctionOffer {
   @DocumentReference
   private User bidder;
 
-  // Snapshot del id+nombre+rating+avatar del bidder — evita depender de hidratar @DocumentReference dentro de array embebido
+  // Snapshot of bidder id+name+rating+avatar — avoids depending on @DocumentReference hydration inside embedded array
   private String bidderId;
   private String bidderName;
   private Double bidderRating;
@@ -59,7 +60,7 @@ public class AuctionOffer {
 
   public void validateCreator(String userId) {
     if (!this.bidder.getId().equals(userId))
-      throw new ForbiddenException("Solo el creador de la oferta puede realizar esta operación");
+      throw new ForbiddenException("Only the offer creator can perform this operation");
   }
 
   public void cancel() {

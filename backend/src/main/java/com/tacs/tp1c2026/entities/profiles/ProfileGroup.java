@@ -5,6 +5,7 @@
  import jakarta.annotation.PostConstruct;
  import lombok.Getter;
  import org.springframework.data.annotation.Id;
+ import org.springframework.data.annotation.TypeAlias;
  import org.springframework.data.mongodb.core.mapping.Document;
  import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
@@ -14,6 +15,7 @@
  import java.util.Set;
 
  @Document("grupo_perfil")
+ @TypeAlias("profile_group")
  public class ProfileGroup {
 
      @Id

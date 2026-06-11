@@ -7,10 +7,10 @@ import com.tacs.tp1c2026.entities.user.embedded.MissingCard;
 import com.tacs.tp1c2026.entities.user.embedded.Suggestion;
 import com.tacs.tp1c2026.exceptions.InsufficientCardException;
 import com.tacs.tp1c2026.exceptions.MissingCardException;
-import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -55,7 +55,7 @@ public class User {
     private UserRole role = UserRole.USER;
 
     @Getter
-    private Double rating = null;
+    private Double rating = 0.0;
 
     @Getter
     private Integer exchangesAmount = 0;
@@ -76,6 +76,7 @@ public class User {
     @Getter
     private List<Suggestion> suggestions = new ArrayList<>();
 
+    @Transient
     private Profile vectorProfile = new Profile();
 
     public Profile getProfile() { return this.vectorProfile; }
@@ -143,7 +144,7 @@ public class User {
             try {
                 item.decrement(amount);
             } catch (InsufficientCardException ignored) {
-                // No debería pasar — el compromise garantiza disponibilidad
+                // Should not happen — compromise guarantees availability
             }
             if (item.getQuantity() == 0) {
                 this.collection.remove(item);
@@ -181,8 +182,7 @@ public class User {
         return this.missingCards.stream().filter(mc -> other.hasInCollection(mc.getCardId())).toList();
     }
 
-    @PostConstruct
-    private void initializeVectorProfile() {
+    public void rebuildVectorProfile() {
         this.vectorProfile = new Profile(
             this.collection.stream().map(CollectionCard::getCardId).toList(),
             this.missingCards.stream().map(MissingCard::getCardId).toList()

@@ -8,9 +8,11 @@ import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Getter;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "notifications")
+@TypeAlias("notification")
 @Builder
 @Getter
 public class Notification {
@@ -33,13 +35,13 @@ public class Notification {
 
   public void validateOwner(String userId) {
     if (!this.receiverId.equals(userId)) {
-      throw new ForbiddenException("No eres dueño de esta nofiticacion");
+      throw new ForbiddenException("You don't have permission to access this notification");
     }
   }
 
   public void setAsRead() {
     if(this.isRead()) {
-      throw new ConflictException("La notificación ya se encuentra leída");
+      throw new ConflictException("Notification already read");
     }
     this.status = NotificationStatus.READ;
   }

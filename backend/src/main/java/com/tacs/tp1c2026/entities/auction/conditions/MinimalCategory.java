@@ -3,7 +3,9 @@ package com.tacs.tp1c2026.entities.auction.conditions;
 import com.tacs.tp1c2026.entities.auction.AuctionOffer;
 import com.tacs.tp1c2026.entities.enums.Category;
 import com.tacs.tp1c2026.entities.user.User;
+import org.springframework.data.annotation.TypeAlias;
 
+@TypeAlias("minimal_category")
 public class MinimalCategory extends AuctionCondition {
   private Category category;
 

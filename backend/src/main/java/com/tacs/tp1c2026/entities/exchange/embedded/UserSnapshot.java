@@ -4,10 +4,12 @@ import com.tacs.tp1c2026.entities.user.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.TypeAlias;
 
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@TypeAlias("user_snapshot")
 public class UserSnapshot {
 
     private String userId;

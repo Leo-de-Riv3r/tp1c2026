@@ -1,8 +1,8 @@
 package com.tacs.tp1c2026.entities.dto.statistics.output;
 
 /**
- * Entrada de la lista "cartas más buscadas" — cada elemento describe una card y cuántos
- * users la marcaron como faltante en la ventana de días considerada
+ * Entry of the "most wanted cards" list — each element describes a card and how many
+ * users marked it as missing in the considered time window
  */
 public record MostWantedCardEntry(
     String cardId,

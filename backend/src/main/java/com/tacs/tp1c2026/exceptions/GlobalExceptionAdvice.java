@@ -29,9 +29,9 @@ public class GlobalExceptionAdvice {
     }
 
     /**
-     * Spring valida los DTOs anotados con @Valid y lanza esta excepción si fallan
-     * Se concatena campo + mensaje en una única descripción para mantener el shape ApiError uniforme con el resto de los handlers
-     * La validación primaria de UX vive en el FE; este mensaje es defensa en profundidad para clientes no-FE (curl/Postman) o bugs del FE
+     * Spring validates DTOs annotated with @Valid and throws this exception when they fail.
+     * Concatenates field + message into a single description to keep the ApiError shape uniform with the other handlers.
+     * Primary UX validation lives in the FE; this message is defense-in-depth for non-FE clients (curl/Postman) or FE bugs.
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiError> handleValidationExceptions(MethodArgumentNotValidException ex) {
@@ -43,13 +43,13 @@ public class GlobalExceptionAdvice {
             .body(ApiError.of(
                 HttpStatus.BAD_REQUEST.value(),
                 HttpStatus.BAD_REQUEST.getReasonPhrase(),
-                "Datos inválidos: " + details
+                "Invalid data: " + details
             ));
     }
 
     /**
-     * Se dispara cuando dos transacciones concurrentes intentan modificar el mismo documento y la versión optimista no coincide.¿
-     * Los @Retryable de los services ya agotaron sus reintentos antes de llegar acá
+     * Triggered when two concurrent transactions attempt to modify the same document and the optimistic lock version does not match.
+     * The @Retryable annotations on services have already exhausted their retries before reaching this point.
      */
     @ExceptionHandler(OptimisticLockingFailureException.class)
     public ResponseEntity<ApiError> handleOptimisticLock(OptimisticLockingFailureException ex) {
@@ -59,7 +59,7 @@ public class GlobalExceptionAdvice {
             .body(ApiError.of(
                 HttpStatus.CONFLICT.value(),
                 HttpStatus.CONFLICT.getReasonPhrase(),
-                "El recurso fue modificado por otra operación. Por favor reintentá."
+                "The resource was modified by another operation. Please retry."
             ));
     }
 

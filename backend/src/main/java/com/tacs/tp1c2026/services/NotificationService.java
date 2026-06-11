@@ -16,7 +16,6 @@ import com.tacs.tp1c2026.utils.PageableGenerator;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,15 +26,20 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class NotificationService {
-  @Autowired
-    private NotificationRepository notificationRepository;
-  @Autowired
-  private PageableGenerator pageableGenerator;
-  @Autowired
-  private AuctionRepository auctionRepository;
+    private final NotificationRepository notificationRepository;
+    private final PageableGenerator pageableGenerator;
+    private final AuctionRepository auctionRepository;
+    private final UserRepository userRepository;
 
-  @Autowired
-  private UserRepository userRepository;
+    public NotificationService(NotificationRepository notificationRepository,
+                                PageableGenerator pageableGenerator,
+                                AuctionRepository auctionRepository,
+                                UserRepository userRepository) {
+        this.notificationRepository = notificationRepository;
+        this.pageableGenerator = pageableGenerator;
+        this.auctionRepository = auctionRepository;
+        this.userRepository = userRepository;
+    }
 
     public void createNotification(User receiver, NotificationType type, String referenceId, String message) {
         Notification notification = Notification.builder()

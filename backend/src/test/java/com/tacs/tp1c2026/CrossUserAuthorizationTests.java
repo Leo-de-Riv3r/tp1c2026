@@ -23,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 public class CrossUserAuthorizationTests extends IntegrationTestBase {
 
-  private static final String CROSS_USER_MESSAGE = "No podés acceder a recursos de otro usuario";
+  private static final String CROSS_USER_MESSAGE = "You cannot access another user's resources";
 
   private void assertForbiddenCrossUserBody(MvcResult result) throws Exception {
     String body = result.getResponse().getContentAsString();
@@ -205,7 +205,7 @@ public class CrossUserAuthorizationTests extends IntegrationTestBase {
         .andReturn().getResponse().getContentAsString();
     assertEquals(401, (int) JsonPath.read(body, "$.status"));
     assertEquals("Unauthorized", JsonPath.read(body, "$.error"));
-    assertEquals("Token de autenticación no provisto", JsonPath.read(body, "$.message"));
+    assertEquals("Authentication token not provided", JsonPath.read(body, "$.message"));
     assertNotNull(JsonPath.read(body, "$.timestamp"));
   }
 
@@ -219,7 +219,7 @@ public class CrossUserAuthorizationTests extends IntegrationTestBase {
         .andReturn().getResponse().getContentAsString();
     assertEquals(401, (int) JsonPath.read(body, "$.status"));
     assertEquals("Unauthorized", JsonPath.read(body, "$.error"));
-    assertEquals("Token de autenticación inválido", JsonPath.read(body, "$.message"));
+    assertEquals("Invalid authentication token", JsonPath.read(body, "$.message"));
     assertNotNull(JsonPath.read(body, "$.timestamp"));
   }
 
@@ -233,7 +233,7 @@ public class CrossUserAuthorizationTests extends IntegrationTestBase {
         .andReturn().getResponse().getContentAsString();
     assertEquals(403, (int) JsonPath.read(body, "$.status"));
     assertEquals("Forbidden", JsonPath.read(body, "$.error"));
-    assertEquals("No tenés permisos para acceder a este recurso", JsonPath.read(body, "$.message"));
+    assertEquals("You do not have permission to access this resource", JsonPath.read(body, "$.message"));
     assertNotNull(JsonPath.read(body, "$.timestamp"));
   }
 }

@@ -15,7 +15,7 @@ import java.util.List;
  *   Tiene que cumplir 1 ≤ requestedCount ≤ publication.remainingCount.
  */
 public record CreateTradeProposalDto(
-    @NotBlank(message = "publicationId es requerido")
+    @NotBlank(message = "id es requerido")
     String publicationId,
 
     @NotEmpty(message = "cardIds no puede estar vacío")

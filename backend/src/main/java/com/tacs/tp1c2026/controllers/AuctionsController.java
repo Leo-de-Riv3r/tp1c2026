@@ -21,7 +21,6 @@ import com.tacs.tp1c2026.exceptions.MissingCardException;
 import com.tacs.tp1c2026.exceptions.NotFoundException;
 import com.tacs.tp1c2026.exceptions.OfferAlreadyProcessedException;
 import com.tacs.tp1c2026.exceptions.OfferNotFoundException;
-import com.tacs.tp1c2026.exceptions.UserNotFoundException;
 import com.tacs.tp1c2026.services.AuctionService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -43,25 +42,25 @@ public class AuctionsController {
   }
 
   /**
-   * Crea una nueva subasta sobre una figurita repetida del usuario.
+   * Creates a new auction on a duplicate card from the user's collection.
    */
   @PostMapping
   public ResponseEntity<ApiResponse<AuctionDto>> createAuction(
       @RequestAttribute("userId") String userId,
       @Valid @RequestBody CreateAuctionDto dto
-  ) throws InsufficientCardException, MissingCardException, NotFoundException, UserNotFoundException {
+  ) throws InsufficientCardException, MissingCardException, NotFoundException, NotFoundException {
     Auction auction = auctionService.createAuction(userId, dto);
     AuctionDto body = auctionMapper.mapAuction(auction);
     return ResponseEntity
         .created(URI.create("/api/auctions/" + auction.getId()))
-        .body(ApiResponse.of("Subasta creada con éxito", body));
+        .body(ApiResponse.of("Auction created successfully", body));
   }
 
   /**
-   * Búsqueda paginada de subastas.
-   *   - Si se envía {@code userId}, devuelve todas las subastas creadas por ese usuario
-   *     (cualquier estado), sin aplicar los filtros de actividad.
-   *   - Si no, devuelve subastas activas con filtros opcionales (name, country, team,
+   * Paginated search of auctions.
+   *   - If {@code userId} is sent, returns all auctions created by that user
+   *     (any status), without applying activity filters.
+   *   - Otherwise, returns active auctions with optional filters (name, country, team,
    *     category, cardType).
    */
   @GetMapping
@@ -89,9 +88,9 @@ public class AuctionsController {
   }
 
   /**
-   * Ofertas hechas por un usuario (vista "Mis Ofertas"). Devuelve una lista plana de
-   * {@link UserBidDto}, no de Auction (shape distinto al search por eso es endpoint propio).
-   * Si no se envía {@code userId}, usa el del token.
+   * Offers made by a user ("My Offers" view). Returns a flat list of {@link UserBidDto},
+   * not Auction (different shape from search, hence its own endpoint).
+   * If {@code userId} is not sent, uses the token user.
    */
   @GetMapping("/offers")
   public ResponseEntity<java.util.List<UserBidDto>> getOffers(
@@ -103,7 +102,7 @@ public class AuctionsController {
   }
 
   /**
-   * Detalle de una subasta.
+   * Auction detail.
    */
   @GetMapping("/{auctionId}")
   public ResponseEntity<AuctionDto> getAuction(@PathVariable String auctionId) throws NotFoundException {
@@ -112,50 +111,49 @@ public class AuctionsController {
   }
 
   /**
-   * Crea una oferta sobre una subasta existente.
+   * Creates an offer on an existing auction.
    */
   @PostMapping("/{auctionId}/offers")
   public ResponseEntity<ApiResponse<AuctionOfferDto>> createOffer(
       @PathVariable String auctionId,
       @RequestAttribute("userId") String userId,
       @Valid @RequestBody CreationAuctionOfferDto body
-  ) throws InsufficientCardException, MissingCardException, NotFoundException, UserNotFoundException {
-    CreationAuctionOfferDto dto = new CreationAuctionOfferDto(auctionId, body.items());
-    AuctionOffer offer = auctionService.createAuctionOffer(userId, dto);
+  ) throws InsufficientCardException, MissingCardException, NotFoundException, NotFoundException {
+    AuctionOffer offer = auctionService.createAuctionOffer(userId, auctionId, body);
     AuctionOfferDto offerDto = auctionMapper.mapOffer(auctionId, offer);
     return ResponseEntity
         .created(URI.create("/api/auctions/" + auctionId + "/offers/" + offer.getId()))
-        .body(ApiResponse.of("Oferta publicada con éxito", offerDto));
+        .body(ApiResponse.of("Offer published successfully", offerDto));
   }
 
   /**
-   * Marca al usuario como interesado en la subasta.
+   * Marks the user as interested in the auction.
    */
   @PostMapping("/{auctionId}/interested")
   public ResponseEntity<ApiResponse<Void>> addInterested(
       @PathVariable String auctionId,
       @RequestAttribute("userId") String userId
-  ) throws NotFoundException, UserNotFoundException {
+  ) throws NotFoundException, NotFoundException {
     auctionService.addInterestedUser(auctionId, userId);
-    return ResponseEntity.ok(ApiResponse.of("Marcado como interesado"));
+    return ResponseEntity.ok(ApiResponse.of("Marked as interested"));
   }
 
   /**
-   * Cancela una subasta del usuario.
+   * Cancels an auction from the user.
    */
   @DeleteMapping("/{auctionId}")
   public ResponseEntity<ApiResponse<Void>> cancelAuction(
       @PathVariable String auctionId,
       @RequestAttribute("userId") String userId
-  ) throws AuctionClosedException, NotFoundException, UserNotFoundException, ForbiddenException {
+  ) throws AuctionClosedException, NotFoundException, NotFoundException, ForbiddenException {
     CancelAuctionDto dto = new CancelAuctionDto();
     dto.setAuctionId(auctionId);
     auctionService.cancelAuction(userId, dto);
-    return ResponseEntity.ok(ApiResponse.of("Subasta cancelada"));
+    return ResponseEntity.ok(ApiResponse.of("Auction cancelled"));
   }
 
   /**
-   * Cancela una oferta del usuario.
+   * Cancels an offer from the user.
    */
   @DeleteMapping("/{auctionId}/offers/{offerId}")
   public ResponseEntity<ApiResponse<Void>> cancelAuctionOffer(
@@ -164,7 +162,7 @@ public class AuctionsController {
       @RequestAttribute("userId") String userId
   ) {
     auctionService.cancelOffer(offerId, userId, auctionId);
-    return ResponseEntity.ok(ApiResponse.of("Oferta cancelada"));
+    return ResponseEntity.ok(ApiResponse.of("Offer cancelled"));
   }
 
   @PutMapping("/{auctionId}/offers/{offerId}/best")
@@ -174,7 +172,7 @@ public class AuctionsController {
       @RequestAttribute("userId") String userId
   ) {
     auctionService.setAuctionOfferAsBest(auctionId, offerId, userId);
-    return ResponseEntity.ok(ApiResponse.of("Oferta marcada como mejor"));
+    return ResponseEntity.ok(ApiResponse.of("Offer marked as best"));
   }
 
   @PutMapping("/{auctionId}/offers/{offerId}/reject")
@@ -184,7 +182,7 @@ public class AuctionsController {
       @RequestAttribute("userId") String userId
   ) {
     auctionService.rejectAuctionOffer(auctionId, offerId, userId);
-    return ResponseEntity.ok(ApiResponse.of("Oferta rechazada"));
+    return ResponseEntity.ok(ApiResponse.of("Offer rejected"));
   }
 
   @PutMapping("/{auctionId}/offers/{offerId}/accept")
@@ -192,9 +190,9 @@ public class AuctionsController {
       @PathVariable String auctionId,
       @PathVariable String offerId,
       @RequestAttribute("userId") String userId
-  ) throws AuctionClosedException, NotFoundException, UserNotFoundException, ForbiddenException, OfferAlreadyProcessedException, OfferNotFoundException {
+  ) throws AuctionClosedException, NotFoundException, NotFoundException, ForbiddenException, OfferAlreadyProcessedException, OfferNotFoundException {
     auctionService.acceptAuctionOffer(auctionId, offerId, userId);
-    return ResponseEntity.ok(ApiResponse.of("Oferta aceptada"));
+    return ResponseEntity.ok(ApiResponse.of("Offer accepted"));
   }
 
 }

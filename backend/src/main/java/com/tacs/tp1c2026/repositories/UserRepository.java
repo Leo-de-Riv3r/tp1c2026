@@ -13,7 +13,7 @@ public interface UserRepository extends Repository<User, String> {
 
   boolean existsByEmail(String email);
 
-  // Excluye admins: el admin nunca debería ser notificado de una card disponible
+  // Excludes admins: admin should never be notified of an available card
   @Query(value = "{ 'missingCards.cardId' : ?0, $or: [ { 'role' : 'USER' }, { 'role' : { $exists: false } } ] }", fields = "{ '_id' : 1 }")
   List<User> findUsersSeekingCard(String cardId);
 }

@@ -1,5 +1,6 @@
 package com.tacs.tp1c2026.config;
 
+import com.tacs.tp1c2026.repositories.UserRepository;
 import com.tacs.tp1c2026.services.AuthService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -12,19 +13,21 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 /**
- * Filtro HTTP que valida el JWT en el header Authorization. Si el token es válido,
- * pone {@code userId} y {@code role} como request attributes para que los controllers
- * los puedan recuperar con {@code @RequestAttribute}.
+ * HTTP filter that validates the JWT in the Authorization header. If the token is valid,
+ * sets {@code userId} and {@code role} as request attributes so controllers can retrieve
+ * them with {@code @RequestAttribute}.
  */
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   private final AuthService authService;
   private final ApiErrorResponseWriter errorWriter;
+  private final UserRepository userRepository;
 
-  public JwtAuthenticationFilter(AuthService authService, ApiErrorResponseWriter errorWriter) {
+  public JwtAuthenticationFilter(AuthService authService, ApiErrorResponseWriter errorWriter, UserRepository userRepository) {
     this.authService = authService;
     this.errorWriter = errorWriter;
+    this.userRepository = userRepository;
   }
 
   @Override
@@ -46,20 +49,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     String header = request.getHeader("Authorization");
     if (header == null || !header.startsWith("Bearer ")) {
-      errorWriter.write(response, HttpStatus.UNAUTHORIZED, "Token de autenticación no provisto");
+      errorWriter.write(response, HttpStatus.UNAUTHORIZED, "Authentication token not provided");
       return;
     }
 
     try {
       String token = header.substring(7);
       if (!authService.isTokenValid(token)) {
-        errorWriter.write(response, HttpStatus.UNAUTHORIZED, "Token de autenticación inválido");
+        errorWriter.write(response, HttpStatus.UNAUTHORIZED, "Invalid authentication token");
         return;
       }
-      request.setAttribute("userId", authService.extractUserId(token));
+      String userId = authService.extractUserId(token);
+      if (!userRepository.existsById(userId)) {
+        errorWriter.write(response, HttpStatus.UNAUTHORIZED, "The token user no longer exists");
+        return;
+      }
+      request.setAttribute("userId", userId);
       request.setAttribute("role", authService.extractRole(token));
     } catch (Exception e) {
-      errorWriter.write(response, HttpStatus.UNAUTHORIZED, "Token de autenticación inválido");
+      errorWriter.write(response, HttpStatus.UNAUTHORIZED, "Invalid authentication token");
       return;
     }
 

@@ -14,7 +14,6 @@ import com.tacs.tp1c2026.repositories.ProposalRepository;
 import com.tacs.tp1c2026.repositories.PublicationRepository;
 import com.tacs.tp1c2026.repositories.UserRepository;
 import com.tacs.tp1c2026.utils.PageableGenerator;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,37 +29,37 @@ import java.util.List;
 
 @Service
 public class PublicationService {
-  @Autowired
-  private ApplicationEventPublisher eventPublisher;
     private final UserRepository userRepository;
     private final PublicationRepository publicationRepository;
     private final ProposalRepository proposalRepository;
     private final UserService userService;
     private final CardService cardService;
     private final PageableGenerator pageableGenerator;
+    private final ApplicationEventPublisher eventPublisher;
 
     public PublicationService(UserRepository userRepository,
                               PublicationRepository publicationRepository,
                               ProposalRepository proposalRepository,
                               UserService userService,
                               CardService cardService,
-                              PageableGenerator pageableGenerator) {
+                              PageableGenerator pageableGenerator,
+                              ApplicationEventPublisher eventPublisher) {
         this.userRepository = userRepository;
         this.publicationRepository = publicationRepository;
         this.proposalRepository = proposalRepository;
         this.userService = userService;
         this.cardService = cardService;
         this.pageableGenerator = pageableGenerator;
+        this.eventPublisher = eventPublisher;
     }
 
     /**
-     * Crea una publicación de N unidades de una figurita. Compromete N unidades en la
-     * colección del publicante.
+     * Creates a publication of N units of a card. Commits N units in the publisher's collection.
      */
     @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
     @Transactional
     public TradePublication createPublication(String userId, CreateTradePublicationDto dto)
-            throws UserNotFoundException, NotFoundException, InsufficientCardException, MissingCardException {
+            throws NotFoundException, NotFoundException, InsufficientCardException, MissingCardException {
         User user = this.userService.getById(userId);
         Card card = this.cardService.getById(dto.cardId());
         CollectionCard item = user.findCollectionItem(card.getId())
@@ -79,19 +78,19 @@ public class PublicationService {
     }
 
     /**
-     * Cancela una publicación. Libera todas las unidades comprometidas restantes
-     * (de la publicada y de las propuestas pendientes que se cancelan en cascada).
+     * Cancels a publication. Releases all remaining committed units
+     * (from the published card and from pending proposals that get cancelled in cascade).
      */
     @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
     @Transactional
     public void cancelPublication(String userId, String publicationId)
-            throws UserNotFoundException, NotFoundException, ForbiddenException {
+            throws NotFoundException, NotFoundException, ForbiddenException {
         User user = this.userService.getById(userId);
         TradePublication publication = this.findPublication(publicationId);
         publication.validateOwner(user);
 
         if (!publication.isActive()) {
-            throw new ConflictException("Solo se puede cancelar una publicación activa");
+            throw new ConflictException("Only an active publication can be cancelled");
         }
 
         Integer remaining = publication.getRemainingCount();
@@ -117,7 +116,7 @@ public class PublicationService {
     }
 
     /**
-     * Búsqueda paginada de publicaciones activas con filtros.
+     * Paginated search of active publications with filters.
      */
     public Page<TradePublication> searchActivePublications(Integer page, Integer perPage, SearchPublicationsFilters filters) {
         Pageable pageable = pageableGenerator.buildPageable(page, perPage, 10, null);
@@ -125,7 +124,7 @@ public class PublicationService {
     }
 
     /**
-     * Publicaciones del usuario, paginadas y ordenadas por fecha descendente.
+     * User's publications, paginated and sorted by date descending.
      */
     public Page<TradePublication> getMyPublications(String userId, Integer page, Integer perPage) {
         Pageable pageable = pageableGenerator.buildPageable(page, perPage, 10,

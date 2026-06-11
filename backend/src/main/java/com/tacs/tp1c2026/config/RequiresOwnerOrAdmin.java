@@ -6,11 +6,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Marca un endpoint como restringido al dueño del recurso (identificado por un {@code @PathVariable}) o a un user con role {@code ADMIN}.
- * El check lo hace {@link OwnerOrAdminInterceptor} comparando el {@code userId} del JWT (puesto por {@link JwtAuthenticationFilter}) contra el path variable nombrado por {@link #value()}.
- * Por default toma el path variable {@code id}; si el endpoint usa otro nombre, pasarlo como argumento.
- * Bypass: si el role del JWT es {@code ADMIN}, se permite acceder a recursos de otros users.
- * No matchea ni es ADMIN → 403 Forbidden con body {@link com.tacs.tp1c2026.entities.dto.common.ApiError}.
+ * Marks an endpoint as restricted to the resource owner (identified by a {@code @PathVariable}) or an {@code ADMIN} user.
+ * The check is performed by {@link OwnerOrAdminInterceptor} comparing the JWT {@code userId} (set by {@link JwtAuthenticationFilter}) against the path variable named by {@link #value()}.
+ * Defaults to the path variable {@code id}; if the endpoint uses a different name, pass it as an argument.
+ * Bypass: if the JWT role is {@code ADMIN}, access to other users' resources is allowed.
+ * No match and not ADMIN → 403 Forbidden with body {@link com.tacs.tp1c2026.entities.dto.common.ApiError}.
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)

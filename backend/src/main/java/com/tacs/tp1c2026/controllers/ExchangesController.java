@@ -39,9 +39,9 @@ public class ExchangesController {
       @RequestParam(defaultValue = "1") Integer page,
       @RequestParam(defaultValue = "10") Integer per_page
   ) throws ForbiddenException {
-    // Guard: no se permite consultar exchanges de otro usuario (info leak)
+    // Guard: prevent querying another user's exchanges (info leak)
     if (userId != null && !userId.equals(currentUserId)) {
-      throw new ForbiddenException("No podés consultar los intercambios de otro usuario");
+      throw new ForbiddenException("You cannot view another user's exchanges");
     }
     String targetUserId = userId != null ? userId : currentUserId;
     Page<Exchange> result = exchangeService.findByUserId(targetUserId, page, per_page);
@@ -53,9 +53,9 @@ public class ExchangesController {
   }
 
   /**
-  * Returns the detail of a single exchange by its ID. Solo accesible para los participantes.
+  * Returns the detail of a single exchange by its ID. Only accessible to participants.
   * @param exchangeId
-  * @return the exchangeDto, or 404 if not found, or 403 si el caller no participó
+  * @return the exchangeDto, or 404 if not found, or 403 if the caller did not participate
   */
   @GetMapping("/{exchangeId}")
   public ResponseEntity<ExchangeDto> getExchange(
@@ -64,7 +64,7 @@ public class ExchangesController {
   ) throws NotFoundException, ForbiddenException {
     Exchange exchange = exchangeService.findById(exchangeId);
     if (!exchange.involves(currentUserId)) {
-      throw new ForbiddenException("No podés consultar un intercambio del que no sos parte");
+      throw new ForbiddenException("You cannot view an exchange you are not part of");
     }
     return ResponseEntity.ok(exchangeMapper.mapExchange(exchange));
   }
@@ -79,6 +79,6 @@ public class ExchangesController {
       @Valid @RequestBody AddFeedbackDto body
   ) throws NotFoundException {
     exchangeService.addFeedback(exchangeId, userId, body.getScore(), body.getComment());
-    return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.of("Feedback registrado"));
+    return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.of("Feedback recorded"));
   }
 }

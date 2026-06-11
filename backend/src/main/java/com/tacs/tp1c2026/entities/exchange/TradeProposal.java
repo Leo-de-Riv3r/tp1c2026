@@ -3,11 +3,13 @@ package com.tacs.tp1c2026.entities.exchange;
 import com.tacs.tp1c2026.entities.card.Card;
 import com.tacs.tp1c2026.entities.enums.TradeProposalStatus;
 import com.tacs.tp1c2026.entities.user.User;
+import com.tacs.tp1c2026.exceptions.ForbiddenException;
 import com.tacs.tp1c2026.exceptions.OfferAlreadyProcessedException;
 import com.tacs.tp1c2026.exceptions.UnauthorizedException;
 import lombok.Getter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.TypeAlias;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
@@ -46,6 +48,9 @@ public class TradeProposal {
 
   private LocalDateTime creationDate = LocalDateTime.now();
 
+  @Version // 🛡️ El escudo definitivo contra mutaciones concurrentes
+  private Long version;
+
   protected TradeProposal() {}
 
   public TradeProposal(TradePublication publication, List<Card> cards, Integer requestedCount, User proposerUser, User receiver) {
@@ -74,13 +79,13 @@ public class TradeProposal {
 
   public void validatePending() throws OfferAlreadyProcessedException {
     if (!isPending()) {
-      throw new OfferAlreadyProcessedException("La propuesta ya fue aceptada o rechazada");
+      throw new OfferAlreadyProcessedException("The proposal has already been accepted or rejected");
     }
   }
 
   public void validateOwner(String userId) throws UnauthorizedException {
     if (!Objects.equals(this.proposerUser.getId(), userId)) {
-      throw new UnauthorizedException("El usuario no es el dueño de la propuesta");
+      throw new ForbiddenException("The user is not the owner of the proposal");
     }
   }
 }

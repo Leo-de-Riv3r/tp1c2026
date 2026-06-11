@@ -30,24 +30,24 @@ public class PublicationsController {
   }
 
   /**
-   * Crea una publicación de intercambio.
+   * Creates a trade publication.
    */
   @PostMapping
   public ResponseEntity<ApiResponse<TradePublicationDto>> createPublication(
       @RequestAttribute("userId") String userId,
       @Valid @RequestBody CreateTradePublicationDto dto
-  ) throws UserNotFoundException, NotFoundException, InsufficientCardException, MissingCardException {
+  ) throws NotFoundException, NotFoundException, InsufficientCardException, MissingCardException {
     TradePublication publication = publicationService.createPublication(userId, dto);
     TradePublicationDto body = tradeMapper.mapPublication(publication);
     return ResponseEntity
         .created(URI.create("/api/publications/" + publication.getId()))
-        .body(ApiResponse.of("Publicación creada con éxito", body));
+        .body(ApiResponse.of("Publication created successfully", body));
   }
 
   /**
-   * Búsqueda paginada de publicaciones.
-   * Si se envía {@code userId}, devuelve las publicaciones del usuario (todos los estados).
-   * Si no, devuelve publicaciones activas (con filtros opcionales por nombre, país, equipo, categoría).
+   * Paginated search of publications.
+   * If {@code userId} is sent, returns that user's publications (all statuses).
+   * Otherwise, returns active publications (with optional filters by name, country, team, category).
    */
   @GetMapping
   public ResponseEntity<PaginationDtoOutput<TradePublicationDto>> searchPublications(
@@ -75,7 +75,7 @@ public class PublicationsController {
   }
 
   /**
-   * Detalle de una publicación.
+   * Publication detail.
    */
   @GetMapping("/{publicationId}")
   public ResponseEntity<TradePublicationDto> getPublication(
@@ -86,14 +86,14 @@ public class PublicationsController {
   }
 
   /**
-   * Cancela una publicación del usuario actual.
+   * Cancels a publication from the current user.
    */
   @DeleteMapping("/{publicationId}")
   public ResponseEntity<ApiResponse<Void>> cancelPublication(
       @PathVariable String publicationId,
       @RequestAttribute("userId") String userId
-  ) throws UserNotFoundException, NotFoundException, ForbiddenException {
+  ) throws NotFoundException, NotFoundException, ForbiddenException {
     publicationService.cancelPublication(userId, publicationId);
-    return ResponseEntity.ok(ApiResponse.of("Publicación cancelada"));
+    return ResponseEntity.ok(ApiResponse.of("Publication cancelled"));
   }
 }

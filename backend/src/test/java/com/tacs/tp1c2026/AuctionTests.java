@@ -127,8 +127,8 @@ public class AuctionTests extends IntegrationTestBase {
     addToCollectionN(bidder.userId(), "card_022", 2, bidder.token());
 
     String offerBody = """
-        { "auctionId": "%s", "items": [ { "cardId": "card_022", "amount": 1 } ] }
-        """.formatted(auctionId);
+        { "items": [ { "cardId": "card_022", "amount": 1 } ] }
+        """;
 
     mockMvc.perform(post("/api/auctions/" + auctionId + "/offers")
             .contentType(MediaType.APPLICATION_JSON)
@@ -223,7 +223,7 @@ public class AuctionTests extends IntegrationTestBase {
     mockMvc.perform(post("/api/auctions/" + auctionId + "/offers")
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + bidder.token())
-            .content("{ \"auctionId\": \"%s\", \"items\": [ { \"cardId\": \"card_003\", \"amount\": 1 } ] }".formatted(auctionId)))
+            .content("{ \"items\": [ { \"cardId\": \"card_003\", \"amount\": 1 } ] }"))
         .andExpect(status().is2xxSuccessful());
   }
 
@@ -241,7 +241,7 @@ public class AuctionTests extends IntegrationTestBase {
     mockMvc.perform(post("/api/auctions/" + auctionId + "/offers")
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + bidder.token())
-            .content("{ \"auctionId\": \"%s\", \"items\": [ { \"cardId\": \"card_003\", \"amount\": 1 } ] }".formatted(auctionId)))
+            .content("{ \"items\": [ { \"cardId\": \"card_003\", \"amount\": 1 } ] }"))
         .andExpect(status().isUnprocessableEntity());
   }
 
@@ -260,7 +260,7 @@ public class AuctionTests extends IntegrationTestBase {
     mockMvc.perform(post("/api/auctions/" + auctionId + "/offers")
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + bidder.token())
-            .content("{ \"auctionId\": \"%s\", \"items\": [ { \"cardId\": \"card_003\", \"amount\": 1 } ] }".formatted(auctionId)))
+            .content("{ \"items\": [ { \"cardId\": \"card_003\", \"amount\": 1 } ] }"))
         .andExpect(status().is2xxSuccessful());
   }
 
@@ -278,7 +278,7 @@ public class AuctionTests extends IntegrationTestBase {
     mockMvc.perform(post("/api/auctions/" + auctionId + "/offers")
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + bidder.token())
-            .content("{ \"auctionId\": \"%s\", \"items\": [ { \"cardId\": \"card_003\", \"amount\": 1 } ] }".formatted(auctionId)))
+            .content("{ \"items\": [ { \"cardId\": \"card_003\", \"amount\": 1 } ] }"))
         .andExpect(status().isUnprocessableEntity());
   }
 
@@ -297,7 +297,7 @@ public class AuctionTests extends IntegrationTestBase {
     mockMvc.perform(post("/api/auctions/" + auctionId + "/offers")
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + bidder.token())
-            .content("{ \"auctionId\": \"%s\", \"items\": [ { \"cardId\": \"card_003\", \"amount\": 1 } ] }".formatted(auctionId)))
+            .content("{ \"items\": [ { \"cardId\": \"card_003\", \"amount\": 1 } ] }"))
         .andExpect(status().is2xxSuccessful());
   }
 
@@ -315,7 +315,7 @@ public class AuctionTests extends IntegrationTestBase {
     mockMvc.perform(post("/api/auctions/" + auctionId + "/offers")
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + bidder.token())
-            .content("{ \"auctionId\": \"%s\", \"items\": [ { \"cardId\": \"card_003\", \"amount\": 1 } ] }".formatted(auctionId)))
+            .content("{ \"items\": [ { \"cardId\": \"card_003\", \"amount\": 1 } ] }"))
         .andExpect(status().isUnprocessableEntity());
   }
 
@@ -333,7 +333,7 @@ public class AuctionTests extends IntegrationTestBase {
     mockMvc.perform(post("/api/auctions/" + auctionId + "/offers")
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + bidder.token())
-            .content("{ \"auctionId\": \"%s\", \"items\": [ { \"cardId\": \"card_003\", \"amount\": 3 } ] }".formatted(auctionId)))
+            .content("{ \"items\": [ { \"cardId\": \"card_003\", \"amount\": 3 } ] }"))
         .andExpect(status().is2xxSuccessful());
   }
 
@@ -351,7 +351,7 @@ public class AuctionTests extends IntegrationTestBase {
     mockMvc.perform(post("/api/auctions/" + auctionId + "/offers")
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + bidder.token())
-            .content("{ \"auctionId\": \"%s\", \"items\": [ { \"cardId\": \"card_003\", \"amount\": 1 } ] }".formatted(auctionId)))
+            .content("{ \"items\": [ { \"cardId\": \"card_003\", \"amount\": 1 } ] }"))
         .andExpect(status().isUnprocessableEntity());
   }
 
@@ -369,7 +369,7 @@ public class AuctionTests extends IntegrationTestBase {
     mockMvc.perform(post("/api/auctions/" + auctionId + "/offers")
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + bidder.token())
-            .content("{ \"auctionId\": \"%s\", \"items\": [ { \"cardId\": \"card_001\", \"amount\": 1 } ] }".formatted(auctionId)))
+            .content("{ \"items\": [ { \"cardId\": \"card_001\", \"amount\": 1 } ] }"))
         .andExpect(status().is2xxSuccessful());
   }
 
@@ -428,8 +428,8 @@ public class AuctionTests extends IntegrationTestBase {
 
   private void placeBid(String bidderToken, String auctionId, String cardId, int amount) throws Exception {
     String offerBody = """
-        { "auctionId": "%s", "items": [ { "cardId": "%s", "amount": %d } ] }
-        """.formatted(auctionId, cardId, amount);
+        { "items": [ { "cardId": "%s", "amount": %d } ] }
+        """.formatted(cardId, amount);
     mockMvc.perform(post("/api/auctions/" + auctionId + "/offers")
         .contentType(MediaType.APPLICATION_JSON)
         .header("Authorization", "Bearer " + bidderToken)
@@ -442,7 +442,7 @@ public class AuctionTests extends IntegrationTestBase {
         .header("Authorization", "Bearer " + token))
         .andExpect(status().isOk())
         .andReturn();
-    return JsonPath.read(res.getResponse().getContentAsString(), "$.offers[0].offerId");
+    return JsonPath.read(res.getResponse().getContentAsString(), "$.offers[0].id");
   }
 
   private Integer compromisedCount(String userId, String cardId, String token) throws Exception {
@@ -663,7 +663,7 @@ public class AuctionTests extends IntegrationTestBase {
 
     assertEquals(403, (int) JsonPath.read(body, "$.status"));
     assertEquals("Forbidden", JsonPath.read(body, "$.error"));
-    assertEquals("Solo el creador de la oferta puede realizar esta operación", JsonPath.read(body, "$.message"));
+    assertEquals("Only the offer creator can perform this operation", JsonPath.read(body, "$.message"));
   }
 
   @Test

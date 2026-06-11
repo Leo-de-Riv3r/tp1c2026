@@ -1,6 +1,5 @@
 package com.tacs.tp1c2026.entities.dto.exchange.output;
 
-import com.tacs.tp1c2026.entities.enums.ExchangeStatus;
 import com.tacs.tp1c2026.entities.exchange.embedded.CardSnapshot;
 import com.tacs.tp1c2026.entities.exchange.embedded.ExchangeOrigin;
 import com.tacs.tp1c2026.entities.exchange.embedded.Feedback;
@@ -16,7 +15,6 @@ public record ExchangeDto(
     UserSnapshot userB,
     List<CardSnapshot> cardsFromA,
     List<CardSnapshot> cardsFromB,
-    ExchangeStatus status,
     LocalDateTime createdAt,
     Feedback feedbackFromA,
     Feedback feedbackFromB
