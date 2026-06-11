@@ -1,13 +1,14 @@
 package com.tacs.tp1c2026.entities.user;
 
 import com.tacs.tp1c2026.entities.enums.UserRole;
-import com.tacs.tp1c2026.entities.notification.Notification;
+import com.tacs.tp1c2026.entities.notification.UserNotification;
 import com.tacs.tp1c2026.entities.profiles.Profile;
 import com.tacs.tp1c2026.entities.user.embedded.CollectionCard;
 import com.tacs.tp1c2026.entities.user.embedded.MissingCard;
 import com.tacs.tp1c2026.entities.user.embedded.Suggestion;
 import com.tacs.tp1c2026.exceptions.InsufficientCardException;
 import com.tacs.tp1c2026.exceptions.MissingCardException;
+import com.tacs.tp1c2026.exceptions.NotFoundException;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
@@ -78,8 +79,11 @@ public class User {
     private List<Suggestion> suggestions = new ArrayList<>();
 
     @Getter
-    private List<Notification> notifications = new ArrayList<>();
+    private List<UserNotification> notifications = new ArrayList<>();
 
+    public static final int MAX_NOTIFICATIONS = 20;
+
+    @Transient
     private Profile vectorProfile = new Profile();
 
     public Profile getProfile() { return this.vectorProfile; }
@@ -185,30 +189,53 @@ public class User {
         return this.missingCards.stream().filter(mc -> other.hasInCollection(mc.getCardId())).toList();
     }
 
-    public void receiveNotification(Notification notification) {
+    /**
+     * Encola una notificación propia (FIFO, tope {@value #MAX_NOTIFICATIONS}). Al excederse,
+     * descarta la más vieja LEÍDA; si están todas sin leer, cae la más vieja. Así se protege
+     * lo pendiente. Limitación consciente: más de 20 sin leer ⇒ se pierden las más viejas.
+     */
+    public void receiveNotification(UserNotification notification) {
         this.notifications.add(notification);
+        if (this.notifications.size() > MAX_NOTIFICATIONS) {
+            evictOldest();
+        }
     }
 
-    @PostConstruct
-    private void initializeVectorProfile() {
+    private void evictOldest() {
+        for (int i = 0; i < this.notifications.size(); i++) {
+            if (!this.notifications.get(i).isUnread()) {
+                this.notifications.remove(i);
+                return;
+            }
+        }
+        this.notifications.remove(0); // todas sin leer → cae la más vieja (FIFO)
+    }
+
+    public void markNotificationRead(String notificationId) {
+        UserNotification n = this.notifications.stream()
+            .filter(it -> it.getId().equals(notificationId))
+            .findFirst()
+            .orElseThrow(() -> new NotFoundException("Notification not found"));
+        n.markRead();
+    }
+
+    public void markAllNotificationsRead() {
+        this.notifications.forEach(UserNotification::markRead);
+    }
+
+    public long unreadNotificationCount() {
+        return this.notifications.stream().filter(UserNotification::isUnread).count();
+    }
+
+    /** Para dedupe de "carta disponible": ¿ya hay una noti propia sin leer apuntando a este recurso? */
+    public boolean hasUnreadNotificationReferencing(String referenceId) {
+        return this.notifications.stream().anyMatch(n -> n.isUnreadOwnReferencing(referenceId));
+    }
+
+    public void rebuildVectorProfile() {
         this.vectorProfile = new Profile(
             this.collection.stream().map(CollectionCard::getCardId).toList(),
             this.missingCards.stream().map(MissingCard::getCardId).toList()
         );
     }
-
-    public void saveNotificationById(String notificationId) {
-        Notification notification = this.notifications.stream().filter(n -> n.getId().equals(notificationId)).findFirst()
-            .orElseThrow(() -> new IllegalArgumentException("Notification not found in user's notifications"));
-        notification.setAsRead();
-    }
-
-    public void readAllNotifications() {
-        this.notifications.forEach(n -> {
-            if (!n.isRead()) {
-                n.setAsRead();
-            }
-        });
-    }
-
 }

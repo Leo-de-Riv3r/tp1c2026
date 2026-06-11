@@ -12,7 +12,6 @@ import com.tacs.tp1c2026.config.RequiresOwnerOrAdmin;
 import com.tacs.tp1c2026.config.RequiresRole;
 import com.tacs.tp1c2026.config.ValidatesPathUser;
 import com.tacs.tp1c2026.entities.enums.NotificationStatus;
-import com.tacs.tp1c2026.entities.notification.Notification;
 import com.tacs.tp1c2026.exceptions.InsufficientCardException;
 import com.tacs.tp1c2026.exceptions.MissingCardException;
 import com.tacs.tp1c2026.exceptions.NotFoundException;
@@ -187,9 +186,8 @@ public class UsersController {
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "20") Integer per_page,
             @RequestParam(required = true) NotificationStatus status) {
-        Page<Notification> result = notificationService.getNotificationsForUser(id, status, page, per_page);
-        List<NotificationDto> dtos = result.getContent().stream().map(NotificationDto::from).toList();
-        return ResponseEntity.ok(new PaginationDtoOutput<>(dtos, result.getNumber() + 1, result.getTotalPages()));
+        Page<NotificationDto> result = notificationService.getNotificationsForUser(id, status, page, per_page);
+        return ResponseEntity.ok(new PaginationDtoOutput<>(result.getContent(), result.getNumber() + 1, result.getTotalPages()));
     }
 
     @PutMapping("/{id}/notifications/read")

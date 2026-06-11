@@ -1,44 +1,49 @@
 package com.tacs.tp1c2026.entities.notification;
 
-import com.tacs.tp1c2026.entities.user.User;
 import lombok.Builder;
+import lombok.Getter;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-@Document("scheduled_notifications")
+/**
+ * Notificación agendada para dispararse en el futuro (ej. "subasta por cerrar" a varios
+ * lead-times antes del cierre). Acumula los ids de usuarios interesados; cuando vence, el
+ * {@code NotificationService} la entrega a cada uno como una {@link UserNotification} propia.
+ * Vive en Mongo, así que el cron sobrevive a restarts.
+ */
+@Document(collection = "scheduled_notifications")
+@TypeAlias("scheduledNotification")
+@Getter
 @Builder
 public class ScheduledNotification {
 
-    private final Notification.NotificationData notificationData;
+  @Id
+  private String id;
 
-    private final LocalDateTime scheduledTime;
+  private NotificationData notificationData;
 
-    @DocumentReference
-    private final List<User> users;
+  private LocalDateTime scheduledTime;
 
-    public boolean isDue(LocalDateTime currentTime) {
-        return scheduledTime.isBefore(currentTime);
+  @Builder.Default
+  private List<String> userIds = new ArrayList<>();
+
+  public boolean isDue(LocalDateTime now) {
+    return scheduledTime.isBefore(now);
+  }
+
+  public boolean hasReferenceId(String referenceId) {
+    return Objects.equals(this.notificationData.getReferenceId(), referenceId);
+  }
+
+  public void addUser(String userId) {
+    if (!this.userIds.contains(userId)) {
+      this.userIds.add(userId);
     }
-
-    public void sendNotification(){
-        Notification notification = Notification.builder().data(notificationData).creationDate(LocalDateTime.now()).build();
-        users.forEach(user -> user.receiveNotification(notification));
-    }
-
-    public boolean hasReferenceId(String refId) {
-        return Objects.equals(this.notificationData.getReferenceId(), refId);
-    }
-
-    public void addUser(User user) {
-        users.add(user);
-    }
-
-    public List<User> getUsers() {
-        return users;
-    }
-
+  }
 }
