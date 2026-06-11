@@ -101,7 +101,7 @@ public class ProposalService {
         TradeProposal proposal = new TradeProposal(publication, cards, requested, proposer, publisher);
         TradeProposal saved = proposalRepository.save(proposal);  // autogenera id
         userRepository.save(proposer);
-        notificationService.createNotification(
+        notificationService.createUserNotification(
             publisher,
             NotificationType.TRADE_PROPOSAL_RECEIVED,
             saved.getId(),
@@ -211,7 +211,7 @@ public class ProposalService {
         userRepository.save(publisher);
         publicationRepository.save(publication);
 
-        notificationService.createNotification(
+        notificationService.createUserNotification(
             proposer,
             NotificationType.TRADE_PROPOSAL_ACCEPTED,
             proposal.getId(),
@@ -246,8 +246,7 @@ public class ProposalService {
         }
         proposalRepository.save(proposal);
         userRepository.save(proposer);
-        publicationRepository.releaseSlots(publication.getId(), proposal.getRequestedCount());
-        notificationService.createNotification(
+        notificationService.createUserNotification(
             proposer,
             NotificationType.TRADE_PROPOSAL_REJECTED,
             proposal.getId(),

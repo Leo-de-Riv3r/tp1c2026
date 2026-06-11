@@ -13,7 +13,8 @@ public interface UserRepository extends Repository<User, String> {
 
   boolean existsByEmail(String email);
 
-  // Excludes admins: admin should never be notified of an available card
-  @Query(value = "{ 'missingCards.cardId' : ?0, $or: [ { 'role' : 'USER' }, { 'role' : { $exists: false } } ] }", fields = "{ '_id' : 1 }")
+  // Excludes admins: admin should never be notified of an available card.
+  // Devuelve el user completo (no proyección): el handler dedupea y pushea sobre su cola embebida.
+  @Query(value = "{ 'missingCards.cardId' : ?0, $or: [ { 'role' : 'USER' }, { 'role' : { $exists: false } } ] }")
   List<User> findUsersSeekingCard(String cardId);
 }
