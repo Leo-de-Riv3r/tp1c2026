@@ -26,8 +26,8 @@ public class CardsTests extends IntegrationTestBase {
             .header("Authorization", "Bearer " + pepe.token()))
         .andExpect(status().isOk())
         .andReturn().getResponse().getContentAsString();
-    // El seed de tests carga 500 cards (ver IntegrationTestBase.cleanAndSeed)
-    assertEquals(500, ((List<?>) JsonPath.read(body, "$")).size());
+    // El seed de tests carga 991 cards (catálogo Panini-style, ver IntegrationTestBase.cleanAndSeed)
+    assertEquals(991, ((List<?>) JsonPath.read(body, "$")).size());
   }
 
   @Test

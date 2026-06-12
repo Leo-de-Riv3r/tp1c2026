@@ -216,12 +216,25 @@ public class ExchangeTests extends IntegrationTestBase {
   void ratingUsesOnlyLast21Feedbacks() throws Exception {
     Session bob = register("Bob", "bob22@test.com", "password123");
 
+    // 22 cards distintas para publisher (MEX1..MEX20 + ARG1..ARG2) y 22 para Bob (BRA1..BRA20 + CAN1..CAN2).
+    // El catálogo Panini tiene ~20 cards por país, por eso combinamos dos prefijos cada lado.
+    String[] pubCards = {
+        "MEX1","MEX2","MEX3","MEX4","MEX5","MEX6","MEX7","MEX8","MEX9","MEX10",
+        "MEX11","MEX12","MEX13","MEX14","MEX15","MEX16","MEX17","MEX18","MEX19","MEX20",
+        "ARG1","ARG2"
+    };
+    String[] bobCards = {
+        "BRA1","BRA2","BRA3","BRA4","BRA5","BRA6","BRA7","BRA8","BRA9","BRA10",
+        "BRA11","BRA12","BRA13","BRA14","BRA15","BRA16","BRA17","BRA18","BRA19","BRA20",
+        "CAN1","CAN2"
+    };
+
     // Crear 22 exchanges donde Bob es el "reviewed" (proposer = B).
     // El primero con score=1 (antiguo), los siguientes 21 con score=5.
     for (int i = 1; i <= 22; i++) {
       Session publisher = register("Publisher" + i, "pub" + i + "@test.com", "password123");
-      String cardForPublisher = "card_" + String.format("%03d", i);
-      String cardForBob = "card_" + String.format("%03d", i + 22);
+      String cardForPublisher = pubCards[i - 1];
+      String cardForBob = bobCards[i - 1];
       addToCollection(publisher.userId(), cardForPublisher, publisher.token());
       addToCollection(bob.userId(), cardForBob, bob.token());
 

@@ -303,13 +303,13 @@ public class PublicationTests extends IntegrationTestBase {
 
   @Test
   void searchActivePublicationsFiltersByNameCountryAndCategory() throws Exception {
-    // Pepe publica FWC1 ("Copa del Mundo FIFA 2026", country=null, EPICO).
+    // Pepe publica FWC1 ("Official Emblem", country="FIFA World Cup 2026", EPICO).
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
     addToCollection(pepe.userId(), "FWC1", pepe.token());
     String pubId = idFromCreated(publish(pepe.token(), "FWC1", 1), "id");
 
     // Filter by name (regex case-insensitive contra cardDescription)
-    assertTrue(readActiveIds(pepe.token(), "name", "Copa").contains(pubId));
+    assertTrue(readActiveIds(pepe.token(), "name", "Emblem").contains(pubId));
     assertFalse(readActiveIds(pepe.token(), "name", "noexiste").contains(pubId));
 
     // Filter by category usando el value en español — verifica el fix del CategoryConverter.
@@ -317,7 +317,7 @@ public class PublicationTests extends IntegrationTestBase {
     assertTrue(readActiveIds(pepe.token(), "category", "EPICO").contains(pubId));
     assertFalse(readActiveIds(pepe.token(), "category", "LEGENDARIO").contains(pubId));
 
-    // Filter by country: FWC1 tiene country=null, así que nada matchea
+    // Filter by country: FWC1 tiene country="FIFA World Cup 2026", así que "Argentina" no matchea
     assertFalse(readActiveIds(pepe.token(), "country", "Argentina").contains(pubId));
   }
 
