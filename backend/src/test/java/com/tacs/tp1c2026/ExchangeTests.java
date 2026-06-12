@@ -22,17 +22,17 @@ public class ExchangeTests extends IntegrationTestBase {
   @Autowired
   private AuctionService auctionService;
 
-  /** Setup: Alice publica card_001x1, Bob propone card_002, Alice acepta → 1 Exchange. */
+  /** Setup: Alice publica FWC1x1, Bob propone FWC3, Alice acepta → 1 Exchange. */
   private record Setup(Session alice, Session bob, String exchangeId) {}
 
   private Setup setupAcceptedExchange() throws Exception {
     Session alice = register("Alice", "alice@test.com", "password123");
-    addToCollection(alice.userId(), "card_001", alice.token());
-    String pubId = idFromCreated(publish(alice.token(), "card_001", 1), "id");
+    addToCollection(alice.userId(), "FWC1", alice.token());
+    String pubId = idFromCreated(publish(alice.token(), "FWC1", 1), "id");
 
     Session bob = register("Bob", "bob@test.com", "password123");
-    addToCollection(bob.userId(), "card_002", bob.token());
-    String proposalId = idFromCreated(propose(bob.token(), pubId, List.of("card_002"), 1), "proposalId");
+    addToCollection(bob.userId(), "FWC3", bob.token());
+    String proposalId = idFromCreated(propose(bob.token(), pubId, List.of("FWC3"), 1), "proposalId");
 
     acceptProposal(alice.token(), proposalId);
 
@@ -106,13 +106,13 @@ public class ExchangeTests extends IntegrationTestBase {
 
   @Test
   void acceptedBidCreatesHistoricExchangeWithAuctionOrigin() throws Exception {
-    // Pepe subasta 1× card_001, Moni oferta 1× card_002, Pepe marca best y cierra → Exchange (SUBASTA).
+    // Pepe subasta 1× FWC1, Moni oferta 1× FWC3, Pepe marca best y cierra → Exchange (SUBASTA).
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
-    addToCollection(pepe.userId(), "card_001", pepe.token());
+    addToCollection(pepe.userId(), "FWC1", pepe.token());
     Session moni = register("Moni Argento", "moniargento@gmail.com", "password123");
-    addToCollection(moni.userId(), "card_002", moni.token());
+    addToCollection(moni.userId(), "FWC3", moni.token());
 
-    String auctionId = setupAcceptedAuction(pepe, moni, "card_001", "card_002");
+    String auctionId = setupAcceptedAuction(pepe, moni, "FWC1", "FWC3");
 
     // Pepe debería ver un exchange con origin SUBASTA
     String body = mockMvc.perform(get("/api/exchanges")
@@ -135,19 +135,19 @@ public class ExchangeTests extends IntegrationTestBase {
   void getExchangesReturnsMultipleEntriesForUser() throws Exception {
     // Pepe gana 2 exchanges: uno via propuesta (con Moni) + uno via subasta (con Coqui).
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
-    addToCollectionN(pepe.userId(), "card_001", 2, pepe.token());
+    addToCollectionN(pepe.userId(), "FWC1", 2, pepe.token());
 
     // Exchange 1: proposal
-    String pubId = idFromCreated(publish(pepe.token(), "card_001", 1), "id");
+    String pubId = idFromCreated(publish(pepe.token(), "FWC1", 1), "id");
     Session moni = register("Moni Argento", "moniargento@gmail.com", "password123");
-    addToCollection(moni.userId(), "card_002", moni.token());
-    String propId = idFromCreated(propose(moni.token(), pubId, List.of("card_002"), 1), "proposalId");
+    addToCollection(moni.userId(), "FWC3", moni.token());
+    String propId = idFromCreated(propose(moni.token(), pubId, List.of("FWC3"), 1), "proposalId");
     acceptProposal(pepe.token(), propId);
 
     // Exchange 2: subasta (con la card que le queda)
     Session coqui = register("Coqui Argento", "coquiargento@gmail.com", "password123");
-    addToCollection(coqui.userId(), "card_003", coqui.token());
-    setupAcceptedAuction(pepe, coqui, "card_001", "card_003");
+    addToCollection(coqui.userId(), "ARG1", coqui.token());
+    setupAcceptedAuction(pepe, coqui, "FWC1", "ARG1");
 
     String body = mockMvc.perform(get("/api/exchanges")
             .header("Authorization", "Bearer " + pepe.token()))

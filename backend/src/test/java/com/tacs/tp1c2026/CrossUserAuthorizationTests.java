@@ -67,7 +67,7 @@ public class CrossUserAuthorizationTests extends IntegrationTestBase {
     MvcResult res = mockMvc.perform(post("/api/users/" + juan.userId() + "/collection")
             .header("Authorization", "Bearer " + pepe.token())
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"cardId\": \"card_001\" }"))
+            .content("{ \"cardId\": \"FWC1\" }"))
         .andExpect(status().isForbidden())
         .andReturn();
     assertForbiddenCrossUserBody(res);
@@ -78,7 +78,7 @@ public class CrossUserAuthorizationTests extends IntegrationTestBase {
     Session pepe = register("Pepe", "pepe@test.com", "password123");
     Session juan = register("Juan", "juan@test.com", "password123");
 
-    MvcResult res = mockMvc.perform(patch("/api/users/" + juan.userId() + "/collection/card_001")
+    MvcResult res = mockMvc.perform(patch("/api/users/" + juan.userId() + "/collection/FWC1")
             .header("Authorization", "Bearer " + pepe.token()))
         .andExpect(status().isForbidden())
         .andReturn();
@@ -105,7 +105,7 @@ public class CrossUserAuthorizationTests extends IntegrationTestBase {
     MvcResult res = mockMvc.perform(post("/api/users/" + juan.userId() + "/missing-cards")
             .header("Authorization", "Bearer " + pepe.token())
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"cardId\": \"card_001\" }"))
+            .content("{ \"cardId\": \"FWC1\" }"))
         .andExpect(status().isForbidden())
         .andReturn();
     assertForbiddenCrossUserBody(res);
@@ -116,7 +116,7 @@ public class CrossUserAuthorizationTests extends IntegrationTestBase {
     Session pepe = register("Pepe", "pepe@test.com", "password123");
     Session juan = register("Juan", "juan@test.com", "password123");
 
-    MvcResult res = mockMvc.perform(delete("/api/users/" + juan.userId() + "/missing-cards/card_001")
+    MvcResult res = mockMvc.perform(delete("/api/users/" + juan.userId() + "/missing-cards/FWC1")
             .header("Authorization", "Bearer " + pepe.token()))
         .andExpect(status().isForbidden())
         .andReturn();
@@ -190,7 +190,7 @@ public class CrossUserAuthorizationTests extends IntegrationTestBase {
     mockMvc.perform(post("/api/users/" + juan.userId() + "/collection")
             .header("Authorization", "Bearer " + admin.token())
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{ \"cardId\": \"card_001\" }"))
+            .content("{ \"cardId\": \"FWC1\" }"))
         .andExpect(status().is2xxSuccessful());
   }
 

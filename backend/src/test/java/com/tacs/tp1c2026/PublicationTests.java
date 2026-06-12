@@ -34,7 +34,7 @@ public class PublicationTests extends IntegrationTestBase {
   void publishWithoutCardInCollectionFails() throws Exception {
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
 
-    String body = "{ \"cardId\": \"card_001\", \"quantity\": 1 }";
+    String body = "{ \"cardId\": \"FWC1\", \"quantity\": 1 }";
     mockMvc.perform(post("/api/publications")
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + pepe.token())
@@ -45,9 +45,9 @@ public class PublicationTests extends IntegrationTestBase {
   @Test
   void publishZeroQuantityFails() throws Exception {
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
-    addToCollection(pepe.userId(), "card_001", pepe.token());
+    addToCollection(pepe.userId(), "FWC1", pepe.token());
 
-    String body = "{ \"cardId\": \"card_001\", \"quantity\": 0 }";
+    String body = "{ \"cardId\": \"FWC1\", \"quantity\": 0 }";
     mockMvc.perform(post("/api/publications")
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + pepe.token())
@@ -58,9 +58,9 @@ public class PublicationTests extends IntegrationTestBase {
   @Test
   void publishMoreThanAvailableFails() throws Exception {
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
-    addToCollectionN(pepe.userId(), "card_001", 2, pepe.token());
+    addToCollectionN(pepe.userId(), "FWC1", 2, pepe.token());
 
-    String body = "{ \"cardId\": \"card_001\", \"quantity\": 3 }";
+    String body = "{ \"cardId\": \"FWC1\", \"quantity\": 3 }";
     mockMvc.perform(post("/api/publications")
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + pepe.token())
@@ -70,15 +70,15 @@ public class PublicationTests extends IntegrationTestBase {
 
   @Test
   void publishConsideringExistingCommitsFails() throws Exception {
-    // Pepe tiene 3× card_001: 1 ya comprometida en una subasta + 1 en una publi previa.
+    // Pepe tiene 3× FWC1: 1 ya comprometida en una subasta + 1 en una publi previa.
     // Available = 3 - 2 = 1. Si intenta publicar 2 más, falla.
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
-    addToCollectionN(pepe.userId(), "card_001", 3, pepe.token());
+    addToCollectionN(pepe.userId(), "FWC1", 3, pepe.token());
 
-    createAuction(pepe.token(), "card_001", 24);
-    publish(pepe.token(), "card_001", 1);
+    createAuction(pepe.token(), "FWC1", 24);
+    publish(pepe.token(), "FWC1", 1);
 
-    String body = "{ \"cardId\": \"card_001\", \"quantity\": 2 }";
+    String body = "{ \"cardId\": \"FWC1\", \"quantity\": 2 }";
     mockMvc.perform(post("/api/publications")
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + pepe.token())
@@ -89,8 +89,8 @@ public class PublicationTests extends IntegrationTestBase {
   @Test
   void cancelPublicationByOtherUserFails() throws Exception {
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
-    addToCollection(pepe.userId(), "card_001", pepe.token());
-    String pubId = idFromCreated(publish(pepe.token(), "card_001", 1), "id");
+    addToCollection(pepe.userId(), "FWC1", pepe.token());
+    String pubId = idFromCreated(publish(pepe.token(), "FWC1", 1), "id");
 
     Session moni = register("Moni Argento", "moniargento@gmail.com", "password123");
     mockMvc.perform(delete("/api/publications/" + pubId)
@@ -101,8 +101,8 @@ public class PublicationTests extends IntegrationTestBase {
   @Test
   void cancelAlreadyCancelledPublicationFails() throws Exception {
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
-    addToCollection(pepe.userId(), "card_001", pepe.token());
-    String pubId = idFromCreated(publish(pepe.token(), "card_001", 1), "id");
+    addToCollection(pepe.userId(), "FWC1", pepe.token());
+    String pubId = idFromCreated(publish(pepe.token(), "FWC1", 1), "id");
 
     cancelPublication(pepe.token(), pubId);
 
@@ -115,12 +115,12 @@ public class PublicationTests extends IntegrationTestBase {
   void cancelFinalizedPublicationFails() throws Exception {
     // Pepe publica 1, Moni propone 1, Pepe acepta → publi FINALIZED. Cancelar debe fallar.
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
-    addToCollection(pepe.userId(), "card_001", pepe.token());
-    String pubId = idFromCreated(publish(pepe.token(), "card_001", 1), "id");
+    addToCollection(pepe.userId(), "FWC1", pepe.token());
+    String pubId = idFromCreated(publish(pepe.token(), "FWC1", 1), "id");
 
     Session moni = register("Moni Argento", "moniargento@gmail.com", "password123");
-    addToCollection(moni.userId(), "card_002", moni.token());
-    String propId = idFromCreated(propose(moni.token(), pubId, List.of("card_002"), 1), "proposalId");
+    addToCollection(moni.userId(), "FWC3", moni.token());
+    String propId = idFromCreated(propose(moni.token(), pubId, List.of("FWC3"), 1), "proposalId");
     acceptProposal(pepe.token(), propId);
 
     mockMvc.perform(delete("/api/publications/" + pubId)
@@ -133,9 +133,9 @@ public class PublicationTests extends IntegrationTestBase {
   @Test
   void publishOneCardCommitsOne() throws Exception {
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
-    addToCollectionN(pepe.userId(), "card_001", 2, pepe.token());
+    addToCollectionN(pepe.userId(), "FWC1", 2, pepe.token());
 
-    MvcResult res = publish(pepe.token(), "card_001", 1);
+    MvcResult res = publish(pepe.token(), "FWC1", 1);
     String pubId = idFromCreated(res, "id");
     assertTrue(pubId.length() > 0);
 
@@ -156,9 +156,9 @@ public class PublicationTests extends IntegrationTestBase {
   @Test
   void publishTwoCardsCommitsTwo() throws Exception {
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
-    addToCollectionN(pepe.userId(), "card_001", 3, pepe.token());
+    addToCollectionN(pepe.userId(), "FWC1", 3, pepe.token());
 
-    String pubId = idFromCreated(publish(pepe.token(), "card_001", 2), "id");
+    String pubId = idFromCreated(publish(pepe.token(), "FWC1", 2), "id");
 
     String coll = mockMvc.perform(get("/api/users/" + pepe.userId() + "/collection")
             .header("Authorization", "Bearer " + pepe.token()))
@@ -178,8 +178,8 @@ public class PublicationTests extends IntegrationTestBase {
   @Test
   void cancelPublicationReleasesCommittedCards() throws Exception {
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
-    addToCollectionN(pepe.userId(), "card_001", 3, pepe.token());
-    String pubId = idFromCreated(publish(pepe.token(), "card_001", 2), "id");
+    addToCollectionN(pepe.userId(), "FWC1", 3, pepe.token());
+    String pubId = idFromCreated(publish(pepe.token(), "FWC1", 2), "id");
 
     cancelPublication(pepe.token(), pubId);
 
@@ -192,24 +192,24 @@ public class PublicationTests extends IntegrationTestBase {
 
   @Test
   void cancelPublicationCascadesToThreePendingProposals() throws Exception {
-    // Pepe publica 3× card_001. Moni / Coqui / Dardo proponen 1 card de la suya cada uno
+    // Pepe publica 3× FWC1. Moni / Coqui / Dardo proponen 1 card de la suya cada uno
     // (cada uno tiene 2 cards, así la diferencia compromised antes/después queda evidente).
     // Pepe cancela → 3 propuestas CANCELLED + commit liberado en cada proponente.
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
-    addToCollectionN(pepe.userId(), "card_001", 3, pepe.token());
-    String pubId = idFromCreated(publish(pepe.token(), "card_001", 3), "id");
+    addToCollectionN(pepe.userId(), "FWC1", 3, pepe.token());
+    String pubId = idFromCreated(publish(pepe.token(), "FWC1", 3), "id");
 
     Session moni = register("Moni Argento", "moniargento@gmail.com", "password123");
-    addToCollectionN(moni.userId(), "card_002", 2, moni.token());
-    String moniProp = idFromCreated(propose(moni.token(), pubId, List.of("card_002"), 1), "proposalId");
+    addToCollectionN(moni.userId(), "FWC3", 2, moni.token());
+    String moniProp = idFromCreated(propose(moni.token(), pubId, List.of("FWC3"), 1), "proposalId");
 
     Session coqui = register("Coqui Argento", "coquiargento@gmail.com", "password123");
-    addToCollectionN(coqui.userId(), "card_003", 2, coqui.token());
-    String coquiProp = idFromCreated(propose(coqui.token(), pubId, List.of("card_003"), 1), "proposalId");
+    addToCollectionN(coqui.userId(), "ARG1", 2, coqui.token());
+    String coquiProp = idFromCreated(propose(coqui.token(), pubId, List.of("ARG1"), 1), "proposalId");
 
     Session dardo = register("Dardo Fuseneco", "dardofuseneco@gmail.com", "password123");
-    addToCollectionN(dardo.userId(), "card_004", 2, dardo.token());
-    String dardoProp = idFromCreated(propose(dardo.token(), pubId, List.of("card_004"), 1), "proposalId");
+    addToCollectionN(dardo.userId(), "BRA1", 2, dardo.token());
+    String dardoProp = idFromCreated(propose(dardo.token(), pubId, List.of("BRA1"), 1), "proposalId");
 
     cancelPublication(pepe.token(), pubId);
 
@@ -237,26 +237,26 @@ public class PublicationTests extends IntegrationTestBase {
 
   @Test
   void cancelPublicationAfterPartialAcceptReleasesOnlyRemaining() throws Exception {
-    // Pepe publica 3× card_001 (commit=3, remaining=3). Moni propone+aceptada 1.
+    // Pepe publica 3× FWC1 (commit=3, remaining=3). Moni propone+aceptada 1.
     // Tras el accept: Pepe transfirió 1 → quantity=2, compromised=2, remaining=2.
     // Pepe cancela → libera SOLO el remaining (2), no los 3 originales.
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
-    addToCollectionN(pepe.userId(), "card_001", 3, pepe.token());
-    String pubId = idFromCreated(publish(pepe.token(), "card_001", 3), "id");
+    addToCollectionN(pepe.userId(), "FWC1", 3, pepe.token());
+    String pubId = idFromCreated(publish(pepe.token(), "FWC1", 3), "id");
 
     Session moni = register("Moni Argento", "moniargento@gmail.com", "password123");
-    addToCollection(moni.userId(), "card_002", moni.token());
-    String propId = idFromCreated(propose(moni.token(), pubId, List.of("card_002"), 1), "proposalId");
+    addToCollection(moni.userId(), "FWC3", moni.token());
+    String propId = idFromCreated(propose(moni.token(), pubId, List.of("FWC3"), 1), "proposalId");
     acceptProposal(pepe.token(), propId);
 
     cancelPublication(pepe.token(), pubId);
 
-    // Pepe.card_001: quantity 2 (transfirió 1, no se regenera al cancelar), compromised 0
+    // Pepe.FWC1: quantity 2 (transfirió 1, no se regenera al cancelar), compromised 0
     String coll = mockMvc.perform(get("/api/users/" + pepe.userId() + "/collection")
             .header("Authorization", "Bearer " + pepe.token()))
         .andReturn().getResponse().getContentAsString();
-    List<Integer> card001Qty = JsonPath.read(coll, "$[?(@.cardId=='card_001')].quantity");
-    List<Integer> card001Commit = JsonPath.read(coll, "$[?(@.cardId=='card_001')].compromisedCount");
+    List<Integer> card001Qty = JsonPath.read(coll, "$[?(@.cardId=='FWC1')].quantity");
+    List<Integer> card001Commit = JsonPath.read(coll, "$[?(@.cardId=='FWC1')].compromisedCount");
     assertEquals(2, (int) card001Qty.get(0));
     assertEquals(0, (int) card001Commit.get(0));
 
@@ -270,8 +270,8 @@ public class PublicationTests extends IntegrationTestBase {
   void searchActivePublicationsLifecycle() throws Exception {
     // Publi activa aparece en el search; tras cancelar deja de aparecer.
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
-    addToCollection(pepe.userId(), "card_001", pepe.token());
-    String pubId = idFromCreated(publish(pepe.token(), "card_001", 1), "id");
+    addToCollection(pepe.userId(), "FWC1", pepe.token());
+    String pubId = idFromCreated(publish(pepe.token(), "FWC1", 1), "id");
 
     List<String> activeIds = readActiveIds(pepe.token());
     assertTrue(activeIds.contains(pubId), "Una publi activa debería aparecer en el search");
@@ -287,10 +287,10 @@ public class PublicationTests extends IntegrationTestBase {
   @Test
   void getMyPublicationsReturnsOwnList() throws Exception {
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
-    addToCollectionN(pepe.userId(), "card_001", 2, pepe.token());
-    addToCollectionN(pepe.userId(), "card_002", 2, pepe.token());
-    publish(pepe.token(), "card_001", 1);
-    publish(pepe.token(), "card_002", 1);
+    addToCollectionN(pepe.userId(), "FWC1", 2, pepe.token());
+    addToCollectionN(pepe.userId(), "FWC3", 2, pepe.token());
+    publish(pepe.token(), "FWC1", 1);
+    publish(pepe.token(), "FWC3", 1);
 
     MvcResult res = mockMvc.perform(get("/api/publications")
             .param("userId", pepe.userId())
@@ -303,10 +303,10 @@ public class PublicationTests extends IntegrationTestBase {
 
   @Test
   void searchActivePublicationsFiltersByNameCountryAndCategory() throws Exception {
-    // Pepe publica card_001 ("Copa del Mundo FIFA 2026", country=null, EPICO).
+    // Pepe publica FWC1 ("Copa del Mundo FIFA 2026", country=null, EPICO).
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
-    addToCollection(pepe.userId(), "card_001", pepe.token());
-    String pubId = idFromCreated(publish(pepe.token(), "card_001", 1), "id");
+    addToCollection(pepe.userId(), "FWC1", pepe.token());
+    String pubId = idFromCreated(publish(pepe.token(), "FWC1", 1), "id");
 
     // Filter by name (regex case-insensitive contra cardDescription)
     assertTrue(readActiveIds(pepe.token(), "name", "Copa").contains(pubId));
@@ -317,15 +317,15 @@ public class PublicationTests extends IntegrationTestBase {
     assertTrue(readActiveIds(pepe.token(), "category", "EPICO").contains(pubId));
     assertFalse(readActiveIds(pepe.token(), "category", "LEGENDARIO").contains(pubId));
 
-    // Filter by country: card_001 tiene country=null, así que nada matchea
+    // Filter by country: FWC1 tiene country=null, así que nada matchea
     assertFalse(readActiveIds(pepe.token(), "country", "Argentina").contains(pubId));
   }
 
   @Test
   void getPublicationByIdReturnsDetail() throws Exception {
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
-    addToCollectionN(pepe.userId(), "card_001", 2, pepe.token());
-    String pubId = idFromCreated(publish(pepe.token(), "card_001", 1), "id");
+    addToCollectionN(pepe.userId(), "FWC1", 2, pepe.token());
+    String pubId = idFromCreated(publish(pepe.token(), "FWC1", 1), "id");
 
     String body = mockMvc.perform(get("/api/publications/" + pubId)
             .header("Authorization", "Bearer " + pepe.token()))

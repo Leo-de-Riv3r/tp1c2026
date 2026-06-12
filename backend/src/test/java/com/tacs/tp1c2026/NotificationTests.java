@@ -26,7 +26,7 @@ public class NotificationTests extends IntegrationTestBase {
   @Test
   void cardAvailableInAuctionNotifiesSeeker() throws Exception {
     Session user = register("messiFan", "messi@java.com", "pass123");
-    String wantedCardId = "card_081";
+    String wantedCardId = "URU1";
     addMissingCard(user.userId(), wantedCardId, user.token());
 
     notificationService.deliverCardAvailable(wantedCardId, "AUCTION");
@@ -42,9 +42,9 @@ public class NotificationTests extends IntegrationTestBase {
   @Test
   void cardAvailableNotifiesNobodyWhenNoSeeker() throws Exception {
     Session user = register("bichoFan", "cr7@java.com", "pass123");
-    addMissingCard(user.userId(), "card_141", user.token());
+    addMissingCard(user.userId(), "COL1", user.token());
 
-    notificationService.deliverCardAvailable("card_003", "AUCTION");
+    notificationService.deliverCardAvailable("ARG1", "AUCTION");
 
     assertTrue(userRepository.findOrThrow(user.userId()).getNotifications().isEmpty());
   }
@@ -53,7 +53,7 @@ public class NotificationTests extends IntegrationTestBase {
   void cardAvailableNotifiesMultipleSeekers() throws Exception {
     Session u1 = register("user1", "user1@java.com", "pass123");
     Session u2 = register("user2", "user2@java.com", "pass123");
-    String card = "card_010";
+    String card = "BRA3";
     addMissingCard(u1.userId(), card, u1.token());
     addMissingCard(u2.userId(), card, u2.token());
 
@@ -68,7 +68,7 @@ public class NotificationTests extends IntegrationTestBase {
   @Test
   void cardAvailableDedupesWhileUnread() throws Exception {
     Session user = register("dedupeFan", "dedupe@java.com", "pass123");
-    String card = "card_010";
+    String card = "BRA3";
     addMissingCard(user.userId(), card, user.token());
 
     notificationService.deliverCardAvailable(card, "AUCTION");
@@ -82,12 +82,12 @@ public class NotificationTests extends IntegrationTestBase {
   void tradeProposalReceivedNotifiesPublisher() throws Exception {
     Session publisher = register("pub", "pub@java.com", "pass123");
     Session proposer = register("prop", "prop@java.com", "pass123");
-    addToCollection(publisher.userId(), "card_010", publisher.token());
-    addToCollection(proposer.userId(), "card_018", proposer.token());
+    addToCollection(publisher.userId(), "BRA3", publisher.token());
+    addToCollection(proposer.userId(), "BRA4", proposer.token());
 
-    publish(publisher.token(), "card_010", 1);
+    publish(publisher.token(), "BRA3", 1);
     String pubId = publicationRepository.findAll().get(0).getId();
-    propose(proposer.token(), pubId, List.of("card_018"), 1);
+    propose(proposer.token(), pubId, List.of("BRA4"), 1);
 
     List<UserNotification> notifs = userRepository.findOrThrow(publisher.userId()).getNotifications();
     assertEquals(1, notifs.size());
@@ -98,11 +98,11 @@ public class NotificationTests extends IntegrationTestBase {
   void markAsReadIsIdempotent() throws Exception {
     Session publisher = register("pub2", "pub2@java.com", "pass123");
     Session proposer = register("prop2", "prop2@java.com", "pass123");
-    addToCollection(publisher.userId(), "card_010", publisher.token());
-    addToCollection(proposer.userId(), "card_018", proposer.token());
-    publish(publisher.token(), "card_010", 1);
+    addToCollection(publisher.userId(), "BRA3", publisher.token());
+    addToCollection(proposer.userId(), "BRA4", proposer.token());
+    publish(publisher.token(), "BRA3", 1);
     String pubId = publicationRepository.findAll().get(0).getId();
-    propose(proposer.token(), pubId, List.of("card_018"), 1);
+    propose(proposer.token(), pubId, List.of("BRA4"), 1);
 
     UserNotification notif = userRepository.findOrThrow(publisher.userId()).getNotifications().get(0);
 

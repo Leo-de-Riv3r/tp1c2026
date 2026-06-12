@@ -23,7 +23,11 @@ if (existingCards > 0) {
   db.cards.insertMany(catalog);
   print(`✅  Catálogo cargado: ${catalog.length} cards`);
 
-  db.cards.createIndex({ number: 1 }, { unique: true, name: "idx_number" });
+  // number ya no es único globalmente — hay ~49 cards con number=1 (una por país).
+  // Índice no único para acelerar búsqueda por número; índice compuesto (country, number)
+  // para la búsqueda natural del usuario "MEX 7" / "Argentina 3".
+  db.cards.createIndex({ number: 1 }, { name: "idx_number" });
+  db.cards.createIndex({ country: 1, number: 1 }, { name: "idx_country_number" });
   db.cards.createIndex({ country: 1 }, { name: "idx_country" });
   db.cards.createIndex({ type: 1 }, { name: "idx_type" });
   db.cards.createIndex({ category: 1 }, { name: "idx_category" });
@@ -77,20 +81,21 @@ if (existingUsers > 0) {
   const DARDO_ID     = ObjectId(DARDO_ID_HEX);
 
   // IDs predefinidos para los sources de las sugerencias precargadas de Pepe
-  // (publicaciones + subasta de Moni con cards faltantes de Pepe)
-  const MONI_PUB_002_ID_HEX     = "69e54c037de7f7e868da9100";
-  const MONI_AUCTION_007_ID_HEX = "69e54c037de7f7e868da9101";
-  const MONI_PUB_003_ID_HEX     = "69e54c037de7f7e868da9102";
-  const MONI_PUB_004_ID_HEX     = "69e54c037de7f7e868da9103";
-  const MONI_PUB_002_ID     = ObjectId(MONI_PUB_002_ID_HEX);
-  const MONI_AUCTION_007_ID = ObjectId(MONI_AUCTION_007_ID_HEX);
-  const MONI_PUB_003_ID     = ObjectId(MONI_PUB_003_ID_HEX);
-  const MONI_PUB_004_ID     = ObjectId(MONI_PUB_004_ID_HEX);
+  // (publicaciones + subasta de Moni con cards faltantes de Pepe).
+  // Sufijos del HEX coinciden con la card que cada publication/subasta vende, para legibilidad.
+  const MONI_PUB_FWC3_ID_HEX    = "69e54c037de7f7e868da9100";
+  const MONI_AUCTION_MEX7_ID_HEX = "69e54c037de7f7e868da9101";
+  const MONI_PUB_ARG1_ID_HEX    = "69e54c037de7f7e868da9102";
+  const MONI_PUB_BRA1_ID_HEX    = "69e54c037de7f7e868da9103";
+  const MONI_PUB_FWC3_ID     = ObjectId(MONI_PUB_FWC3_ID_HEX);
+  const MONI_AUCTION_MEX7_ID = ObjectId(MONI_AUCTION_MEX7_ID_HEX);
+  const MONI_PUB_ARG1_ID     = ObjectId(MONI_PUB_ARG1_ID_HEX);
+  const MONI_PUB_BRA1_ID     = ObjectId(MONI_PUB_BRA1_ID_HEX);
 
-  const card_002 = seedCard("card_002");
-  const card_003 = seedCard("card_003");
-  const card_004 = seedCard("card_004");
-  const card_007 = seedCard("card_007");
+  const fwc3 = seedCard("FWC3");  // Official Mascots (ESPECIAL)
+  const arg1 = seedCard("ARG1");  // Team Logo Argentina (ESCUDO)
+  const bra1 = seedCard("BRA1");  // Team Logo Brasil (ESCUDO)
+  const mex7 = seedCard("MEX7");  // Israel Reyes — México (JUGADOR)
 
   db.users.insertOne({
     _id: PEPE_ID,
@@ -105,70 +110,70 @@ if (existingUsers > 0) {
     lastLogin: null,
     creationDate: new Date(),
     collection: [
-      toCollection("card_001", 3),
-      toCollection("card_005", 2),
-      toCollection("card_010", 1)
+      toCollection("FWC1", 3),   // Official Emblem
+      toCollection("MEX1", 2),   // Team Logo México
+      toCollection("BRA3", 1)    // Bento — Brasil
     ].filter(Boolean),
     missingCards: [
-      toMissing("card_002"),
-      toMissing("card_003"),
-      toMissing("card_004"),
-      toMissing("card_007")
+      toMissing("FWC3"),         // Official Mascots
+      toMissing("ARG1"),         // Team Logo Argentina
+      toMissing("BRA1"),         // Team Logo Brasil
+      toMissing("MEX7")          // Israel Reyes
     ].filter(Boolean),
     // Sugerencias precargadas: apuntan a las publications + subasta de Moni que matchean las
     // missing de Pepe. Permite probar el flow del home sin esperar al cron horario
     suggestions: [
-      card_002 && {
+      fwc3 && {
         sourceType: "PUBLICATION",
-        sourceId: MONI_PUB_002_ID_HEX,
-        cardId: card_002._id,
-        cardNumber: card_002.number,
-        cardDescription: card_002.description,
-        cardCountry: card_002.country,
-        cardTeam: card_002.team,
-        cardCategory: card_002.category,
+        sourceId: MONI_PUB_FWC3_ID_HEX,
+        cardId: fwc3._id,
+        cardNumber: fwc3.number,
+        cardDescription: fwc3.description,
+        cardCountry: fwc3.country,
+        cardTeam: fwc3.team,
+        cardCategory: fwc3.category,
         publisherUserId: PUBLISHER_ID_HEX,
         publisherName: "Moni Argento",
         publisherAvatarId: "avatar_2",
         generatedAt: new Date()
       },
-      card_003 && {
+      arg1 && {
         sourceType: "PUBLICATION",
-        sourceId: MONI_PUB_003_ID_HEX,
-        cardId: card_003._id,
-        cardNumber: card_003.number,
-        cardDescription: card_003.description,
-        cardCountry: card_003.country,
-        cardTeam: card_003.team,
-        cardCategory: card_003.category,
+        sourceId: MONI_PUB_ARG1_ID_HEX,
+        cardId: arg1._id,
+        cardNumber: arg1.number,
+        cardDescription: arg1.description,
+        cardCountry: arg1.country,
+        cardTeam: arg1.team,
+        cardCategory: arg1.category,
         publisherUserId: PUBLISHER_ID_HEX,
         publisherName: "Moni Argento",
         publisherAvatarId: "avatar_2",
         generatedAt: new Date()
       },
-      card_004 && {
+      bra1 && {
         sourceType: "PUBLICATION",
-        sourceId: MONI_PUB_004_ID_HEX,
-        cardId: card_004._id,
-        cardNumber: card_004.number,
-        cardDescription: card_004.description,
-        cardCountry: card_004.country,
-        cardTeam: card_004.team,
-        cardCategory: card_004.category,
+        sourceId: MONI_PUB_BRA1_ID_HEX,
+        cardId: bra1._id,
+        cardNumber: bra1.number,
+        cardDescription: bra1.description,
+        cardCountry: bra1.country,
+        cardTeam: bra1.team,
+        cardCategory: bra1.category,
         publisherUserId: PUBLISHER_ID_HEX,
         publisherName: "Moni Argento",
         publisherAvatarId: "avatar_2",
         generatedAt: new Date()
       },
-      card_007 && {
+      mex7 && {
         sourceType: "AUCTION",
-        sourceId: MONI_AUCTION_007_ID_HEX,
-        cardId: card_007._id,
-        cardNumber: card_007.number,
-        cardDescription: card_007.description,
-        cardCountry: card_007.country,
-        cardTeam: card_007.team,
-        cardCategory: card_007.category,
+        sourceId: MONI_AUCTION_MEX7_ID_HEX,
+        cardId: mex7._id,
+        cardNumber: mex7.number,
+        cardDescription: mex7.description,
+        cardCountry: mex7.country,
+        cardTeam: mex7.team,
+        cardCategory: mex7.category,
         publisherUserId: PUBLISHER_ID_HEX,
         publisherName: "Moni Argento",
         publisherAvatarId: "avatar_2",
@@ -192,11 +197,11 @@ if (existingUsers > 0) {
     lastLogin: null,
     creationDate: new Date(),
     collection: [
-      { ...toCollection("card_002", 1), compromisedCount: 1 }, // publicada
-      { ...toCollection("card_003", 2), compromisedCount: 2 },
-      { ...toCollection("card_004", 3), compromisedCount: 1 },
-      toCollection("card_006", 1),
-      { ...toCollection("card_007", 1), compromisedCount: 1 }  // subastada
+      { ...toCollection("FWC3", 1), compromisedCount: 1 }, // publicada (Mascots)
+      { ...toCollection("ARG1", 2), compromisedCount: 2 }, // publicada (Escudo Argentina)
+      { ...toCollection("BRA1", 3), compromisedCount: 1 }, // publicada parcial (Escudo Brasil)
+      toCollection("ARG3", 1),                              // libre (Nahuel Molina)
+      { ...toCollection("MEX7", 1), compromisedCount: 1 }  // subastada (Israel Reyes)
     ].filter(Boolean),
     missingCards: [],
     suggestions: []
@@ -262,26 +267,26 @@ if (existingUsers > 0) {
     };
   };
   const pubs = [
-    toPublication(MONI_PUB_003_ID, "card_003", 2, 2),  // 2 disponibles — referenciada por sugerencia de Pepe
-    toPublication(MONI_PUB_004_ID, "card_004", 3, 1),  // ya cedió 2 vía aceptaciones; queda 1 (compromised=1) — referenciada por sugerencia de Pepe
-    toPublication(MONI_PUB_002_ID, "card_002", 1, 1)  // referenciada por la sugerencia precargada de Pepe
+    toPublication(MONI_PUB_ARG1_ID, "ARG1", 2, 2),  // 2 disponibles — referenciada por sugerencia de Pepe
+    toPublication(MONI_PUB_BRA1_ID, "BRA1", 3, 1),  // ya cedió 2 vía aceptaciones; queda 1 (compromised=1) — referenciada por sugerencia de Pepe
+    toPublication(MONI_PUB_FWC3_ID, "FWC3", 1, 1)   // Mascots — referenciada por la sugerencia precargada de Pepe
   ].filter(Boolean);
   if (pubs.length) db.publications.insertMany(pubs);
 
-  // Subasta activa de card_007 — referenciada por la sugerencia precargada de Pepe
+  // Subasta activa de MEX7 (Israel Reyes) — referenciada por la sugerencia precargada de Pepe
   const now = new Date();
   const closeIn48h = new Date(now.getTime() + 48 * 3600 * 1000);
-  if (card_007) {
+  if (mex7) {
     db.auctions.insertOne({
-      _id: MONI_AUCTION_007_ID,
+      _id: MONI_AUCTION_MEX7_ID,
       version: NumberLong(0),
-      card: card_007._id,
-      cardNumber: card_007.number,
-      cardDescription: card_007.description,
-      cardCountry: card_007.country,
-      cardTeam: card_007.team,
-      cardCategory: card_007.category,
-      cardType: card_007.type,
+      card: mex7._id,
+      cardNumber: mex7.number,
+      cardDescription: mex7.description,
+      cardCountry: mex7.country,
+      cardTeam: mex7.team,
+      cardCategory: mex7.category,
+      cardType: mex7.type,
       publisherUser: PUBLISHER_ID,
       publisherName: "Moni Argento",
       publisherAvatarId: "avatar_2",
@@ -304,9 +309,9 @@ if (existingUsers > 0) {
   db.publications.createIndex({ status: 1 }, { name: "idx_pub_status" });
 
   print("✅  Usuarios de prueba creados: peperacing@gmail.com, moniargento@gmail.com, dfuseneco@outlook.com, admin@mail.com (role=ADMIN). Password de todos: 123456");
-  print("✅  Publicaciones de Moni Argento creadas (incluye card_002 referenciada por sugerencia de Pepe)");
-  print("✅  Subasta de Moni Argento creada (card_007 — referenciada por sugerencia de Pepe)");
-  print("✅  Pepe Racing tiene 2 sugerencias precargadas (1 publication + 1 auction)");
+  print("✅  Publicaciones de Moni Argento creadas: FWC3 (Mascots), ARG1 (Escudo AR), BRA1 (Escudo BR) — referenciadas por sugerencias de Pepe");
+  print("✅  Subasta de Moni Argento creada: MEX7 (Israel Reyes) — referenciada por sugerencia de Pepe");
+  print("✅  Pepe Racing tiene 4 sugerencias precargadas (3 publications + 1 auction)");
   print("✅  Índices creados");
 }
 

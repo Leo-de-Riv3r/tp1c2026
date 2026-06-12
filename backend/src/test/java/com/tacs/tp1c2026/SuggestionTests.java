@@ -61,10 +61,10 @@ public class SuggestionTests extends IntegrationTestBase {
         Session sessionA = register("UserA", "usera@test.com", "pass123");
         Session sessionB = register("UserB", "userb@test.com", "pass123");
 
-        addToCollection(sessionB.userId(), "card_001", sessionB.token());
-        String pubId = idFromCreated(publish(sessionB.token(), "card_001", 1), "id");
+        addToCollection(sessionB.userId(), "FWC1", sessionB.token());
+        String pubId = idFromCreated(publish(sessionB.token(), "FWC1", 1), "id");
 
-        addMissingCard(sessionA.userId(), "card_001", sessionA.token());
+        addMissingCard(sessionA.userId(), "FWC1", sessionA.token());
 
         connectInProfileGroup(sessionA, sessionB);
         profileService.updateSuggestionsForUsers();
@@ -77,7 +77,7 @@ public class SuggestionTests extends IntegrationTestBase {
         assertEquals(1, ((List<?>) JsonPath.read(body, "$")).size());
         assertEquals("PUBLICATION", JsonPath.read(body, "$[0].sourceType"));
         assertEquals(pubId,         JsonPath.read(body, "$[0].sourceId"));
-        assertEquals("card_001",    JsonPath.read(body, "$[0].cardId"));
+        assertEquals("FWC1",    JsonPath.read(body, "$[0].cardId"));
         assertEquals("UserB",       JsonPath.read(body, "$[0].publisherName"));
         assertEquals(sessionB.userId(), JsonPath.read(body, "$[0].publisherUserId"));
     }
@@ -90,10 +90,10 @@ public class SuggestionTests extends IntegrationTestBase {
         Session sessionA = register("UserA", "userauc@test.com", "pass123");
         Session sessionB = register("UserB", "userbauc@test.com", "pass123");
 
-        addToCollection(sessionB.userId(), "card_005", sessionB.token());
-        String aucId = idFromCreated(createAuction(sessionB.token(), "card_005", 24), "id");
+        addToCollection(sessionB.userId(), "MEX1", sessionB.token());
+        String aucId = idFromCreated(createAuction(sessionB.token(), "MEX1", 24), "id");
 
-        addMissingCard(sessionA.userId(), "card_005", sessionA.token());
+        addMissingCard(sessionA.userId(), "MEX1", sessionA.token());
 
         connectInProfileGroup(sessionA, sessionB);
         profileService.updateSuggestionsForUsers();
@@ -106,7 +106,7 @@ public class SuggestionTests extends IntegrationTestBase {
         assertEquals(1, ((List<?>) JsonPath.read(body, "$")).size());
         assertEquals("AUCTION",  JsonPath.read(body, "$[0].sourceType"));
         assertEquals(aucId,      JsonPath.read(body, "$[0].sourceId"));
-        assertEquals("card_005", JsonPath.read(body, "$[0].cardId"));
+        assertEquals("MEX1", JsonPath.read(body, "$[0].cardId"));
     }
 
     /**
@@ -119,9 +119,9 @@ public class SuggestionTests extends IntegrationTestBase {
         Session sessionB = register("UserB", "userbc@test.com", "pass123");
 
         // UserB tiene la card pero no la publica ni subasta
-        addToCollection(sessionB.userId(), "card_001", sessionB.token());
+        addToCollection(sessionB.userId(), "FWC1", sessionB.token());
 
-        addMissingCard(sessionA.userId(), "card_001", sessionA.token());
+        addMissingCard(sessionA.userId(), "FWC1", sessionA.token());
 
         connectInProfileGroup(sessionA, sessionB);
         profileService.updateSuggestionsForUsers();
@@ -143,13 +143,13 @@ public class SuggestionTests extends IntegrationTestBase {
         Session sessionA = register("UserA", "useraf@test.com", "pass123");
         Session sessionB = register("UserB", "userbf@test.com", "pass123");
 
-        // UserB publica dos cards: card_001 (la que UserA busca) y card_003 (que no busca)
-        addToCollection(sessionB.userId(), "card_001", sessionB.token());
-        addToCollection(sessionB.userId(), "card_003", sessionB.token());
-        String pubId001 = idFromCreated(publish(sessionB.token(), "card_001", 1), "id");
-        idFromCreated(publish(sessionB.token(), "card_003", 1), "id");
+        // UserB publica dos cards: FWC1 (la que UserA busca) y ARG1 (que no busca)
+        addToCollection(sessionB.userId(), "FWC1", sessionB.token());
+        addToCollection(sessionB.userId(), "ARG1", sessionB.token());
+        String pubId001 = idFromCreated(publish(sessionB.token(), "FWC1", 1), "id");
+        idFromCreated(publish(sessionB.token(), "ARG1", 1), "id");
 
-        addMissingCard(sessionA.userId(), "card_001", sessionA.token());
+        addMissingCard(sessionA.userId(), "FWC1", sessionA.token());
 
         connectInProfileGroup(sessionA, sessionB);
         profileService.updateSuggestionsForUsers();
@@ -161,7 +161,7 @@ public class SuggestionTests extends IntegrationTestBase {
 
         assertEquals(1, ((List<?>) JsonPath.read(body, "$")).size());
         assertEquals(pubId001,   JsonPath.read(body, "$[0].sourceId"));
-        assertEquals("card_001", JsonPath.read(body, "$[0].cardId"));
+        assertEquals("FWC1", JsonPath.read(body, "$[0].cardId"));
     }
 
     /**
@@ -172,8 +172,8 @@ public class SuggestionTests extends IntegrationTestBase {
         Session sessionA = register("UserA", "userae@test.com", "pass123");
         Session sessionB = register("UserB", "userbe@test.com", "pass123");
 
-        addToCollection(sessionB.userId(), "card_001", sessionB.token());
-        idFromCreated(publish(sessionB.token(), "card_001", 1), "id");
+        addToCollection(sessionB.userId(), "FWC1", sessionB.token());
+        idFromCreated(publish(sessionB.token(), "FWC1", 1), "id");
 
         // UserA no tiene missing cards
 

@@ -40,7 +40,7 @@ public class AuctionTests extends IntegrationTestBase {
   @Test
   void searchActiveAuctionsReturnsCreatedAuction() throws Exception {
     Session seller = register("seller", "seller@java.com", "password123");
-    String cardId = "card_021";
+    String cardId = "ARG4";
 
     addToCollection(seller.userId(), cardId, seller.token());
 
@@ -57,26 +57,26 @@ public class AuctionTests extends IntegrationTestBase {
 
     String body = res.getResponse().getContentAsString();
     assertEquals(1, ((java.util.List<?>) JsonPath.read(body, "$.data")).size());
-    assertEquals(21, (Integer) JsonPath.read(body, "$.data[0].cardNumber"));
+    assertEquals(4, (Integer) JsonPath.read(body, "$.data[0].cardNumber"));
   }
 
   @Test
   void getMyAuctionsReturnsCurrentUserAuctions() throws Exception {
     Session seller = register("seller", "seller@java.com", "password123");
 
-    addToCollection(seller.userId(), "card_021", seller.token());
-    addToCollection(seller.userId(), "card_022", seller.token());
+    addToCollection(seller.userId(), "ARG4", seller.token());
+    addToCollection(seller.userId(), "ARG5", seller.token());
 
     mockMvc.perform(post("/api/auctions")
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + seller.token())
-            .content(createAuctionBody("card_021", 24, List.of())))
+            .content(createAuctionBody("ARG4", 24, List.of())))
         .andExpect(status().is2xxSuccessful());
 
     mockMvc.perform(post("/api/auctions")
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + seller.token())
-            .content(createAuctionBody("card_022", 24, List.of())))
+            .content(createAuctionBody("ARG5", 24, List.of())))
         .andExpect(status().is2xxSuccessful());
 
     MvcResult res = mockMvc.perform(get("/api/auctions")
@@ -91,12 +91,12 @@ public class AuctionTests extends IntegrationTestBase {
   @Test
   void cancelAuctionReleasesCommittedCard() throws Exception {
     Session seller = register("seller", "seller@java.com", "password123");
-    addToCollection(seller.userId(), "card_021", seller.token());
+    addToCollection(seller.userId(), "ARG4", seller.token());
 
     MvcResult created = mockMvc.perform(post("/api/auctions")
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + seller.token())
-            .content(createAuctionBody("card_021", 24, List.of())))
+            .content(createAuctionBody("ARG4", 24, List.of())))
         .andReturn();
 
     String auctionId = JsonPath.read(created.getResponse().getContentAsString(), "$.data.id");
@@ -114,20 +114,20 @@ public class AuctionTests extends IntegrationTestBase {
   @Test
   void myOffersReturnsBidsPlacedByCurrentUser() throws Exception {
     Session seller = register("seller", "seller@java.com", "password123");
-    addToCollection(seller.userId(), "card_021", seller.token());
+    addToCollection(seller.userId(), "ARG4", seller.token());
 
     MvcResult created = mockMvc.perform(post("/api/auctions")
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + seller.token())
-            .content(createAuctionBody("card_021", 24, List.of())))
+            .content(createAuctionBody("ARG4", 24, List.of())))
         .andReturn();
     String auctionId = JsonPath.read(created.getResponse().getContentAsString(), "$.data.id");
 
     Session bidder = register("bidder", "bidder@java.com", "password123");
-    addToCollectionN(bidder.userId(), "card_022", 2, bidder.token());
+    addToCollectionN(bidder.userId(), "ARG5", 2, bidder.token());
 
     String offerBody = """
-        { "items": [ { "cardId": "card_022", "amount": 1 } ] }
+        { "items": [ { "cardId": "ARG5", "amount": 1 } ] }
         """;
 
     mockMvc.perform(post("/api/auctions/" + auctionId + "/offers")
@@ -156,7 +156,7 @@ public class AuctionTests extends IntegrationTestBase {
   @Test
   void publishCardForAuction() throws Exception {
     Session user = register("testUser", "test@java.com", "password123");
-    String cardId = "card_021";
+    String cardId = "ARG4";
     addToCollection(user.userId(), cardId, user.token());
 
     AuctionConditionDto condicion1 = AuctionConditionDto.builder()
@@ -183,7 +183,7 @@ public class AuctionTests extends IntegrationTestBase {
   @Test
   void conditionsAreStoredAndReturnedInAuctionResponse() throws Exception {
     Session seller = register("seller", "seller@java.com", "password123");
-    addToCollection(seller.userId(), "card_021", seller.token());
+    addToCollection(seller.userId(), "ARG4", seller.token());
 
     AuctionConditionDto repCond = AuctionConditionDto.builder().filterName("MIN_REPUTATION").quantity(3).build();
     AuctionConditionDto exchCond = AuctionConditionDto.builder().filterName("MIN_EXCHANGES").quantity(2).build();
@@ -191,7 +191,7 @@ public class AuctionTests extends IntegrationTestBase {
     MvcResult created = mockMvc.perform(post("/api/auctions")
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + seller.token())
-            .content(createAuctionBody("card_021", 24, List.of(repCond, exchCond))))
+            .content(createAuctionBody("ARG4", 24, List.of(repCond, exchCond))))
         .andExpect(status().is2xxSuccessful())
         .andReturn();
 
@@ -214,162 +214,162 @@ public class AuctionTests extends IntegrationTestBase {
   @Test
   void auctionWithoutConditionsAllowsAnyBidder() throws Exception {
     Session seller = register("seller", "seller@java.com", "password123");
-    addToCollection(seller.userId(), "card_021", seller.token());
-    String auctionId = createAuctionAndGetId(seller.token(), "card_021");
+    addToCollection(seller.userId(), "ARG4", seller.token());
+    String auctionId = createAuctionAndGetId(seller.token(), "ARG4");
 
     Session bidder = register("bidder", "bidder@java.com", "password123");
-    addToCollection(bidder.userId(), "card_003", bidder.token());
+    addToCollection(bidder.userId(), "ARG1", bidder.token());
 
     mockMvc.perform(post("/api/auctions/" + auctionId + "/offers")
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + bidder.token())
-            .content("{ \"items\": [ { \"cardId\": \"card_003\", \"amount\": 1 } ] }"))
+            .content("{ \"items\": [ { \"cardId\": \"ARG1\", \"amount\": 1 } ] }"))
         .andExpect(status().is2xxSuccessful());
   }
 
   @Test
   void minReputationBlocksBidderWithNullRating() throws Exception {
     Session seller = register("seller", "seller@java.com", "password123");
-    addToCollection(seller.userId(), "card_021", seller.token());
+    addToCollection(seller.userId(), "ARG4", seller.token());
 
-    String auctionId = createAuctionWithConditionsAndGetId(seller.token(), "card_021",
+    String auctionId = createAuctionWithConditionsAndGetId(seller.token(), "ARG4",
         List.of(AuctionConditionDto.builder().filterName("MIN_REPUTATION").quantity(3).build()));
 
     Session bidder = register("bidder", "bidder@java.com", "password123");
-    addToCollection(bidder.userId(), "card_003", bidder.token());
+    addToCollection(bidder.userId(), "ARG1", bidder.token());
 
     mockMvc.perform(post("/api/auctions/" + auctionId + "/offers")
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + bidder.token())
-            .content("{ \"items\": [ { \"cardId\": \"card_003\", \"amount\": 1 } ] }"))
+            .content("{ \"items\": [ { \"cardId\": \"ARG1\", \"amount\": 1 } ] }"))
         .andExpect(status().isUnprocessableEntity());
   }
 
   @Test
   void minReputationAllowsBidderWithSufficientRating() throws Exception {
     Session seller = register("seller", "seller@java.com", "password123");
-    addToCollection(seller.userId(), "card_021", seller.token());
+    addToCollection(seller.userId(), "ARG4", seller.token());
 
-    String auctionId = createAuctionWithConditionsAndGetId(seller.token(), "card_021",
+    String auctionId = createAuctionWithConditionsAndGetId(seller.token(), "ARG4",
         List.of(AuctionConditionDto.builder().filterName("MIN_REPUTATION").quantity(3).build()));
 
     Session bidder = register("bidder", "bidder@java.com", "password123");
-    addToCollection(bidder.userId(), "card_003", bidder.token());
+    addToCollection(bidder.userId(), "ARG1", bidder.token());
     setUserRating(bidder.userId(), 4.0);
 
     mockMvc.perform(post("/api/auctions/" + auctionId + "/offers")
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + bidder.token())
-            .content("{ \"items\": [ { \"cardId\": \"card_003\", \"amount\": 1 } ] }"))
+            .content("{ \"items\": [ { \"cardId\": \"ARG1\", \"amount\": 1 } ] }"))
         .andExpect(status().is2xxSuccessful());
   }
 
   @Test
   void minExchangesBlocksBidderWithZeroExchanges() throws Exception {
     Session seller = register("seller", "seller@java.com", "password123");
-    addToCollection(seller.userId(), "card_021", seller.token());
+    addToCollection(seller.userId(), "ARG4", seller.token());
 
-    String auctionId = createAuctionWithConditionsAndGetId(seller.token(), "card_021",
+    String auctionId = createAuctionWithConditionsAndGetId(seller.token(), "ARG4",
         List.of(AuctionConditionDto.builder().filterName("MIN_EXCHANGES").quantity(2).build()));
 
     Session bidder = register("bidder", "bidder@java.com", "password123");
-    addToCollection(bidder.userId(), "card_003", bidder.token());
+    addToCollection(bidder.userId(), "ARG1", bidder.token());
 
     mockMvc.perform(post("/api/auctions/" + auctionId + "/offers")
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + bidder.token())
-            .content("{ \"items\": [ { \"cardId\": \"card_003\", \"amount\": 1 } ] }"))
+            .content("{ \"items\": [ { \"cardId\": \"ARG1\", \"amount\": 1 } ] }"))
         .andExpect(status().isUnprocessableEntity());
   }
 
   @Test
   void minExchangesAllowsBidderWithSufficientExchanges() throws Exception {
     Session seller = register("seller", "seller@java.com", "password123");
-    addToCollection(seller.userId(), "card_021", seller.token());
+    addToCollection(seller.userId(), "ARG4", seller.token());
 
-    String auctionId = createAuctionWithConditionsAndGetId(seller.token(), "card_021",
+    String auctionId = createAuctionWithConditionsAndGetId(seller.token(), "ARG4",
         List.of(AuctionConditionDto.builder().filterName("MIN_EXCHANGES").quantity(2).build()));
 
     Session bidder = register("bidder", "bidder@java.com", "password123");
-    addToCollection(bidder.userId(), "card_003", bidder.token());
+    addToCollection(bidder.userId(), "ARG1", bidder.token());
     setUserExchangesAmount(bidder.userId(), 3);
 
     mockMvc.perform(post("/api/auctions/" + auctionId + "/offers")
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + bidder.token())
-            .content("{ \"items\": [ { \"cardId\": \"card_003\", \"amount\": 1 } ] }"))
+            .content("{ \"items\": [ { \"cardId\": \"ARG1\", \"amount\": 1 } ] }"))
         .andExpect(status().is2xxSuccessful());
   }
 
   @Test
   void minCardCountBlocksBidderOfferingTooFewCards() throws Exception {
     Session seller = register("seller", "seller@java.com", "password123");
-    addToCollection(seller.userId(), "card_021", seller.token());
+    addToCollection(seller.userId(), "ARG4", seller.token());
 
-    String auctionId = createAuctionWithConditionsAndGetId(seller.token(), "card_021",
+    String auctionId = createAuctionWithConditionsAndGetId(seller.token(), "ARG4",
         List.of(AuctionConditionDto.builder().filterName("MIN_CARD_COUNT").quantity(3).build()));
 
     Session bidder = register("bidder", "bidder@java.com", "password123");
-    addToCollectionN(bidder.userId(), "card_003", 3, bidder.token());
+    addToCollectionN(bidder.userId(), "ARG1", 3, bidder.token());
 
     mockMvc.perform(post("/api/auctions/" + auctionId + "/offers")
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + bidder.token())
-            .content("{ \"items\": [ { \"cardId\": \"card_003\", \"amount\": 1 } ] }"))
+            .content("{ \"items\": [ { \"cardId\": \"ARG1\", \"amount\": 1 } ] }"))
         .andExpect(status().isUnprocessableEntity());
   }
 
   @Test
   void minCardCountAllowsBidderOfferingEnoughCards() throws Exception {
     Session seller = register("seller", "seller@java.com", "password123");
-    addToCollection(seller.userId(), "card_021", seller.token());
+    addToCollection(seller.userId(), "ARG4", seller.token());
 
-    String auctionId = createAuctionWithConditionsAndGetId(seller.token(), "card_021",
+    String auctionId = createAuctionWithConditionsAndGetId(seller.token(), "ARG4",
         List.of(AuctionConditionDto.builder().filterName("MIN_CARD_COUNT").quantity(3).build()));
 
     Session bidder = register("bidder", "bidder@java.com", "password123");
-    addToCollectionN(bidder.userId(), "card_003", 3, bidder.token());
+    addToCollectionN(bidder.userId(), "ARG1", 3, bidder.token());
 
     mockMvc.perform(post("/api/auctions/" + auctionId + "/offers")
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + bidder.token())
-            .content("{ \"items\": [ { \"cardId\": \"card_003\", \"amount\": 3 } ] }"))
+            .content("{ \"items\": [ { \"cardId\": \"ARG1\", \"amount\": 3 } ] }"))
         .andExpect(status().is2xxSuccessful());
   }
 
   @Test
   void minCategoryBlocksBidderOfferingCommonWhenEpicRequired() throws Exception {
     Session seller = register("seller", "seller@java.com", "password123");
-    addToCollection(seller.userId(), "card_021", seller.token());
+    addToCollection(seller.userId(), "ARG4", seller.token());
 
-    String auctionId = createAuctionWithConditionsAndGetId(seller.token(), "card_021",
+    String auctionId = createAuctionWithConditionsAndGetId(seller.token(), "ARG4",
         List.of(AuctionConditionDto.builder().filterName("MIN_CATEGORY").value(com.tacs.tp1c2026.entities.enums.Category.fromValue("EPICO")).build()));
 
     Session bidder = register("bidder", "bidder@java.com", "password123");
-    addToCollection(bidder.userId(), "card_003", bidder.token()); // COMUN
+    addToCollection(bidder.userId(), "ARG1", bidder.token()); // COMUN
 
     mockMvc.perform(post("/api/auctions/" + auctionId + "/offers")
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + bidder.token())
-            .content("{ \"items\": [ { \"cardId\": \"card_003\", \"amount\": 1 } ] }"))
+            .content("{ \"items\": [ { \"cardId\": \"ARG1\", \"amount\": 1 } ] }"))
         .andExpect(status().isUnprocessableEntity());
   }
 
   @Test
   void minCategoryAllowsBidderOfferingEpicOrHigher() throws Exception {
     Session seller = register("seller", "seller@java.com", "password123");
-    addToCollection(seller.userId(), "card_021", seller.token());
+    addToCollection(seller.userId(), "ARG4", seller.token());
 
-    String auctionId = createAuctionWithConditionsAndGetId(seller.token(), "card_021",
+    String auctionId = createAuctionWithConditionsAndGetId(seller.token(), "ARG4",
         List.of(AuctionConditionDto.builder().filterName("MIN_CATEGORY").value(com.tacs.tp1c2026.entities.enums.Category.fromValue("EPICO")).build()));
 
     Session bidder = register("bidder", "bidder@java.com", "password123");
-    addToCollection(bidder.userId(), "card_001", bidder.token()); // EPICO
+    addToCollection(bidder.userId(), "FWC1", bidder.token()); // EPICO
 
     mockMvc.perform(post("/api/auctions/" + auctionId + "/offers")
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + bidder.token())
-            .content("{ \"items\": [ { \"cardId\": \"card_001\", \"amount\": 1 } ] }"))
+            .content("{ \"items\": [ { \"cardId\": \"FWC1\", \"amount\": 1 } ] }"))
         .andExpect(status().is2xxSuccessful());
   }
 
@@ -501,12 +501,12 @@ public class AuctionTests extends IntegrationTestBase {
   @Test
   void acceptAuctionOfferFinalizesAndCreatesExchange() throws Exception {
     Session seller = register("seller", "seller@java.com", "password123");
-    addToCollection(seller.userId(), "card_021", seller.token());
-    String auctionId = createAuctionAndGetId(seller.token(), "card_021");
+    addToCollection(seller.userId(), "ARG4", seller.token());
+    String auctionId = createAuctionAndGetId(seller.token(), "ARG4");
 
     Session bidder = register("bidder", "bidder@java.com", "password123");
-    addToCollection(bidder.userId(), "card_050", bidder.token());
-    placeBid(bidder.token(), auctionId, "card_050", 1);
+    addToCollection(bidder.userId(), "BRA5", bidder.token());
+    placeBid(bidder.token(), auctionId, "BRA5", 1);
     String offerId = firstOfferId(auctionId, seller.token());
 
     mockMvc.perform(put("/api/auctions/" + auctionId + "/offers/" + offerId + "/accept")
@@ -534,12 +534,12 @@ public class AuctionTests extends IntegrationTestBase {
   @Test
   void acceptAuctionOfferTransfersCardsBetweenCollections() throws Exception {
     Session seller = register("seller", "seller@java.com", "password123");
-    addToCollection(seller.userId(), "card_021", seller.token());
-    String auctionId = createAuctionAndGetId(seller.token(), "card_021");
+    addToCollection(seller.userId(), "ARG4", seller.token());
+    String auctionId = createAuctionAndGetId(seller.token(), "ARG4");
 
     Session bidder = register("bidder", "bidder@java.com", "password123");
-    addToCollection(bidder.userId(), "card_050", bidder.token());
-    placeBid(bidder.token(), auctionId, "card_050", 1);
+    addToCollection(bidder.userId(), "BRA5", bidder.token());
+    placeBid(bidder.token(), auctionId, "BRA5", 1);
     String offerId = firstOfferId(auctionId, seller.token());
 
     mockMvc.perform(put("/api/auctions/" + auctionId + "/offers/" + offerId + "/accept")
@@ -547,23 +547,23 @@ public class AuctionTests extends IntegrationTestBase {
         .andExpect(status().isOk());
 
     // Bidder pierde la ofrecida y recibe la subastada
-    assertEquals(0, quantityInCollection(bidder.userId(), "card_050", bidder.token()));
-    assertEquals(1, quantityInCollection(bidder.userId(), "card_021", bidder.token()));
+    assertEquals(0, quantityInCollection(bidder.userId(), "BRA5", bidder.token()));
+    assertEquals(1, quantityInCollection(bidder.userId(), "ARG4", bidder.token()));
 
     // Seller pierde la subastada y recibe la ofrecida
-    assertEquals(0, quantityInCollection(seller.userId(), "card_021", seller.token()));
-    assertEquals(1, quantityInCollection(seller.userId(), "card_050", seller.token()));
+    assertEquals(0, quantityInCollection(seller.userId(), "ARG4", seller.token()));
+    assertEquals(1, quantityInCollection(seller.userId(), "BRA5", seller.token()));
   }
 
   @Test
   void acceptAuctionOfferForbiddenForNonPublisher() throws Exception {
     Session seller = register("seller", "seller@java.com", "password123");
-    addToCollection(seller.userId(), "card_021", seller.token());
-    String auctionId = createAuctionAndGetId(seller.token(), "card_021");
+    addToCollection(seller.userId(), "ARG4", seller.token());
+    String auctionId = createAuctionAndGetId(seller.token(), "ARG4");
 
     Session bidder = register("bidder", "bidder@java.com", "password123");
-    addToCollection(bidder.userId(), "card_050", bidder.token());
-    placeBid(bidder.token(), auctionId, "card_050", 1);
+    addToCollection(bidder.userId(), "BRA5", bidder.token());
+    placeBid(bidder.token(), auctionId, "BRA5", 1);
     String offerId = firstOfferId(auctionId, seller.token());
 
     mockMvc.perform(put("/api/auctions/" + auctionId + "/offers/" + offerId + "/accept")
@@ -574,12 +574,12 @@ public class AuctionTests extends IntegrationTestBase {
   @Test
   void closeExpiredAuctionWithBestOfferAwardsAndCreatesExchange() throws Exception {
     Session seller = register("seller", "seller@java.com", "password123");
-    addToCollection(seller.userId(), "card_021", seller.token());
-    String auctionId = createAuctionAndGetId(seller.token(), "card_021");
+    addToCollection(seller.userId(), "ARG4", seller.token());
+    String auctionId = createAuctionAndGetId(seller.token(), "ARG4");
 
     Session bidder = register("bidder", "bidder@java.com", "password123");
-    addToCollection(bidder.userId(), "card_050", bidder.token());
-    placeBid(bidder.token(), auctionId, "card_050", 1);
+    addToCollection(bidder.userId(), "BRA5", bidder.token());
+    placeBid(bidder.token(), auctionId, "BRA5", 1);
     String offerId = firstOfferId(auctionId, seller.token());
 
     mockMvc.perform(put("/api/auctions/" + auctionId + "/offers/" + offerId + "/best")
@@ -604,10 +604,10 @@ public class AuctionTests extends IntegrationTestBase {
   @Test
   void closeExpiredAuctionWithoutOffersCancelsAndReleasesCommit() throws Exception {
     Session seller = register("seller", "seller@java.com", "password123");
-    addToCollection(seller.userId(), "card_021", seller.token());
-    String auctionId = createAuctionAndGetId(seller.token(), "card_021");
+    addToCollection(seller.userId(), "ARG4", seller.token());
+    String auctionId = createAuctionAndGetId(seller.token(), "ARG4");
 
-    assertEquals(1, compromisedCount(seller.userId(), "card_021", seller.token()));
+    assertEquals(1, compromisedCount(seller.userId(), "ARG4", seller.token()));
 
     auctionService.closeExpiredAuction(auctionId);
 
@@ -615,27 +615,27 @@ public class AuctionTests extends IntegrationTestBase {
         .header("Authorization", "Bearer " + seller.token()))
         .andReturn();
     assertEquals("CANCELLED", JsonPath.read(detail.getResponse().getContentAsString(), "$.status"));
-    assertEquals(0, compromisedCount(seller.userId(), "card_021", seller.token()));
+    assertEquals(0, compromisedCount(seller.userId(), "ARG4", seller.token()));
     assertTrue(exchangeRepository.findAll().isEmpty());
   }
 
   @Test
   void rejectOfferReleasesBidderCommit() throws Exception {
     Session seller = register("seller", "seller@java.com", "password123");
-    addToCollection(seller.userId(), "card_021", seller.token());
-    String auctionId = createAuctionAndGetId(seller.token(), "card_021");
+    addToCollection(seller.userId(), "ARG4", seller.token());
+    String auctionId = createAuctionAndGetId(seller.token(), "ARG4");
 
     Session bidder = register("bidder", "bidder@java.com", "password123");
-    addToCollection(bidder.userId(), "card_050", bidder.token());
-    placeBid(bidder.token(), auctionId, "card_050", 1);
-    assertEquals(1, compromisedCount(bidder.userId(), "card_050", bidder.token()));
+    addToCollection(bidder.userId(), "BRA5", bidder.token());
+    placeBid(bidder.token(), auctionId, "BRA5", 1);
+    assertEquals(1, compromisedCount(bidder.userId(), "BRA5", bidder.token()));
 
     String offerId = firstOfferId(auctionId, seller.token());
     mockMvc.perform(put("/api/auctions/" + auctionId + "/offers/" + offerId + "/reject")
         .header("Authorization", "Bearer " + seller.token()))
         .andExpect(status().isOk());
 
-    assertEquals(0, compromisedCount(bidder.userId(), "card_050", bidder.token()));
+    assertEquals(0, compromisedCount(bidder.userId(), "BRA5", bidder.token()));
   }
 
   /**
@@ -646,12 +646,12 @@ public class AuctionTests extends IntegrationTestBase {
   @Test
   void cancelOfferByNonCreatorReturnsForbidden() throws Exception {
     Session seller = register("seller", "seller@java.com", "password123");
-    addToCollection(seller.userId(), "card_021", seller.token());
-    String auctionId = createAuctionAndGetId(seller.token(), "card_021");
+    addToCollection(seller.userId(), "ARG4", seller.token());
+    String auctionId = createAuctionAndGetId(seller.token(), "ARG4");
 
     Session bidder = register("bidder", "bidder@java.com", "password123");
-    addToCollection(bidder.userId(), "card_050", bidder.token());
-    placeBid(bidder.token(), auctionId, "card_050", 1);
+    addToCollection(bidder.userId(), "BRA5", bidder.token());
+    placeBid(bidder.token(), auctionId, "BRA5", 1);
     String offerId = firstOfferId(auctionId, seller.token());
 
     Session stranger = register("stranger", "stranger@java.com", "password123");
@@ -669,12 +669,12 @@ public class AuctionTests extends IntegrationTestBase {
   @Test
   void setBestOfferDoesNotCloseAuction() throws Exception {
     Session seller = register("seller", "seller@java.com", "password123");
-    addToCollection(seller.userId(), "card_021", seller.token());
-    String auctionId = createAuctionAndGetId(seller.token(), "card_021");
+    addToCollection(seller.userId(), "ARG4", seller.token());
+    String auctionId = createAuctionAndGetId(seller.token(), "ARG4");
 
     Session bidder = register("bidder", "bidder@java.com", "password123");
-    addToCollection(bidder.userId(), "card_050", bidder.token());
-    placeBid(bidder.token(), auctionId, "card_050", 1);
+    addToCollection(bidder.userId(), "BRA5", bidder.token());
+    placeBid(bidder.token(), auctionId, "BRA5", 1);
     String offerId = firstOfferId(auctionId, seller.token());
 
     mockMvc.perform(put("/api/auctions/" + auctionId + "/offers/" + offerId + "/best")

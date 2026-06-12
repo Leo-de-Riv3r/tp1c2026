@@ -34,11 +34,11 @@ public class CardsTests extends IntegrationTestBase {
   void getCatalogByIdReturnsCard() throws Exception {
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
 
-    String body = mockMvc.perform(get("/api/cards/catalog/card_001")
+    String body = mockMvc.perform(get("/api/cards/catalog/FWC1")
             .header("Authorization", "Bearer " + pepe.token()))
         .andExpect(status().isOk())
         .andReturn().getResponse().getContentAsString();
-    assertEquals("card_001", JsonPath.read(body, "$.id"));
+    assertEquals("FWC1", JsonPath.read(body, "$.id"));
     assertNotNull(JsonPath.read(body, "$.description"));
     assertNotNull(JsonPath.read(body, "$.category"));
   }
@@ -54,15 +54,15 @@ public class CardsTests extends IntegrationTestBase {
 
   @Test
   void searchAvailableReturnsBothPublicationsAndAuctionsPaginated() throws Exception {
-    // Pepe publica card_001, Moni subasta card_002 → search sin filtros devuelve ambas listas
+    // Pepe publica FWC1, Moni subasta FWC3 → search sin filtros devuelve ambas listas
     // paginadas (default page=1, perPage=10).
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
-    addToCollection(pepe.userId(), "card_001", pepe.token());
-    publish(pepe.token(), "card_001", 1);
+    addToCollection(pepe.userId(), "FWC1", pepe.token());
+    publish(pepe.token(), "FWC1", 1);
 
     Session moni = register("Moni Argento", "moniargento@gmail.com", "password123");
-    addToCollection(moni.userId(), "card_002", moni.token());
-    createAuction(moni.token(), "card_002", 24);
+    addToCollection(moni.userId(), "FWC3", moni.token());
+    createAuction(moni.token(), "FWC3", 24);
 
     String body = mockMvc.perform(get("/api/cards/search")
             .header("Authorization", "Bearer " + pepe.token()))
@@ -78,16 +78,16 @@ public class CardsTests extends IntegrationTestBase {
 
   @Test
   void searchAvailableFiltersByCardNumberAndCategory() throws Exception {
-    // Pepe publica card_001 (EPICO), Moni subasta card_002 (EPICO).
-    // Filter por number=1 → solo card_001 (en publications).
+    // Pepe publica FWC1 (EPICO), Moni subasta FWC3 (EPICO).
+    // Filter por number=1 → solo FWC1 (en publications).
     // Filter por category=EPICO → encuentra ambas (verifica el CategoryConverter end-to-end).
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
-    addToCollection(pepe.userId(), "card_001", pepe.token());
-    publish(pepe.token(), "card_001", 1);
+    addToCollection(pepe.userId(), "FWC1", pepe.token());
+    publish(pepe.token(), "FWC1", 1);
 
     Session moni = register("Moni Argento", "moniargento@gmail.com", "password123");
-    addToCollection(moni.userId(), "card_002", moni.token());
-    createAuction(moni.token(), "card_002", 24);
+    addToCollection(moni.userId(), "FWC3", moni.token());
+    createAuction(moni.token(), "FWC3", 24);
 
     String byNumber = mockMvc.perform(get("/api/cards/search")
             .param("number", "1")
