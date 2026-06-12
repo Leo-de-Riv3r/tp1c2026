@@ -65,8 +65,8 @@ public class UsersTests extends IntegrationTestBase {
   @Test
   void getMissingCardsReturnsListForUser() throws Exception {
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
-    addMissingCard(pepe.userId(), "card_001", pepe.token());
-    addMissingCard(pepe.userId(), "card_002", pepe.token());
+    addMissingCard(pepe.userId(), "FWC1", pepe.token());
+    addMissingCard(pepe.userId(), "FWC3", pepe.token());
 
     String body = mockMvc.perform(get("/api/users/" + pepe.userId() + "/missing-cards")
             .header("Authorization", "Bearer " + pepe.token()))
@@ -92,13 +92,13 @@ public class UsersTests extends IntegrationTestBase {
   void addToCollectionCreatesNewEntryWhenAbsent() throws Exception {
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
 
-    addToCollection(pepe.userId(), "card_001", pepe.token());
+    addToCollection(pepe.userId(), "FWC1", pepe.token());
 
     String body = mockMvc.perform(get("/api/users/" + pepe.userId() + "/collection")
             .header("Authorization", "Bearer " + pepe.token()))
         .andReturn().getResponse().getContentAsString();
     assertEquals(1, ((List<?>) JsonPath.read(body, "$")).size());
-    assertEquals("card_001", JsonPath.read(body, "$[0].cardId"));
+    assertEquals("FWC1", JsonPath.read(body, "$[0].cardId"));
     assertEquals(1, (Integer) JsonPath.read(body, "$[0].quantity"));
     assertEquals(0, (Integer) JsonPath.read(body, "$[0].compromisedCount"));
   }
@@ -107,8 +107,8 @@ public class UsersTests extends IntegrationTestBase {
   void addToCollectionIncrementsQuantityWhenPresent() throws Exception {
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
 
-    addToCollection(pepe.userId(), "card_001", pepe.token());
-    addToCollection(pepe.userId(), "card_001", pepe.token()); // misma card → quantity++
+    addToCollection(pepe.userId(), "FWC1", pepe.token());
+    addToCollection(pepe.userId(), "FWC1", pepe.token()); // misma card → quantity++
 
     String body = mockMvc.perform(get("/api/users/" + pepe.userId() + "/collection")
             .header("Authorization", "Bearer " + pepe.token()))
@@ -122,9 +122,9 @@ public class UsersTests extends IntegrationTestBase {
   @Test
   void decrementFromCollectionReducesQuantity() throws Exception {
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
-    addToCollectionN(pepe.userId(), "card_001", 3, pepe.token());
+    addToCollectionN(pepe.userId(), "FWC1", 3, pepe.token());
 
-    mockMvc.perform(patch("/api/users/" + pepe.userId() + "/collection/card_001")
+    mockMvc.perform(patch("/api/users/" + pepe.userId() + "/collection/FWC1")
             .header("Authorization", "Bearer " + pepe.token()))
         .andExpect(status().is2xxSuccessful());
 
@@ -137,9 +137,9 @@ public class UsersTests extends IntegrationTestBase {
   @Test
   void decrementFromCollectionRemovesEntryAtZero() throws Exception {
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
-    addToCollection(pepe.userId(), "card_001", pepe.token()); // quantity=1
+    addToCollection(pepe.userId(), "FWC1", pepe.token()); // quantity=1
 
-    mockMvc.perform(patch("/api/users/" + pepe.userId() + "/collection/card_001")
+    mockMvc.perform(patch("/api/users/" + pepe.userId() + "/collection/FWC1")
             .header("Authorization", "Bearer " + pepe.token()))
         .andExpect(status().is2xxSuccessful());
 
@@ -155,13 +155,13 @@ public class UsersTests extends IntegrationTestBase {
   void addMissingCardCreatesEntry() throws Exception {
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
 
-    addMissingCard(pepe.userId(), "card_001", pepe.token());
+    addMissingCard(pepe.userId(), "FWC1", pepe.token());
 
     String body = mockMvc.perform(get("/api/users/" + pepe.userId() + "/missing-cards")
             .header("Authorization", "Bearer " + pepe.token()))
         .andReturn().getResponse().getContentAsString();
     assertEquals(1, ((List<?>) JsonPath.read(body, "$")).size());
-    assertEquals("card_001", JsonPath.read(body, "$[0].cardId"));
+    assertEquals("FWC1", JsonPath.read(body, "$[0].cardId"));
   }
 
   @Test
@@ -170,8 +170,8 @@ public class UsersTests extends IntegrationTestBase {
     // El endpoint devuelve 201 igual ambas veces, pero la lista no crece.
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
 
-    addMissingCard(pepe.userId(), "card_001", pepe.token());
-    addMissingCard(pepe.userId(), "card_001", pepe.token()); // segunda vez no duplica
+    addMissingCard(pepe.userId(), "FWC1", pepe.token());
+    addMissingCard(pepe.userId(), "FWC1", pepe.token()); // segunda vez no duplica
 
     String body = mockMvc.perform(get("/api/users/" + pepe.userId() + "/missing-cards")
             .header("Authorization", "Bearer " + pepe.token()))
@@ -182,10 +182,10 @@ public class UsersTests extends IntegrationTestBase {
   @Test
   void removeMissingCardDeletesEntry() throws Exception {
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
-    addMissingCard(pepe.userId(), "card_001", pepe.token());
-    addMissingCard(pepe.userId(), "card_002", pepe.token());
+    addMissingCard(pepe.userId(), "FWC1", pepe.token());
+    addMissingCard(pepe.userId(), "FWC3", pepe.token());
 
-    mockMvc.perform(delete("/api/users/" + pepe.userId() + "/missing-cards/card_001")
+    mockMvc.perform(delete("/api/users/" + pepe.userId() + "/missing-cards/FWC1")
             .header("Authorization", "Bearer " + pepe.token()))
         .andExpect(status().is2xxSuccessful());
 
@@ -193,7 +193,7 @@ public class UsersTests extends IntegrationTestBase {
             .header("Authorization", "Bearer " + pepe.token()))
         .andReturn().getResponse().getContentAsString();
     assertEquals(1, ((List<?>) JsonPath.read(body, "$")).size());
-    assertEquals("card_002", JsonPath.read(body, "$[0].cardId"));
+    assertEquals("FWC3", JsonPath.read(body, "$[0].cardId"));
   }
 
   // ──────────────────────────── Inválidos ────────────────────────────
@@ -213,22 +213,22 @@ public class UsersTests extends IntegrationTestBase {
   @Test
   void decrementFromCollectionWhenNotInCollectionFails() throws Exception {
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
-    // No agregamos card_001 a la colección. PATCH directo debería fallar.
+    // No agregamos FWC1 a la colección. PATCH directo debería fallar.
 
-    mockMvc.perform(patch("/api/users/" + pepe.userId() + "/collection/card_001")
+    mockMvc.perform(patch("/api/users/" + pepe.userId() + "/collection/FWC1")
             .header("Authorization", "Bearer " + pepe.token()))
         .andExpect(status().is4xxClientError());
   }
 
   @Test
   void decrementFromCollectionForCommittedCardFails() throws Exception {
-    // Pepe tiene 1× card_001, la publica (compromised=1, available=0). PATCH debe fallar
+    // Pepe tiene 1× FWC1, la publica (compromised=1, available=0). PATCH debe fallar
     // porque available < 1: si bajara la quantity, compromised quedaría > quantity, rompiendo el invariante.
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
-    addToCollection(pepe.userId(), "card_001", pepe.token());
-    publish(pepe.token(), "card_001", 1);
+    addToCollection(pepe.userId(), "FWC1", pepe.token());
+    publish(pepe.token(), "FWC1", 1);
 
-    mockMvc.perform(patch("/api/users/" + pepe.userId() + "/collection/card_001")
+    mockMvc.perform(patch("/api/users/" + pepe.userId() + "/collection/FWC1")
             .header("Authorization", "Bearer " + pepe.token()))
         .andExpect(status().is4xxClientError());
   }
@@ -237,9 +237,9 @@ public class UsersTests extends IntegrationTestBase {
   void addMissingCardForCardAlreadyInCollectionFails() throws Exception {
     // El service tiene un guard explícito: si la card está en la colección, ConflictException.
     Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
-    addToCollection(pepe.userId(), "card_001", pepe.token());
+    addToCollection(pepe.userId(), "FWC1", pepe.token());
 
-    String body = "{ \"cardId\": \"card_001\" }";
+    String body = "{ \"cardId\": \"FWC1\" }";
     mockMvc.perform(post("/api/users/" + pepe.userId() + "/missing-cards")
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + pepe.token())

@@ -42,19 +42,19 @@ public class ConcurrencyTests extends IntegrationTestBase {
     @Test
     void twoConcurrentBidsOnSameAuctionBothPersist() throws Exception {
         Session seller = register("Seller", "seller@conc.com", "pass123");
-        addToCollection(seller.userId(), "card_001", seller.token());
+        addToCollection(seller.userId(), "FWC1", seller.token());
 
         CreateAuctionDto createDto = new CreateAuctionDto();
-        createDto.setCardId("card_001");
+        createDto.setCardId("FWC1");
         createDto.setAuctionDurationHours(24);
         createDto.setConditions(List.of());
         Auction auction = auctionService.createAuction(seller.userId(), createDto);
         String auctionId = auction.getId();
 
         Session b1 = register("Bidder1", "b1@conc.com", "pass123");
-        addToCollection(b1.userId(), "card_002", b1.token());
+        addToCollection(b1.userId(), "FWC3", b1.token());
         Session b2 = register("Bidder2", "b2@conc.com", "pass123");
-        addToCollection(b2.userId(), "card_002", b2.token());
+        addToCollection(b2.userId(), "FWC3", b2.token());
 
         CountDownLatch start = new CountDownLatch(1);
         ExecutorService pool = Executors.newFixedThreadPool(2);
@@ -62,14 +62,14 @@ public class ConcurrencyTests extends IntegrationTestBase {
         Future<Throwable> f1 = pool.submit(() -> {
             start.await();
             try {
-                auctionService.createAuctionOffer(b1.userId(), auctionId, buildOffer("card_002", 1));
+                auctionService.createAuctionOffer(b1.userId(), auctionId, buildOffer("FWC3", 1));
                 return (Throwable) null;
             } catch (Throwable t) { return t; }
         });
         Future<Throwable> f2 = pool.submit(() -> {
             start.await();
             try {
-                auctionService.createAuctionOffer(b2.userId(), auctionId, buildOffer("card_002", 1));
+                auctionService.createAuctionOffer(b2.userId(), auctionId, buildOffer("FWC3", 1));
                 return (Throwable) null;
             } catch (Throwable t) { return t; }
         });
@@ -94,18 +94,18 @@ public class ConcurrencyTests extends IntegrationTestBase {
     @Test
     void twoConcurrentAcceptsDecrementRemainingCorrectly() throws Exception {
         Session alice = register("Alice", "alice@conc.com", "pass123");
-        addToCollectionN(alice.userId(), "card_001", 2, alice.token());
-        String pubId = idFromCreated(publish(alice.token(), "card_001", 2), "id");
+        addToCollectionN(alice.userId(), "FWC1", 2, alice.token());
+        String pubId = idFromCreated(publish(alice.token(), "FWC1", 2), "id");
 
         Session bob = register("Bob", "bob@conc.com", "pass123");
-        addToCollection(bob.userId(), "card_002", bob.token());
+        addToCollection(bob.userId(), "FWC3", bob.token());
         String bobProposalId = idFromCreated(
-            propose(bob.token(), pubId, List.of("card_002"), 1), "proposalId");
+            propose(bob.token(), pubId, List.of("FWC3"), 1), "proposalId");
 
         Session carol = register("Carol", "carol@conc.com", "pass123");
-        addToCollection(carol.userId(), "card_002", carol.token());
+        addToCollection(carol.userId(), "FWC3", carol.token());
         String carolProposalId = idFromCreated(
-            propose(carol.token(), pubId, List.of("card_002"), 1), "proposalId");
+            propose(carol.token(), pubId, List.of("FWC3"), 1), "proposalId");
 
         CountDownLatch start = new CountDownLatch(1);
         ExecutorService pool = Executors.newFixedThreadPool(2);
