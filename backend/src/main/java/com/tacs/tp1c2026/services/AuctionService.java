@@ -137,7 +137,7 @@ public class AuctionService {
             auction.getPublisherUser(),
             NotificationType.AUCTION_OFFER_RECEIVED,
             auction.getId(),
-            "You received a new offer on your auction #" + auction.getCardNumber()
+            "Recibiste una nueva oferta en tu subasta de " + auction.getCardId() + " - " + auction.getCardDescription()
         );
         return offer;
     }
@@ -178,7 +178,7 @@ public class AuctionService {
             bidder,
             NotificationType.AUCTION_CANCELLED,
             auction.getId(),
-            "The auction you bid on was cancelled."
+            "Una subasta de " + auction.getCardId() + " - " + auction.getCardDescription() + " en la que ofertaste fue cancelada"
         );
       }
     }
@@ -309,7 +309,7 @@ public class AuctionService {
           bidder,
           NotificationType.AUCTION_OFFER_REJECTED,
           auctionId,
-                    "Your offer on auction #" + auction.getCardNumber() + " was rejected."
+                    "Tu oferta en la subasta de " + auction.getCardId() + " - " + auction.getCardDescription() + " fue rechazada"
       );
     }
 
@@ -401,7 +401,7 @@ public class AuctionService {
                     bidder,
                     NotificationType.AUCTION_OFFER_REJECTED,
                     auction.getId(),
-          "Your offer on auction #" + auction.getCardNumber() + " was rejected."
+          "Tu oferta en la subasta de " + auction.getCardId() + " - " + auction.getCardDescription() + " fue rechazada"
                 );
             }
         }
@@ -421,7 +421,7 @@ public class AuctionService {
             winner,
             NotificationType.AUCTION_OFFER_ACCEPTED,
             auction.getId(),
-            "Your offer on auction #" + auction.getCardNumber() + " was accepted."
+            "¡Tu oferta en la subasta de " + auction.getCardId() + " - " + auction.getCardDescription() + " fue aceptada!"
         );
 
         List<Card> offeredCardsExpanded = winningOffer.getOfferedItems().stream()

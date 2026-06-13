@@ -38,6 +38,7 @@ public class TradePublication {
   @DocumentReference
   private Card card;
 
+  private String cardId;
   private Integer cardNumber;
   private String cardDescription;
   private String cardCountry;
@@ -64,6 +65,7 @@ public class TradePublication {
     this.publisherName = publisherUser.getName();
     this.publisherAvatarId = publisherUser.getAvatarId();
     this.card = card;
+    this.cardId = card.getId();
     this.cardNumber = card.getNumber();
     this.cardDescription = card.getDescription();
     this.cardCountry = card.getCountry();

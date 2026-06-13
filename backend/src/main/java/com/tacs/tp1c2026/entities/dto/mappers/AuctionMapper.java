@@ -45,6 +45,7 @@ public class AuctionMapper {
 
     return new AuctionDto(
         auction.getId(),
+        auction.getCardId(),
         auction.getCardNumber(),
         auction.getCardDescription(),
         auction.getCardCountry(),

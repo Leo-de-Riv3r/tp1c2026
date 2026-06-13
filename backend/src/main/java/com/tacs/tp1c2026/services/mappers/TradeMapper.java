@@ -21,6 +21,7 @@ public class TradeMapper {
   public TradePublicationDto mapPublication(TradePublication publication) {
     return new TradePublicationDto(
         publication.getId(),
+        publication.getCardId(),
         publication.getInitialCount(),
         publication.getRemainingCount(),
         publication.getCardNumber(),
