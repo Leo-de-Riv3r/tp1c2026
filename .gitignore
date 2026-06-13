@@ -42,3 +42,6 @@ build/
 # Local docker compose overrides (cada dev tiene los suyos)
 docker-compose.override.yml
 docker-compose.override.yaml
+
+# Notas WIP personales (no compartidas)
+notes/

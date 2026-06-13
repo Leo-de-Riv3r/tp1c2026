@@ -5,6 +5,7 @@ import com.tacs.tp1c2026.entities.enums.PublicationStatus;
 
 public record TradePublicationDto(
     String id,
+    String cardId,
     Integer initialCount,
     Integer remainingCount,
     Integer cardNumber,

@@ -58,15 +58,6 @@ if (existingUsers > 0) {
       acquisitionDate: new Date(), acquisitionOrigin: "SEED"
     };
   };
-  const toMissing = (id) => {
-    const c = seedCard(id);
-    return c && {
-      cardId: c._id, number: c.number, description: c.description,
-      country: c.country, team: c.team,
-      category: c.category, addedAt: new Date()
-    };
-  };
-
   const PASSWORD_HASH = "$2a$10$tNRX2onk9NYyT./j1Q18.OyDr16Y8K0fDpgW2IIUrKS.NleG.ntHq";
 
   // IDs predefinidos para poder referenciarlos desde otros documentos del seed
@@ -79,23 +70,6 @@ if (existingUsers > 0) {
   const PUBLISHER_ID = ObjectId(PUBLISHER_ID_HEX);
   const ADMIN_ID     = ObjectId(ADMIN_ID_HEX);
   const DARDO_ID     = ObjectId(DARDO_ID_HEX);
-
-  // IDs predefinidos para los sources de las sugerencias precargadas de Pepe
-  // (publicaciones + subasta de Moni con cards faltantes de Pepe).
-  // Sufijos del HEX coinciden con la card que cada publication/subasta vende, para legibilidad.
-  const MONI_PUB_FWC3_ID_HEX    = "69e54c037de7f7e868da9100";
-  const MONI_AUCTION_MEX7_ID_HEX = "69e54c037de7f7e868da9101";
-  const MONI_PUB_ARG1_ID_HEX    = "69e54c037de7f7e868da9102";
-  const MONI_PUB_BRA1_ID_HEX    = "69e54c037de7f7e868da9103";
-  const MONI_PUB_FWC3_ID     = ObjectId(MONI_PUB_FWC3_ID_HEX);
-  const MONI_AUCTION_MEX7_ID = ObjectId(MONI_AUCTION_MEX7_ID_HEX);
-  const MONI_PUB_ARG1_ID     = ObjectId(MONI_PUB_ARG1_ID_HEX);
-  const MONI_PUB_BRA1_ID     = ObjectId(MONI_PUB_BRA1_ID_HEX);
-
-  const fwc3 = seedCard("FWC3");  // Official Mascots (ESPECIAL)
-  const arg1 = seedCard("ARG1");  // Team Logo Argentina (ESCUDO)
-  const bra1 = seedCard("BRA1");  // Team Logo Brasil (ESCUDO)
-  const mex7 = seedCard("MEX7");  // Israel Reyes — México (JUGADOR)
 
   db.users.insertOne({
     _id: PEPE_ID,
@@ -114,76 +88,12 @@ if (existingUsers > 0) {
       toCollection("MEX1", 2),   // Team Logo México
       toCollection("BRA3", 1)    // Bento — Brasil
     ].filter(Boolean),
-    missingCards: [
-      toMissing("FWC3"),         // Official Mascots
-      toMissing("ARG1"),         // Team Logo Argentina
-      toMissing("BRA1"),         // Team Logo Brasil
-      toMissing("MEX7")          // Israel Reyes
-    ].filter(Boolean),
-    // Sugerencias precargadas: apuntan a las publications + subasta de Moni que matchean las
-    // missing de Pepe. Permite probar el flow del home sin esperar al cron horario
-    suggestions: [
-      fwc3 && {
-        sourceType: "PUBLICATION",
-        sourceId: MONI_PUB_FWC3_ID_HEX,
-        cardId: fwc3._id,
-        cardNumber: fwc3.number,
-        cardDescription: fwc3.description,
-        cardCountry: fwc3.country,
-        cardTeam: fwc3.team,
-        cardCategory: fwc3.category,
-        publisherUserId: PUBLISHER_ID_HEX,
-        publisherName: "Moni Argento",
-        publisherAvatarId: "avatar_2",
-        generatedAt: new Date()
-      },
-      arg1 && {
-        sourceType: "PUBLICATION",
-        sourceId: MONI_PUB_ARG1_ID_HEX,
-        cardId: arg1._id,
-        cardNumber: arg1.number,
-        cardDescription: arg1.description,
-        cardCountry: arg1.country,
-        cardTeam: arg1.team,
-        cardCategory: arg1.category,
-        publisherUserId: PUBLISHER_ID_HEX,
-        publisherName: "Moni Argento",
-        publisherAvatarId: "avatar_2",
-        generatedAt: new Date()
-      },
-      bra1 && {
-        sourceType: "PUBLICATION",
-        sourceId: MONI_PUB_BRA1_ID_HEX,
-        cardId: bra1._id,
-        cardNumber: bra1.number,
-        cardDescription: bra1.description,
-        cardCountry: bra1.country,
-        cardTeam: bra1.team,
-        cardCategory: bra1.category,
-        publisherUserId: PUBLISHER_ID_HEX,
-        publisherName: "Moni Argento",
-        publisherAvatarId: "avatar_2",
-        generatedAt: new Date()
-      },
-      mex7 && {
-        sourceType: "AUCTION",
-        sourceId: MONI_AUCTION_MEX7_ID_HEX,
-        cardId: mex7._id,
-        cardNumber: mex7.number,
-        cardDescription: mex7.description,
-        cardCountry: mex7.country,
-        cardTeam: mex7.team,
-        cardCategory: mex7.category,
-        publisherUserId: PUBLISHER_ID_HEX,
-        publisherName: "Moni Argento",
-        publisherAvatarId: "avatar_2",
-        generatedAt: new Date()
-      }
-    ].filter(Boolean)
+    missingCards: [],
+    suggestions: []
   });
 
-  // Segundo usuario con publicaciones + subasta activas. Las cards publicadas/subastadas quedan
-  // comprometidas (compromisedCount = quantity publicada/subastada)
+  // Segundo usuario con cards en collection (libres) para que pueda publicar/subastar en demo.
+  // No sembramos sus publications/auctions: las crea el profe desde el FE.
   db.users.insertOne({
     _id: PUBLISHER_ID,
     version: NumberLong(0),
@@ -192,16 +102,16 @@ if (existingUsers > 0) {
     passwordHash: PASSWORD_HASH,
     avatarId: "avatar_2",
     role: "USER",
-    rating: 4.5,
+    rating: null,
     exchangesAmount: 0,
     lastLogin: null,
     creationDate: new Date(),
     collection: [
-      { ...toCollection("FWC3", 1), compromisedCount: 1 }, // publicada (Mascots)
-      { ...toCollection("ARG1", 2), compromisedCount: 2 }, // publicada (Escudo Argentina)
-      { ...toCollection("BRA1", 3), compromisedCount: 1 }, // publicada parcial (Escudo Brasil)
-      toCollection("ARG3", 1),                              // libre (Nahuel Molina)
-      { ...toCollection("MEX7", 1), compromisedCount: 1 }  // subastada (Israel Reyes)
+      toCollection("FWC3", 1),    // Official Mascots
+      toCollection("ARG1", 2),    // Team Logo Argentina
+      toCollection("BRA1", 3),    // Team Logo Brasil
+      toCollection("ARG3", 1),    // Nahuel Molina
+      toCollection("MEX7", 1)     // Israel Reyes
     ].filter(Boolean),
     missingCards: [],
     suggestions: []
@@ -244,63 +154,6 @@ if (existingUsers > 0) {
     suggestions: []
   });
 
-  const toPublication = (id, cardId, initial, remaining) => {
-    const c = seedCard(cardId);
-    return c && {
-      _id: id,
-      version: NumberLong(0),
-      publisherUser: PUBLISHER_ID,
-      publisherName: "Moni Argento",
-      publisherAvatarId: "avatar_2",
-      card: c._id,
-      cardNumber: c.number,
-      cardDescription: c.description,
-      cardCountry: c.country,
-      cardTeam: c.team,
-      cardCategory: c.category,
-      initialCount: initial,
-      remainingCount: remaining,
-      creationDate: new Date(),
-      status: "ACTIVE",
-      proposals: [],
-      _class: "publication"
-    };
-  };
-  const pubs = [
-    toPublication(MONI_PUB_ARG1_ID, "ARG1", 2, 2),  // 2 disponibles — referenciada por sugerencia de Pepe
-    toPublication(MONI_PUB_BRA1_ID, "BRA1", 3, 1),  // ya cedió 2 vía aceptaciones; queda 1 (compromised=1) — referenciada por sugerencia de Pepe
-    toPublication(MONI_PUB_FWC3_ID, "FWC3", 1, 1)   // Mascots — referenciada por la sugerencia precargada de Pepe
-  ].filter(Boolean);
-  if (pubs.length) db.publications.insertMany(pubs);
-
-  // Subasta activa de MEX7 (Israel Reyes) — referenciada por la sugerencia precargada de Pepe
-  const now = new Date();
-  const closeIn48h = new Date(now.getTime() + 48 * 3600 * 1000);
-  if (mex7) {
-    db.auctions.insertOne({
-      _id: MONI_AUCTION_MEX7_ID,
-      version: NumberLong(0),
-      card: mex7._id,
-      cardNumber: mex7.number,
-      cardDescription: mex7.description,
-      cardCountry: mex7.country,
-      cardTeam: mex7.team,
-      cardCategory: mex7.category,
-      cardType: mex7.type,
-      publisherUser: PUBLISHER_ID,
-      publisherName: "Moni Argento",
-      publisherAvatarId: "avatar_2",
-      creationDate: now,
-      closeDate: closeIn48h,
-      conditions: [],
-      status: "ACTIVE",
-      bestOffer: null,
-      offers: [],
-      interestedUsers: [],
-      _class: "com.tacs.tp1c2026.entities.auction.Auction"
-    });
-  }
-
   db.users.createIndex({ email: 1 }, { unique: true, name: "idx_email" });
   db.users.createIndex({ "collection.cardId": 1 }, { name: "idx_collection_cardId" });
   db.users.createIndex({ "missingCards.cardId": 1 }, { name: "idx_missing_cardId" });
@@ -309,9 +162,6 @@ if (existingUsers > 0) {
   db.publications.createIndex({ status: 1 }, { name: "idx_pub_status" });
 
   print("✅  Usuarios de prueba creados: peperacing@gmail.com, moniargento@gmail.com, dfuseneco@outlook.com, admin@mail.com (role=ADMIN). Password de todos: 123456");
-  print("✅  Publicaciones de Moni Argento creadas: FWC3 (Mascots), ARG1 (Escudo AR), BRA1 (Escudo BR) — referenciadas por sugerencias de Pepe");
-  print("✅  Subasta de Moni Argento creada: MEX7 (Israel Reyes) — referenciada por sugerencia de Pepe");
-  print("✅  Pepe Racing tiene 4 sugerencias precargadas (3 publications + 1 auction)");
   print("✅  Índices creados");
 }
 
@@ -344,3 +194,4 @@ print("\n📊  Estado de la base:");
 print(`    cards:        ${db.cards.countDocuments()}`);
 print(`    users:        ${db.users.countDocuments()}`);
 print(`    publications: ${db.publications.countDocuments()}`);
+print(`    auctions:     ${db.auctions.countDocuments()}`);

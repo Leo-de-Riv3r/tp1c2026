@@ -12,6 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 public class AuctionDto {
   private String id;
+  private String cardId;
   private Integer cardNumber;
   private String cardDescription;
   private String cardCountry;

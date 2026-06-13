@@ -105,7 +105,7 @@ public class ProposalService {
             publisher,
             NotificationType.TRADE_PROPOSAL_RECEIVED,
             saved.getId(),
-            "You received a new proposal from " + proposer.getName()
+            "Recibiste una propuesta nueva de " + proposer.getName() + "."
         );
         return saved;
     }
@@ -215,7 +215,7 @@ public class ProposalService {
             proposer,
             NotificationType.TRADE_PROPOSAL_ACCEPTED,
             proposal.getId(),
-            "Your proposal was accepted. Check your exchanges."
+            "¡Tu propuesta fue aceptada! Revisá tus intercambios."
         );
 
         // Cascade: if the publication is FINALIZED, cancel remaining pending proposals and release
@@ -250,7 +250,7 @@ public class ProposalService {
             proposer,
             NotificationType.TRADE_PROPOSAL_REJECTED,
             proposal.getId(),
-            "Your proposal was rejected."
+            "Tu propuesta fue rechazada."
         );
     }
 

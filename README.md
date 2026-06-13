@@ -42,7 +42,7 @@ docker compose up -d --build
 
 ## Estado actual del proyecto
 
-**Catálogo**: catálogo generado de 500 figuritas en [`backend/seed/catalog.json`](backend/seed/catalog.json) que el contenedor `mongo-seed` inserta automáticamente en la colección `cards` al levantar el stack, junto con usuarios de prueba en la colección `users`
+**Catálogo**: 991 figuritas estilo Panini en [`backend/seed/catalog.json`](backend/seed/catalog.json) que el contenedor `mongo-seed` inserta automáticamente en la colección `cards` al levantar el stack, junto con usuarios de prueba en la colección `users`
 
 **Autenticación**: integrada vía JWT. Único endpoint `POST /api/auth/login` que detecta admin vs user según el `role` del User en Mongo (no hay endpoint admin separado). Todas las respuestas del API están en **inglés**. El filtro JWT valida además que el usuario del token siga existiendo en la base (`JwtAuthenticationFilter.java:53`).
 
@@ -56,8 +56,8 @@ Todos los users del seed comparten el mismo password: **`123456`**
 
 | Email                    | Rol   | Notas                                                                  |
 |--------------------------|-------|------------------------------------------------------------------------|
-| `peperacing@gmail.com`   | USER  | Tiene cards en colección (3x card_001, 2x card_005, 1x card_010) y missing cards |
-| `moniargento@gmail.com`  | USER  | Tiene 2 publicaciones activas (card_003 y card_004)                    |
+| `peperacing@gmail.com`   | USER  | Tiene cards en colección (3x FWC1, 2x MEX1, 1x BRA3)                   |
+| `moniargento@gmail.com`  | USER  | Tiene cards en colección (1x FWC3, 2x ARG1, 3x BRA1, 1x ARG3, 1x MEX7) |
 | `dfuseneco@outlook.com`  | USER  | Usuario "vacío" — sin colección, faltantes, publicaciones ni propuestas |
 | `admin@mail.com`         | ADMIN | Usuario de administración                                              |
 
@@ -110,6 +110,18 @@ $env:SPRING_MONGODB_URI = "mongodb://localhost:27017/tacs_db?directConnection=tr
 ```
 
 > **Nota:** el seed es idempotente — si ya hay datos, no los duplica. Para resetear: parar mongodb, borrar `/tmp/tacs-mongo` o `%TEMP%\tacs-mongo` y empezar de nuevo
+
+## Seedear MongoDB Atlas
+
+Para popular un cluster M0 de Atlas (deploy cloud), correr el mismo `seed.js` apuntando al connection string del cluster. Requiere [`mongosh`](https://www.mongodb.com/try/download/shell) local y la IP outbound whitelisteada en Network Access.
+
+Desde dentro de `backend/`:
+
+```bash
+mongosh "mongodb+srv://<user>:<password>@<cluster-host>/tacs_db?appName=<app>" --file seed/seed.js
+```
+
+El connection string completo (con password) queda solo en el password manager — nunca en el repo. El seed deja la base con 991 cards, 4 users de prueba, sin publications/auctions/proposals/exchanges (esos los crean los users desde el FE).
 
 ## Visualizar la base (opcional)
 
