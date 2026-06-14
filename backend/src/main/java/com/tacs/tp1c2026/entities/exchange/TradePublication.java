@@ -51,9 +51,6 @@ public class TradePublication {
   /** Available quantity. Decremented when a proposal is accepted by its requestedCount. */
   private Integer remainingCount;
 
-  /** Sum of requestedCount from PENDING proposals. Updated atomically via findAndModify. */
-  private int pendingCount = 0;
-
   private final LocalDateTime creationDate = LocalDateTime.now();
 
   private PublicationStatus status = PublicationStatus.ACTIVE;
@@ -106,7 +103,6 @@ public class TradePublication {
       throw new ConflictException("The proposal requests " + amount + " but only " + this.remainingCount + " remain");
     }
     this.remainingCount -= amount;
-    this.pendingCount = Math.max(0, this.pendingCount - amount);
     if (this.remainingCount == 0) {
       this.status = PublicationStatus.FINALIZED;
     }

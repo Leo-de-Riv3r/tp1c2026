@@ -35,13 +35,15 @@ public class ProposalService {
     private final PublicationService publicationService;
     private final ExchangeService exchangeService;
     private final NotificationService notificationService;
+    private final SettingsService settingsService;
     public ProposalService(UserRepository userRepository,
                            PublicationRepository publicationRepository,
                            ProposalRepository proposalRepository,
                            UserService userService,
                            CardService cardService,
                            PublicationService publicationService,
-                           ExchangeService exchangeService, NotificationService notificationService) {
+                           ExchangeService exchangeService, NotificationService notificationService,
+                           SettingsService settingsService) {
         this.userRepository = userRepository;
         this.publicationRepository = publicationRepository;
         this.proposalRepository = proposalRepository;
@@ -50,6 +52,7 @@ public class ProposalService {
         this.publicationService = publicationService;
         this.exchangeService = exchangeService;
       this.notificationService = notificationService;
+        this.settingsService = settingsService;
     }
 
     /**
@@ -58,7 +61,7 @@ public class ProposalService {
     @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
     @Transactional
     public TradeProposal createProposal(String userId, CreateTradeProposalDto dto)
-            throws NotFoundException, NotFoundException, InsufficientCardException, MissingCardException, NoAvailableSlotsException {
+            throws NotFoundException, NotFoundException, InsufficientCardException, MissingCardException {
         TradePublication publication = publicationService.findPublication(dto.publicationId());
         if (!publication.isActive()) {
             throw new ConflictException("The publication is not active");
@@ -68,15 +71,26 @@ public class ProposalService {
         if (requested == null || requested < 1) {
             throw new ConflictException("requestedCount debe ser >= 1");
         }
+        // No se puede pedir más figuritas de las que la publicación tiene disponibles.
         if (requested > publication.getRemainingCount()) {
             throw new ConflictException("The proposal requests " + requested + " but only " + publication.getRemainingCount() + " remain");
         }
 
-        // Atomic reservation: checks remainingCount - pendingCount >= requested and increments
-        // pendingCount in a single findAndModify. Serializes concurrent requests without needing
-        // multi-document transactions or replica set.
-        if (!publicationRepository.tryReserveSlots(publication.getId(), requested)) {
-            throw new NoAvailableSlotsException("No more slots available for new proposals");
+        // Modelo marketplace: una publicación admite hasta N propuestas PENDIENTES (configurable
+        // por el admin). Se permite sobre-suscripción: varias propuestas pueden competir por las
+        // mismas unidades. La disponibilidad real se resuelve al aceptar (decrementRemaining) y la
+        // cascada cancela las pendientes que ya no entran.
+        //
+        // SOFT CAP (a propósito): el count+insert no está serializado, así que dos creates
+        // concurrentes en el borde (count == N-1) podrían terminar en N+1. Es un tope anti-spam,
+        // no un invariante de escasez (esa se resuelve al aceptar, serializado por @Version +
+        // @Retryable). Para hacerlo estricto habría que bumpear la @Version de la publicación acá
+        // y dejar que el retry recuente. Diferido para revisar después.
+        int maxPending = settingsService.getMaxPendingProposals();
+        long currentPending = proposalRepository
+            .findByPublicationIdAndStatus(publication.getId(), TradeProposalStatus.PENDING).size();
+        if (currentPending >= maxPending) {
+            throw new ConflictException("La publicación alcanzó el máximo de propuestas pendientes (" + maxPending + ")");
         }
 
         User proposer = userService.getById(userId);
@@ -136,8 +150,20 @@ public class ProposalService {
         return base;
     }
 
-    public List<TradeProposal> findByPublicationId(String publicationId) {
-        return proposalRepository.findByPublicationId(publicationId);
+    /**
+     * Lists proposals on a publication, filtered by caller visibility:
+     *  - publisher sees all proposals (to accept/reject)
+     *  - any other user sees only their own proposals on that publication
+     * Returns empty list if the publication does not exist.
+     */
+    public List<TradeProposal> findByPublicationIdForUser(String publicationId, String currentUserId) {
+        List<TradeProposal> all = proposalRepository.findByPublicationId(publicationId);
+        if (all.isEmpty()) return all;
+        String publisherUserId = all.getFirst().getPublication().getPublisherUser().getId();
+        if (Objects.equals(publisherUserId, currentUserId)) return all;
+        return all.stream()
+            .filter(p -> Objects.equals(p.getProposerUser().getId(), currentUserId))
+            .toList();
     }
 
     /**
@@ -218,11 +244,10 @@ public class ProposalService {
             "¡Tu propuesta fue aceptada! Revisá tus intercambios."
         );
 
-        // Cascade: if the publication is FINALIZED, cancel remaining pending proposals and release
-        // their compromisedCount.
-        if (publication.getStatus() == PublicationStatus.FINALIZED) {
-            cancelPendingProposalsAndRelease(publication.getId(), proposal.getId());
-        }
+        // Cascada marketplace: tras consumir unidades, cancelar (silenciosamente) las pendientes
+        // que ya no entran porque piden más de lo que quedó disponible. Si remainingCount llegó a 0
+        // (publicación FINALIZED), esto cancela todas las pendientes restantes.
+        cancelUnsatisfiablePendingProposals(publication.getId(), publication.getRemainingCount(), proposal.getId());
         return exchange.getId();
     }
 
@@ -272,13 +297,34 @@ public class ProposalService {
         }
         proposalRepository.save(proposal);
         userRepository.save(proposal.getProposerUser());
-        publicationRepository.releaseSlots(proposal.getPublication().getId(), proposal.getRequestedCount());
+    }
+
+    /**
+     * Cancela (silenciosamente) las propuestas PENDIENTES de una publicación que ya no se pueden
+     * satisfacer porque piden más unidades de las que quedan disponibles ({@code requestedCount >
+     * remaining}), liberando su compromisedCount. Excluye opcionalmente una (la recién aceptada).
+     * Con {@code remaining == 0} cancela todas las pendientes restantes (publicación FINALIZED).
+     * No notifica: el rechazo explícito del publisher es el que notifica, no esta cascada.
+     */
+    public void cancelUnsatisfiablePendingProposals(String publicationId, int remaining, String exceptProposalId) {
+        List<TradeProposal> pendings = proposalRepository
+            .findByPublicationIdAndStatus(publicationId, TradeProposalStatus.PENDING);
+        for (TradeProposal p : pendings) {
+            if (exceptProposalId != null && Objects.equals(p.getId(), exceptProposalId)) continue;
+            if (p.getRequestedCount() <= remaining) continue;
+            p.cancel();
+            User otherProposer = p.getProposerUser();
+            for (Card c : p.getCards()) {
+                otherProposer.findCollectionItem(c.getId()).ifPresent(item -> item.release(1));
+            }
+            proposalRepository.save(p);
+            userRepository.save(otherProposer);
+        }
     }
 
     /**
      * Cancels all pending proposals of a publication (optionally excluding one) and releases
-     * each proposer's compromisedCount. Used by the cascade accept (FINALIZED) and by
-     * manual publication cancel.
+     * each proposer's compromisedCount. Used by manual publication cancel.
      */
     public void cancelPendingProposalsAndRelease(String publicationId, String exceptProposalId) {
         List<TradeProposal> pendings = proposalRepository

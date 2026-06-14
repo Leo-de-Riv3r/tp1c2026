@@ -13,7 +13,8 @@ public record UserDto(
         Double rating,
         Integer exchangesAmount,
         String avatarId,
-        String creationDate
+        String creationDate,
+        String role
 ) {
     public static UserDto from(User user) {
         return new UserDto(
@@ -23,7 +24,8 @@ public record UserDto(
                 user.getRating(),
                 user.getExchangesAmount(),
                 user.getAvatarId(),
-                user.getCreationDate().toString()
+                user.getCreationDate().toString(),
+                user.getRole().name()
         );
     }
 }

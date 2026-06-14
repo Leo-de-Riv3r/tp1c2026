@@ -23,12 +23,13 @@ public class AuthMongoTests extends IntegrationTestBase {
   private final ObjectMapper objectMapper = new ObjectMapper();
 
   @Test
-  void registerUsuarioDevuelveOkYUsuario() throws Exception {
+  void registerUsuarioDevuelveTokenYUsuario() throws Exception {
     mockMvc.perform(post("/api/auth/register")
             .contentType(MediaType.APPLICATION_JSON)
             .content(registerBody("Nuevo User", "nuevo@test.com", "secreto123", "avatar-1")))
         .andExpect(status().is2xxSuccessful())
-        .andExpect(jsonPath("$.email").value("nuevo@test.com"));
+        .andExpect(jsonPath("$.token").isNotEmpty())
+        .andExpect(jsonPath("$.user.email").value("nuevo@test.com"));
   }
 
   @Test
