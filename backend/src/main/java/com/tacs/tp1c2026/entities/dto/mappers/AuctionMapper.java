@@ -57,6 +57,7 @@ public class AuctionMapper {
         auction.getPublisherUser() != null ? auction.getPublisherUser().getId() : null,
         auction.getPublisherName(),
         auction.getPublisherAvatarId(),
+        auction.getPublisherUser() != null ? auction.getPublisherUser().getRating() : null,
         offerDtos,
         conditionDtos
     );

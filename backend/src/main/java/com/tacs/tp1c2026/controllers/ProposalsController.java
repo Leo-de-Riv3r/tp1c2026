@@ -34,7 +34,7 @@ public class ProposalsController {
   public ResponseEntity<ApiResponse<TradeProposalDto>> createProposal(
       @RequestAttribute("userId") String userId,
       @Valid @RequestBody CreateTradeProposalDto body
-  ) throws NotFoundException, NotFoundException, InsufficientCardException, MissingCardException, NoAvailableSlotsException {
+  ) throws NotFoundException, NotFoundException, InsufficientCardException, MissingCardException {
     TradeProposal proposal = proposalService.createProposal(userId, body);
     TradeProposalDto dto = tradeMapper.mapProposal(proposal);
     return ResponseEntity
@@ -59,7 +59,7 @@ public class ProposalsController {
   ) {
     List<TradeProposal> result;
     if (publicationId != null) {
-      result = proposalService.findByPublicationId(publicationId);
+      result = proposalService.findByPublicationIdForUser(publicationId, currentUserId);
       if (status != null) {
         result = result.stream().filter(p -> p.getStatus() == status).toList();
       }

@@ -3,7 +3,6 @@ package com.tacs.tp1c2026.controllers;
 import com.tacs.tp1c2026.entities.dto.user.input.LoginDTO;
 import com.tacs.tp1c2026.entities.dto.user.input.RegisterDTO;
 import com.tacs.tp1c2026.entities.dto.user.output.LoginResponseDto;
-import com.tacs.tp1c2026.entities.dto.user.output.UserDto;
 import com.tacs.tp1c2026.services.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -29,7 +28,7 @@ public class AuthController {
   }
 
   @PostMapping("/register")
-  public ResponseEntity<UserDto> register(@Valid @RequestBody RegisterDTO dto) {
+  public ResponseEntity<LoginResponseDto> register(@Valid @RequestBody RegisterDTO dto) {
     return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(dto));
   }
 

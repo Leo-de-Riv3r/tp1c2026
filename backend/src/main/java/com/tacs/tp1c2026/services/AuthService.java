@@ -53,7 +53,11 @@ public class AuthService {
     this.passwordEncoder = new BCryptPasswordEncoder();
   }
 
-  public UserDto register(RegisterDTO dto) {
+  /**
+   * Registers a new user and returns a session ready to use (token + UserDto), so the FE can
+   * auto-login without a second round-trip.
+   */
+  public LoginResponseDto register(RegisterDTO dto) {
     String email = dto.getEmail().trim().toLowerCase();
 
     if (userRepository.existsByEmail(email)) {
@@ -68,7 +72,10 @@ public class AuthService {
     user.setRole(UserRole.USER);
 
     User saved = userRepository.save(user);
-    return UserDto.from(saved);
+    return new LoginResponseDto(
+        generateJwt(saved.getId(), saved.getEmail(), saved.getRole().name()),
+        UserDto.from(saved)
+    );
   }
 
   /**
