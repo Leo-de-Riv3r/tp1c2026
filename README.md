@@ -2,7 +2,38 @@
 
 Backend en Spring Boot + MongoDB para la plataforma de intercambio de figuritas
 
-## Levantar con Docker (stack completo)
+## Acceso al deploy (cloud)
+
+La aplicación está corriendo en cloud sobre **tier free** de los tres proveedores (Atlas M0 + Render free + Netlify free):
+
+| Componente | URL |
+|---|---|
+| Frontend (Netlify) | https://tacs-2026.netlify.app |
+| Backend (Render)   | https://tacs-backend-2026.onrender.com |
+| Database (Atlas M0) | acceso interno desde el BE — no exposed |
+
+**Cómo probarlo**: ingresar desde el FE (`https://tacs-2026.netlify.app`). El BE solo acepta tráfico desde ese origen vía CORS — pegar a la URL del backend directo desde otro origen devuelve `403 Origin not allowed`.
+
+### Cold start de Render free
+
+El BE se "duerme" después de **15 min sin tráfico**. El primer request lo despierta y tarda **~30 segundos**. La pantalla de login en Netlify aparece rápido (es estático), pero el primer click "Iniciar sesión" puede colgar 30s la primera vez. Para evitar esto en una demo, pegarle a `https://tacs-backend-2026.onrender.com/actuator/health` un minuto antes de empezar.
+
+### Usuarios disponibles
+
+Todos comparten el mismo password: **`123456`**.
+
+| Email                    | Rol   | Estado inicial                                                    |
+|--------------------------|-------|-------------------------------------------------------------------|
+| `peperacing@gmail.com`   | USER  | Tiene cards en colección (3× FWC1, 2× MEX1, 1× BRA3)              |
+| `moniargento@gmail.com`  | USER  | Tiene cards en colección (1× FWC3, 2× ARG1, 3× BRA1, 1× ARG3, 1× MEX7) |
+| `dfuseneco@outlook.com`  | USER  | Usuario "vacío" — sin colección. Para probar empty states         |
+| `admin@mail.com`         | ADMIN | Usuario administrador (panel `/admin`)                            |
+
+No hay publicaciones, subastas, propuestas ni intercambios preseedeados — los crean los users desde el FE durante la demo.
+
+## Levantar con Docker (stack completo, local)
+
+Útil para **load tests** y desarrollo. Apunta a una Mongo local (no Atlas), tiene seed propio y no comparte estado con el cloud.
 
 **Requisitos:** [Docker Desktop](https://www.docker.com/products/docker-desktop/) corriendo
 
@@ -50,16 +81,9 @@ docker compose up -d --build
 
 **Endpoints públicos**: `/api/auth*` y `/actuator*` no requieren token. El resto de los endpoints requieren un Bearer token válido.
 
-## Usuarios de prueba
+### Usuarios del seed local
 
-Todos los users del seed comparten el mismo password: **`123456`**
-
-| Email                    | Rol   | Notas                                                                  |
-|--------------------------|-------|------------------------------------------------------------------------|
-| `peperacing@gmail.com`   | USER  | Tiene cards en colección (3x FWC1, 2x MEX1, 1x BRA3)                   |
-| `moniargento@gmail.com`  | USER  | Tiene cards en colección (1x FWC3, 2x ARG1, 3x BRA1, 1x ARG3, 1x MEX7) |
-| `dfuseneco@outlook.com`  | USER  | Usuario "vacío" — sin colección, faltantes, publicaciones ni propuestas |
-| `admin@mail.com`         | ADMIN | Usuario de administración                                              |
+Mismos que el cloud (ver "Acceso al deploy" arriba). Stack y data son independientes — los users solo existen como duplicado para que el setup local sea autocontenido.
 
 ## Levantar Mongo localmente (sin Docker)
 
@@ -122,6 +146,17 @@ mongosh "mongodb+srv://<user>:<password>@<cluster-host>/tacs_db?appName=<app>" -
 ```
 
 El connection string completo (con password) queda solo en el password manager — nunca en el repo. El seed deja la base con 991 cards, 4 users de prueba, sin publications/auctions/proposals/exchanges (esos los crean los users desde el FE).
+
+## Deploy en Render (gotchas)
+
+El BE se deploya en Render free, contra Atlas M0. Notas para futuras corridas:
+
+1. **Connection string**: usar `?retryWrites=true&w=majority` (formato canónico Atlas). Probamos primero `?authSource=admin&appName=...` y el driver Java se confundía intentando handshakes contra el database `local` aunque el user (`atlasAdmin@admin`) tuviera permisos. El formato con `retryWrites+w=majority` hace que el driver infiera bien el authSource y todo funciona.
+2. **MongoHealthIndicator deshabilitado**: Spring Boot Actuator's MongoDB health check ejecuta `hello` contra el database `local`, que Atlas M0 restringe incluso para `atlasAdmin`. Sin el indicator deshabilitado, `/actuator/health` devuelve 503 → Render mata el container. Está apagado en `application.properties`. La app sigue conectando a Mongo normalmente para queries reales; el health-check verifica disk + app status sin tocar Mongo.
+3. **Network Access en Atlas**: hay que agregar `0.0.0.0/0` porque Render free no tiene IPs estáticas. La protección queda en la auth user/password.
+4. **Env vars críticas**: `SPRING_MONGODB_URI` (Atlas conn string), `JWT_SECRET` (32+ chars), `FRONTEND_URI` (URL del Netlify sin path ni trailing slash).
+5. **`server.port=${PORT:8080}`**: Render asigna el puerto dinámicamente, Spring debe leerlo de `PORT`. Sin esto, "no service did not bind to port".
+6. **Health Check Path**: `/actuator/health` (no `/healthz`, que es el default de Render).
 
 ## Visualizar la base (opcional)
 
