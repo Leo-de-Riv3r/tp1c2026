@@ -17,6 +17,7 @@ import java.util.List;
 public class UserBidDto {
   private String auctionId;
   // Card published in the auction
+  private String cardId;
   private Integer cardNumber;
   private String cardDescription;
   private String cardCountry;
