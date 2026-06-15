@@ -224,3 +224,6 @@ Y reemplazá el servicio `frontend` en `backend/docker-compose.yml` por:
 | FRONTEND_URI         | —                                     | ✅        | Origen(es) CORS permitidos (separados por coma)       |
 
 > **Importante:** `JWT_SECRET` ya no tiene un valor por defecto de desarrollo. El backend falla al iniciar si no se configura. Creá un archivo `.env` en `backend/` basado en [`backend/.env.example`](backend/.env.example) antes de levantar el stack.
+
+
+PRUEBA MULTI ARCH
