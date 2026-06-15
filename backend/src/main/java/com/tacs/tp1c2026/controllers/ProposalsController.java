@@ -1,5 +1,6 @@
 package com.tacs.tp1c2026.controllers;
 
+import com.tacs.tp1c2026.config.RequiresOwnerOrAdmin;
 import com.tacs.tp1c2026.entities.dto.common.ApiResponse;
 import com.tacs.tp1c2026.entities.dto.trade.input.CreateTradeProposalDto;
 import com.tacs.tp1c2026.entities.dto.trade.output.TradeProposalDto;
@@ -50,6 +51,7 @@ public class ProposalsController {
    * Optional filters: {@code status}, {@code id}.
    */
   @GetMapping
+  @RequiresOwnerOrAdmin(value = "userId", source = RequiresOwnerOrAdmin.Source.QUERY)
   public ResponseEntity<List<TradeProposalDto>> listProposals(
       @RequestAttribute("userId") String currentUserId,
       @RequestParam(required = false) String userId,

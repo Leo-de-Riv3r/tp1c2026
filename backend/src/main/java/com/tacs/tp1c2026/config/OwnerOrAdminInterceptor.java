@@ -16,8 +16,17 @@ import java.util.Map;
 
 /**
  * Checks the {@link RequiresOwnerOrAdmin} annotation on the handler method.
- * If present: extracts the path variable indicated by {@link RequiresOwnerOrAdmin#value()}, compares it with the JWT {@code userId} (set by {@link JwtAuthenticationFilter}) and allows access if they match. Bypass if the JWT role is {@code ADMIN}.
- * No match and not ADMIN → 403 Forbidden with body {@link com.tacs.tp1c2026.entities.dto.common.ApiError}
+ *
+ * <p>If present: extracts the identifier (from path variable or query param according to
+ * {@link RequiresOwnerOrAdmin#source()}) and compares it with the JWT {@code userId} (set by
+ * {@link JwtAuthenticationFilter}). Bypass if the JWT role is {@code ADMIN}.
+ *
+ * <p>Path-variable mode: the variable is required; absent → 403 (configuration error).
+ *
+ * <p>Query-param mode: if the param is absent, the check bypasses (meaning "default to current
+ * user"). If present and does not match → 403.
+ *
+ * <p>No match and not ADMIN → 403 Forbidden with body {@link com.tacs.tp1c2026.entities.dto.common.ApiError}.
  */
 @Component
 public class OwnerOrAdminInterceptor implements HandlerInterceptor {
@@ -45,17 +54,26 @@ public class OwnerOrAdminInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        String pathUserId = extractPathVariable(request, required.value());
-        if (pathUserId == null) {
-            // Configuration error: the endpoint declares @RequiresOwnerOrAdmin but does not have the expected path variable
-            log.error("@RequiresOwnerOrAdmin on {} expects path variable '{}' which is not present", hm.getMethod(), required.value());
-            errorWriter.write(response, HttpStatus.FORBIDDEN, "Not authorized");
-            return false;
+        String resourceUserId;
+        if (required.source() == RequiresOwnerOrAdmin.Source.QUERY) {
+            resourceUserId = request.getParameter(required.value());
+            // Query param absent → bypass (the controller defaults to the JWT user)
+            if (resourceUserId == null) {
+                return true;
+            }
+        } else {
+            resourceUserId = extractPathVariable(request, required.value());
+            if (resourceUserId == null) {
+                // Configuration error: the endpoint declares @RequiresOwnerOrAdmin but does not have the expected path variable
+                log.error("@RequiresOwnerOrAdmin on {} expects path variable '{}' which is not present", hm.getMethod(), required.value());
+                errorWriter.write(response, HttpStatus.FORBIDDEN, "Not authorized");
+                return false;
+            }
         }
 
         String jwtUserId = (String) request.getAttribute("userId");
-        if (!pathUserId.equals(jwtUserId)) {
-            log.warn("Cross-user access denied: caller userId={} attempted to access resource of userId={}", jwtUserId, pathUserId);
+        if (!resourceUserId.equals(jwtUserId)) {
+            log.warn("Cross-user access denied: caller userId={} attempted to access resource of userId={}", jwtUserId, resourceUserId);
             errorWriter.write(response, HttpStatus.FORBIDDEN, "You cannot access another user's resources");
             return false;
         }

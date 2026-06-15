@@ -6,6 +6,7 @@ import com.tacs.tp1c2026.entities.dto.common.output.PaginationDtoOutput;
 import com.tacs.tp1c2026.entities.dto.trade.input.CreateTradePublicationDto;
 import com.tacs.tp1c2026.entities.dto.trade.output.TradePublicationDto;
 import com.tacs.tp1c2026.entities.enums.Category;
+import com.tacs.tp1c2026.config.RequiresOwnerOrAdmin;
 import com.tacs.tp1c2026.entities.exchange.TradePublication;
 import com.tacs.tp1c2026.exceptions.*;
 import com.tacs.tp1c2026.services.PublicationService;
@@ -50,6 +51,7 @@ public class PublicationsController {
    * Otherwise, returns active publications (with optional filters by name, country, team, category).
    */
   @GetMapping
+  @RequiresOwnerOrAdmin(value = "userId", source = RequiresOwnerOrAdmin.Source.QUERY)
   public ResponseEntity<PaginationDtoOutput<TradePublicationDto>> searchPublications(
       @RequestAttribute("userId") String currentUserId,
       @RequestParam(defaultValue = "1") Integer page,
@@ -64,7 +66,8 @@ public class PublicationsController {
     if (userId != null) {
       result = publicationService.getMyPublications(userId, page, per_page);
     } else {
-      SearchPublicationsFilters filters = new SearchPublicationsFilters(name, country, team, category, null, null);
+      // Búsqueda activa: excluye las publicaciones del propio user (no tiene sentido proponerse a uno mismo).
+      SearchPublicationsFilters filters = new SearchPublicationsFilters(name, country, team, category, null, null, currentUserId);
       result = publicationService.searchActivePublications(page, per_page, filters);
     }
     return ResponseEntity.ok(new PaginationDtoOutput<>(

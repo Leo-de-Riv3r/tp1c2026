@@ -1,5 +1,6 @@
 package com.tacs.tp1c2026.controllers;
 
+import com.tacs.tp1c2026.config.RequiresOwnerOrAdmin;
 import com.tacs.tp1c2026.entities.auction.Auction;
 import com.tacs.tp1c2026.entities.auction.AuctionOffer;
 import com.tacs.tp1c2026.entities.dto.common.ApiResponse;
@@ -64,6 +65,7 @@ public class AuctionsController {
    *     category, cardType).
    */
   @GetMapping
+  @RequiresOwnerOrAdmin(value = "userId", source = RequiresOwnerOrAdmin.Source.QUERY)
   public ResponseEntity<PaginationDtoOutput<AuctionDto>> searchAuctions(
       @RequestAttribute("userId") String currentUserId,
       @RequestParam(defaultValue = "1") Integer page,
@@ -83,7 +85,8 @@ public class AuctionsController {
           result.getTotalPages()
       ));
     }
-    SearchPublicationsFilters filters = new SearchPublicationsFilters(name, country, team, category, cardType, null);
+    // Búsqueda activa: excluye las subastas del propio user (no tiene sentido ofertar en una propia).
+    SearchPublicationsFilters filters = new SearchPublicationsFilters(name, country, team, category, cardType, null, currentUserId);
     return ResponseEntity.ok(auctionService.searchActiveAuctions(page, per_page, filters));
   }
 
@@ -93,6 +96,7 @@ public class AuctionsController {
    * If {@code userId} is not sent, uses the token user.
    */
   @GetMapping("/offers")
+  @RequiresOwnerOrAdmin(value = "userId", source = RequiresOwnerOrAdmin.Source.QUERY)
   public ResponseEntity<java.util.List<UserBidDto>> getOffers(
       @RequestAttribute("userId") String currentUserId,
       @RequestParam(required = false) String userId

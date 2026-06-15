@@ -53,6 +53,7 @@ public class CardsController {
      */
     @GetMapping("/search")
     public ResponseEntity<SearchCardsResponseDto> searchAvailable(
+            @RequestAttribute("userId") String currentUserId,
             @RequestParam(required = false) Integer number,
             @RequestParam(required = false) String description,
             @RequestParam(required = false) String country,
@@ -63,8 +64,9 @@ public class CardsController {
             @RequestParam(defaultValue = "10") Integer pubPerPage,
             @RequestParam(defaultValue = "1") Integer aucPage,
             @RequestParam(defaultValue = "10") Integer aucPerPage) {
+        // Excluye las publicaciones/subastas del propio user (no tiene sentido intercambiar con uno mismo).
         SearchPublicationsFilters filters = new SearchPublicationsFilters(
-            description, country, team, category, cardType, number);
+            description, country, team, category, cardType, number, currentUserId);
         return ResponseEntity.ok(
             cardService.searchInActiveListings(filters, pubPage, pubPerPage, aucPage, aucPerPage));
     }

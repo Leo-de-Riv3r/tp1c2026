@@ -1,5 +1,6 @@
 package com.tacs.tp1c2026.controllers;
 
+import com.tacs.tp1c2026.config.RequiresOwnerOrAdmin;
 import com.tacs.tp1c2026.entities.dto.common.ApiResponse;
 import com.tacs.tp1c2026.entities.dto.common.output.PaginationDtoOutput;
 import com.tacs.tp1c2026.entities.dto.exchange.input.AddFeedbackDto;
@@ -33,16 +34,13 @@ public class ExchangesController {
   * @return list of the user's exchanges
   */
   @GetMapping
+  @RequiresOwnerOrAdmin(value = "userId", source = RequiresOwnerOrAdmin.Source.QUERY)
   public ResponseEntity<PaginationDtoOutput<ExchangeDto>> getMyExchanges(
       @RequestAttribute("userId") String currentUserId,
       @RequestParam(required = false) String userId,
       @RequestParam(defaultValue = "1") Integer page,
       @RequestParam(defaultValue = "10") Integer per_page
-  ) throws ForbiddenException {
-    // Guard: prevent querying another user's exchanges (info leak)
-    if (userId != null && !userId.equals(currentUserId)) {
-      throw new ForbiddenException("You cannot view another user's exchanges");
-    }
+  ) {
     String targetUserId = userId != null ? userId : currentUserId;
     Page<Exchange> result = exchangeService.findByUserId(targetUserId, page, per_page);
     return ResponseEntity.ok(new PaginationDtoOutput<>(

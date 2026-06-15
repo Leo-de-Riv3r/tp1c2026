@@ -18,4 +18,6 @@ public class SearchPublicationsFilters {
   private Category category;
   private CardType cardType;
   private Integer cardNumber;
+  /** Si está seteado, excluye del resultado las publicaciones/subastas cuyo publisher es ese user. */
+  private String excludeUserId;
 }
