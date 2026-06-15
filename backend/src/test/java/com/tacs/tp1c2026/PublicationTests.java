@@ -273,12 +273,15 @@ public class PublicationTests extends IntegrationTestBase {
     addToCollection(pepe.userId(), "FWC1", pepe.token());
     String pubId = idFromCreated(publish(pepe.token(), "FWC1", 1), "id");
 
-    List<String> activeIds = readActiveIds(pepe.token());
+    // El search activo excluye las publicaciones propias, así que busca otro user.
+    Session searcher = register("Searcher", "searcher@gmail.com", "password123");
+
+    List<String> activeIds = readActiveIds(searcher.token());
     assertTrue(activeIds.contains(pubId), "Una publi activa debería aparecer en el search");
 
     cancelPublication(pepe.token(), pubId);
 
-    List<String> afterCancel = readActiveIds(pepe.token());
+    List<String> afterCancel = readActiveIds(searcher.token());
     assertFalse(afterCancel.contains(pubId), "Una publi cancelada no debería aparecer en el search activo");
   }
 
@@ -308,17 +311,20 @@ public class PublicationTests extends IntegrationTestBase {
     addToCollection(pepe.userId(), "FWC1", pepe.token());
     String pubId = idFromCreated(publish(pepe.token(), "FWC1", 1), "id");
 
+    // El search activo excluye las publicaciones propias, así que busca otro user.
+    Session searcher = register("Searcher", "searcher@gmail.com", "password123");
+
     // Filter by name (regex case-insensitive contra cardDescription)
-    assertTrue(readActiveIds(pepe.token(), "name", "Emblem").contains(pubId));
-    assertFalse(readActiveIds(pepe.token(), "name", "noexiste").contains(pubId));
+    assertTrue(readActiveIds(searcher.token(), "name", "Emblem").contains(pubId));
+    assertFalse(readActiveIds(searcher.token(), "name", "noexiste").contains(pubId));
 
     // Filter by category usando el value en español — verifica el fix del CategoryConverter.
     // Sin él, ?category=EPICO daba 400 y solo aceptaba ?category=EPIC.
-    assertTrue(readActiveIds(pepe.token(), "category", "EPICO").contains(pubId));
-    assertFalse(readActiveIds(pepe.token(), "category", "LEGENDARIO").contains(pubId));
+    assertTrue(readActiveIds(searcher.token(), "category", "EPICO").contains(pubId));
+    assertFalse(readActiveIds(searcher.token(), "category", "LEGENDARIO").contains(pubId));
 
     // Filter by country: FWC1 tiene country="FIFA World Cup 2026", así que "Argentina" no matchea
-    assertFalse(readActiveIds(pepe.token(), "country", "Argentina").contains(pubId));
+    assertFalse(readActiveIds(searcher.token(), "country", "Argentina").contains(pubId));
   }
 
   @Test

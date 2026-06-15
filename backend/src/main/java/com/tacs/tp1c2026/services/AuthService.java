@@ -27,14 +27,17 @@ import java.util.Date;
 public class AuthService {
 
   private final UserRepository userRepository;
+  private final SessionService sessionService;
   private final SecretKey jwtSecretKey;
   private final long jwtExpirationMs;
   private final PasswordEncoder passwordEncoder;
 
   public AuthService(UserRepository userRepository,
+                     SessionService sessionService,
                      @Value("${jwt.secret:}") String jwtSecret,
                      @Value("${jwt.expiration}") long jwtExpirationMs) {
     this.userRepository = userRepository;
+    this.sessionService = sessionService;
 
     if (jwtSecret == null || jwtSecret.length() < 32) {
       throw new IllegalStateException(
@@ -73,7 +76,7 @@ public class AuthService {
 
     User saved = userRepository.save(user);
     return new LoginResponseDto(
-        generateJwt(saved.getId(), saved.getEmail(), saved.getRole().name()),
+        sessionService.create(saved.getId(), saved.getRole().name()),
         UserDto.from(saved)
     );
   }
@@ -95,7 +98,7 @@ public class AuthService {
     user.setLastLogin(LocalDateTime.now());
     userRepository.save(user);
     UserRole role = user.getRole() == null ? UserRole.USER : user.getRole();
-    return new LoginResponseDto(generateJwt(user.getId(), user.getEmail(), role.name()), UserDto.from(user));
+    return new LoginResponseDto(sessionService.create(user.getId(), role.name()), UserDto.from(user));
   }
 
   public boolean isTokenValid(String token) {

@@ -1,6 +1,7 @@
 package com.tacs.tp1c2026;
 
 import com.mongodb.client.MongoClient;
+import com.tacs.tp1c2026.entities.enums.CardType;
 import com.tacs.tp1c2026.entities.enums.Category;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,7 +26,9 @@ public class MongoConfig {
   MongoCustomConversions customConversions() {
     return new MongoCustomConversions(List.of(
         new CategoryWritingConverter(),
-        new CategoryReadingConverter()
+        new CategoryReadingConverter(),
+        new CardTypeWritingConverter(),
+        new CardTypeReadingConverter()
     ));
   }
 
@@ -47,6 +50,22 @@ public class MongoConfig {
     @Override
     public Category convert(String source) {
       return Category.fromValue(source);
+    }
+  }
+
+  @WritingConverter
+  static class CardTypeWritingConverter implements Converter<CardType, String> {
+    @Override
+    public String convert(CardType source) {
+      return source.getValue();
+    }
+  }
+
+  @ReadingConverter
+  static class CardTypeReadingConverter implements Converter<String, CardType> {
+    @Override
+    public CardType convert(String source) {
+      return CardType.fromValue(source);
     }
   }
 

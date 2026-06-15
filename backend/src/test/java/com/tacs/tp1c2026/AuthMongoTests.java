@@ -4,10 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tacs.tp1c2026.entities.enums.UserRole;
 import com.tacs.tp1c2026.entities.user.User;
-import com.tacs.tp1c2026.services.AuthService;
 import com.tacs.tp1c2026.support.IntegrationTestBase;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -17,8 +15,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class AuthMongoTests extends IntegrationTestBase {
-  @Autowired
-  private AuthService authService;
 
   private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -33,23 +29,21 @@ public class AuthMongoTests extends IntegrationTestBase {
   }
 
   @Test
-  void loginUsuarioDevuelveJwtConRoleUser() throws Exception {
+  void loginUsuarioDevuelveTokenConRoleUser() throws Exception {
     registrarUsuario("User Login", "user@login.com", "clave123", "avatar-2");
 
-    MvcResult res = mockMvc.perform(post("/api/auth/login")
+    // El role ya no va en el token (ahora es un sessionId opaco): viaja en el UserDto de la response.
+    mockMvc.perform(post("/api/auth/login")
             .contentType(MediaType.APPLICATION_JSON)
             .content(loginBody("user@login.com", "clave123")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.token").isNotEmpty())
         .andExpect(jsonPath("$.user.email").value("user@login.com"))
-        .andReturn();
-
-    String token = objectMapper.readTree(res.getResponse().getContentAsString()).get("token").asText();
-    assertEquals("USER", authService.extractRole(token));
+        .andExpect(jsonPath("$.user.role").value("USER"));
   }
 
   @Test
-  void loginAdminDevuelveJwtConRoleAdmin() throws Exception {
+  void loginAdminDevuelveTokenConRoleAdmin() throws Exception {
     registrarUsuario("Administrador", "admin@mail.com", "1234", "avatar-1");
     promoverAAdmin("admin@mail.com");
 
@@ -59,11 +53,10 @@ public class AuthMongoTests extends IntegrationTestBase {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.token").isNotEmpty())
         .andExpect(jsonPath("$.user.email").value("admin@mail.com"))
+        .andExpect(jsonPath("$.user.role").value("ADMIN"))
         .andReturn();
 
     JsonNode body = objectMapper.readTree(res.getResponse().getContentAsString());
-    String token = body.get("token").asText();
-    assertEquals("ADMIN", authService.extractRole(token));
     // El user.id del admin es un ObjectId real (no el string mágico "admin" del flow viejo).
     assertEquals(24, body.get("user").get("id").asText().length());
   }

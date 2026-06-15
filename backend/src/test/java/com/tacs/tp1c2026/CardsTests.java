@@ -64,8 +64,10 @@ public class CardsTests extends IntegrationTestBase {
     addToCollection(moni.userId(), "FWC3", moni.token());
     createAuction(moni.token(), "FWC3", 24);
 
+    // El search activo excluye lo propio; un tercer user ve la publi de Pepe y la subasta de Moni.
+    Session buyer = register("Buyer", "buyer@gmail.com", "password123");
     String body = mockMvc.perform(get("/api/cards/search")
-            .header("Authorization", "Bearer " + pepe.token()))
+            .header("Authorization", "Bearer " + buyer.token()))
         .andExpect(status().isOk())
         .andReturn().getResponse().getContentAsString();
     assertEquals(1, ((java.util.List<?>) JsonPath.read(body, "$.publications.data")).size());
@@ -89,9 +91,11 @@ public class CardsTests extends IntegrationTestBase {
     addToCollection(moni.userId(), "FWC3", moni.token());
     createAuction(moni.token(), "FWC3", 24);
 
+    // El search activo excluye lo propio; un tercer user ve ambas.
+    Session buyer = register("Buyer", "buyer@gmail.com", "password123");
     String byNumber = mockMvc.perform(get("/api/cards/search")
             .param("number", "1")
-            .header("Authorization", "Bearer " + pepe.token()))
+            .header("Authorization", "Bearer " + buyer.token()))
         .andExpect(status().isOk())
         .andReturn().getResponse().getContentAsString();
     assertEquals(1, ((java.util.List<?>) JsonPath.read(byNumber, "$.publications.data")).size());
@@ -99,7 +103,7 @@ public class CardsTests extends IntegrationTestBase {
 
     String byCategory = mockMvc.perform(get("/api/cards/search")
             .param("category", "EPICO")
-            .header("Authorization", "Bearer " + pepe.token()))
+            .header("Authorization", "Bearer " + buyer.token()))
         .andExpect(status().isOk())
         .andReturn().getResponse().getContentAsString();
     assertEquals(1, ((java.util.List<?>) JsonPath.read(byCategory, "$.publications.data")).size());
