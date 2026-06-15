@@ -1,0 +1,65 @@
+name: Multi Architecture Tests
+
+on:
+  pull_request:
+    branches: [ master ]
+    paths:
+      - 'backend/**'
+
+jobs:
+  # 🐳 Test de Integración de Entorno (Docker Compose en Múltiples Arquitecturas)
+  test-environment:
+    runs-on: ubuntu-latest
+    
+    # 📊 Definimos la matriz para correr el test tanto en x64 como en ARM64
+    strategy:
+      matrix:
+        platform: [linux/amd64, linux/arm64]
+      fail-fast: false # 🛡️ Si una arquitectura falla, no cancela la otra; queremos ver el reporte de ambas
+
+    defaults:
+      run:
+        working-directory: ./backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Paso 1: Configurar QEMU (Esencial para que la VM de GitHub pueda emular ARM64)
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: 'arm64,amd64'
+
+      # Paso 2: Configurar Docker Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Paso 3: Validar e iniciar el entorno usando la arquitectura de la matriz actual
+      - name: Lift Environment and Verify Health (${{ matrix.platform }})
+        run: |
+          echo "🚀 Configurando entorno para la plataforma: ${{ matrix.platform }}..."
+          # 🌟 Inyectamos la variable dinámica de la matriz
+          export DOCKER_DEFAULT_PLATFORM=${{ matrix.platform }}
+          
+          echo "🏗️ Compilando y levantando el ecosistema con Docker Compose..."
+          docker compose up -d --build
+
+          echo "⏳ Esperando a que los 3 servicios (Mongo, Backend, Frontend) pasen sus Healthchecks..."
+          # El bucle espera hasta que los 3 servicios principales queden en status "healthy"
+          timeout 240s bash -c '
+            while [ "$(docker compose ps --filter "status=running" --filter "health=healthy" -q | wc -l)" -lt 3 ]; do
+              echo "Aún levantando y verificando contenedores en ${{ matrix.platform }}..."
+              sleep 5
+            done
+          '
+          
+          echo "📋 Estado final de los contenedores para ${{ matrix.platform }}:"
+          docker compose ps
+          
+          echo "✅ ¡Entorno verificado con éxito para la arquitectura ${{ matrix.platform }}!"
+
+      # Paso 4: Limpieza absoluta al terminar cada variante
+      - name: Stop Environment
+        if: always()
+        run: |
+          docker compose down -v
