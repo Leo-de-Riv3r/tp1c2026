@@ -87,9 +87,14 @@ public class ProposalService {
         // @Retryable). Para hacerlo estricto habría que bumpear la @Version de la publicación acá
         // y dejar que el retry recuente. Diferido para revisar después.
         int maxPending = settingsService.getMaxPendingProposals();
-        long currentPending = proposalRepository
-            .findByPublicationIdAndStatus(publication.getId(), TradeProposalStatus.PENDING).size();
-        if (currentPending >= maxPending) {
+        List<TradeProposal> pending = proposalRepository
+            .findByPublicationIdAndStatus(publication.getId(), TradeProposalStatus.PENDING);
+        boolean alreadyProposed = pending.stream()
+            .anyMatch(p -> Objects.equals(p.getProposerUser().getId(), userId));
+        if (alreadyProposed) {
+            throw new ConflictException("Ya tenés una propuesta pendiente en esta publicación");
+        }
+        if (pending.size() >= maxPending) {
             throw new ConflictException("La publicación alcanzó el máximo de propuestas pendientes (" + maxPending + ")");
         }
 
