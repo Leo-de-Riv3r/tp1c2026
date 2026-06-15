@@ -3,9 +3,9 @@ package com.tacs.tp1c2026.exceptions;
 import org.springframework.http.HttpStatus;
 
 /**
- * Thrown when an authenticated user attempts an action they are not allowed to perform
- * Maps to HTTP 403 Forbidden
- * Example: a user trying to accept a proposal that belongs to another user
+ * Se lanza cuando un user autenticado intenta hacer una acción que no le está permitida.
+ * Mapea a HTTP 403 Forbidden.
+ * Ejemplo: un user intentando aceptar una propuesta que pertenece a otro user.
  */
 public class ForbiddenException extends CustomException {
     public ForbiddenException(String message) {

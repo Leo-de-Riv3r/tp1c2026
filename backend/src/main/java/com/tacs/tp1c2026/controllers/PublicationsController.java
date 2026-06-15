@@ -6,6 +6,7 @@ import com.tacs.tp1c2026.entities.dto.common.output.PaginationDtoOutput;
 import com.tacs.tp1c2026.entities.dto.trade.input.CreateTradePublicationDto;
 import com.tacs.tp1c2026.entities.dto.trade.output.TradePublicationDto;
 import com.tacs.tp1c2026.entities.enums.Category;
+import com.tacs.tp1c2026.config.RequiresOwnerOrAdmin;
 import com.tacs.tp1c2026.entities.exchange.TradePublication;
 import com.tacs.tp1c2026.exceptions.*;
 import com.tacs.tp1c2026.services.PublicationService;
@@ -30,7 +31,7 @@ public class PublicationsController {
   }
 
   /**
-   * Creates a trade publication.
+   * Crea una publicación de intercambio.
    */
   @PostMapping
   public ResponseEntity<ApiResponse<TradePublicationDto>> createPublication(
@@ -41,15 +42,16 @@ public class PublicationsController {
     TradePublicationDto body = tradeMapper.mapPublication(publication);
     return ResponseEntity
         .created(URI.create("/api/publications/" + publication.getId()))
-        .body(ApiResponse.of("Publication created successfully", body));
+        .body(ApiResponse.of("Publicación creada correctamente", body));
   }
 
   /**
-   * Paginated search of publications.
-   * If {@code userId} is sent, returns that user's publications (all statuses).
-   * Otherwise, returns active publications (with optional filters by name, country, team, category).
+   * Búsqueda paginada de publicaciones.
+   * Si se envía {@code userId}, devuelve las publicaciones de ese user (cualquier estado).
+   * Si no, devuelve publicaciones activas (con filtros opcionales por name, country, team, category).
    */
   @GetMapping
+  @RequiresOwnerOrAdmin(value = "userId", source = RequiresOwnerOrAdmin.Source.QUERY)
   public ResponseEntity<PaginationDtoOutput<TradePublicationDto>> searchPublications(
       @RequestAttribute("userId") String currentUserId,
       @RequestParam(defaultValue = "1") Integer page,
@@ -64,7 +66,8 @@ public class PublicationsController {
     if (userId != null) {
       result = publicationService.getMyPublications(userId, page, per_page);
     } else {
-      SearchPublicationsFilters filters = new SearchPublicationsFilters(name, country, team, category, null, null);
+      // Búsqueda activa: excluye las publicaciones del propio user (no tiene sentido proponerse a uno mismo).
+      SearchPublicationsFilters filters = new SearchPublicationsFilters(name, country, team, category, null, null, currentUserId);
       result = publicationService.searchActivePublications(page, per_page, filters);
     }
     return ResponseEntity.ok(new PaginationDtoOutput<>(
@@ -75,7 +78,7 @@ public class PublicationsController {
   }
 
   /**
-   * Publication detail.
+   * Detalle de publicación.
    */
   @GetMapping("/{publicationId}")
   public ResponseEntity<TradePublicationDto> getPublication(
@@ -86,7 +89,7 @@ public class PublicationsController {
   }
 
   /**
-   * Cancels a publication from the current user.
+   * Cancela una publicación del user actual.
    */
   @DeleteMapping("/{publicationId}")
   public ResponseEntity<ApiResponse<Void>> cancelPublication(
@@ -94,6 +97,6 @@ public class PublicationsController {
       @RequestAttribute("userId") String userId
   ) throws NotFoundException, NotFoundException, ForbiddenException {
     publicationService.cancelPublication(userId, publicationId);
-    return ResponseEntity.ok(ApiResponse.of("Publication cancelled"));
+    return ResponseEntity.ok(ApiResponse.of("Publicación cancelada"));
   }
 }

@@ -52,6 +52,12 @@ public class AuctionRepositoryImpl implements AuctionRepositoryCustom {
       query.addCriteria(Criteria.where("cardNumber").is(filters.getCardNumber()));
     }
 
+    // Si se pasa un user a excluir, no devolver sus subastas (búsqueda no incluye las propias).
+    if (filters.getExcludeUserId() != null) {
+      query.addCriteria(Criteria.where("publisherUser")
+          .nin(filters.getExcludeUserId(), new ObjectId(filters.getExcludeUserId())));
+    }
+
     query.with(pageable);
 
     List<Auction> results = mongoTemplate.find(query, Auction.class);

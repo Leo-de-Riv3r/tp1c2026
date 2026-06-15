@@ -4,6 +4,8 @@ package com.tacs.tp1c2026.services;
 import com.tacs.tp1c2026.entities.auction.Auction;
 import com.tacs.tp1c2026.entities.auction.AuctionItem;
 import com.tacs.tp1c2026.entities.auction.AuctionOffer;
+import com.tacs.tp1c2026.entities.auction.CancelResult;
+import com.tacs.tp1c2026.entities.auction.CommitRelease;
 import com.tacs.tp1c2026.entities.auction.conditions.AuctionCondition;
 import com.tacs.tp1c2026.entities.card.Card;
 import com.tacs.tp1c2026.entities.dto.auction.input.CancelAuctionDto;
@@ -40,7 +42,9 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -75,8 +79,8 @@ public class AuctionService {
     }
 
     /**
-     * Creates a new auction over a card from the user's collection.
-     * Commits one unit of the card in the collection.
+     * Crea una nueva subasta sobre una figurita de la colección del user.
+     * Compromete una unidad de la figurita en la colección.
      */
     @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
     @Transactional
@@ -84,7 +88,7 @@ public class AuctionService {
         User user = this.userService.getById(userId);
         Card card = this.cardService.getById(dto.getCardId());
         CollectionCard item = user.findCollectionItem(card.getId())
-            .orElseThrow(() -> new MissingCardException("User does not have card " + card.getId()));
+            .orElseThrow(() -> new MissingCardException("El user no tiene la figurita " + card.getId()));
         item.commit(1);
         List<AuctionCondition> conditions = CreateAuctionDtoMapper.toDomainConditions(dto.getConditions());
         Auction auction = new Auction(user, card, dto.getAuctionDurationHours(), conditions);
@@ -105,8 +109,8 @@ public class AuctionService {
     }
 
     /**
-     * Registers an offer on an active auction.
-     * @return the newly created {@link AuctionOffer} (with generated id), so the controller can expose it in the response
+     * Registra una oferta sobre una subasta activa.
+     * @return la {@link AuctionOffer} recién creada (con id autogenerado), para que el controller la exponga en la response.
      */
     @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
     @Transactional
@@ -115,17 +119,17 @@ public class AuctionService {
         Auction auction = this.getAuctionById(auctionId);
 
         if (Objects.equals(auction.getPublisherUser().getId(), proposer.getId())) {
-            throw new ConflictException("The user cannot bid on their own auction");
+            throw new ConflictException("No podés ofertar en tu propia subasta");
         }
         if (auction.isExpired()) {
-            throw new ConflictException("The auction has already expired");
+            throw new ConflictException("La subasta ya expiró");
         }
 
         List<AuctionItem> offerItems = new ArrayList<>();
         for (CreationAuctionOfferDto.Item it : dto.items()) {
             Card card = this.cardService.getById(it.cardId());
             CollectionCard item = proposer.findCollectionItem(card.getId())
-                .orElseThrow(() -> new MissingCardException("User does not have card " + card.getId()));
+                .orElseThrow(() -> new MissingCardException("El user no tiene la figurita " + card.getId()));
             item.commit(it.amount());
             offerItems.add(new AuctionItem(card, it.amount()));
         }
@@ -143,37 +147,51 @@ public class AuctionService {
     }
 
     /**
-     * Cancels an active auction. Releases the `compromisedCount` of the involved
-     * cards (the auctioneer's and those offered in each pending offer).
+     * Cancela una subasta activa. La entidad {@link Auction#cancel()} maneja el invariante interno
+     * (status + reject de offers PENDING) y devuelve un {@link CancelResult} con los commits a
+     * liberar y los bidders a notificar; este service ejecuta esos efectos contra el
+     * {@link UserRepository} + {@link NotificationService}.
      */
     @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
     @Transactional
     public void cancelAuction(String userId, CancelAuctionDto dto) throws AuctionClosedException, NotFoundException, NotFoundException, ForbiddenException {
-      User user = this.userService.getById(userId);
       Auction auction = this.getAuctionById(dto.getAuctionId());
 
-      if (!Objects.equals(auction.getPublisherUser().getId(), user.getId())) {
-        throw new ForbiddenException("The user is not the owner of the auction");
+      if (!Objects.equals(auction.getPublisherUser().getId(), userId)) {
+        throw new ForbiddenException("El user no es dueño de la subasta");
       }
 
-      List<User> bidders = auction.getOffers().stream()
-          .filter(AuctionOffer::isPending)
-          .map(o -> userRepository.findById(o.getBidderId())
-              .orElseThrow(() -> new NotFoundException("Bidder not found: " + o.getBidderId())))
-          .toList();
-
-      auction.cancel(user, bidders);
+      CancelResult result = auction.cancel();
       this.auctionRepository.save(auction);
-      this.userRepository.save(user);
-      bidders.forEach(this.userRepository::save);
+      applyReleases(result.releases());
+      notifyCancelledBidders(auction, result.notifyBidderIds());
+    }
 
-      for (AuctionOffer offer : auction.getOffers()) {
-        User bidder = userRepository.findById(offer.getBidderId())
-            .orElseThrow(() -> new NotFoundException("Bidder not found: " + offer.getBidderId()));
-        for (AuctionItem oi : offer.getOfferedItems()) {
-          bidder.findCollectionItem(oi.getCard().getId()).ifPresent(item -> item.release(oi.getAmount()));
+    /**
+     * Aplica una lista de {@link CommitRelease}: agrupa por user, carga cada uno, libera los
+     * items correspondientes y persiste. Un solo save por user.
+     */
+    private void applyReleases(List<CommitRelease> releases) {
+      Map<String, List<CommitRelease>> byUser = releases.stream()
+          .collect(Collectors.groupingBy(CommitRelease::userId));
+      for (Map.Entry<String, List<CommitRelease>> entry : byUser.entrySet()) {
+        User u = userRepository.findById(entry.getKey())
+            .orElseThrow(() -> new NotFoundException("No se encontró el user: " + entry.getKey()));
+        for (CommitRelease r : entry.getValue()) {
+          u.findCollectionItem(r.cardId()).ifPresent(item -> item.release(r.amount()));
         }
-        userRepository.save(bidder);
+        userRepository.save(u);
+      }
+    }
+
+    /**
+     * Envía la notificación de subasta cancelada a los bidders cuyas offers estaban PENDING
+     * al momento de cancelar (los identificados por {@link CancelResult#notifyBidderIds()}).
+     */
+    private void notifyCancelledBidders(Auction auction, List<String> bidderIds) {
+      for (String bidderId : bidderIds) {
+        User bidder = userRepository.findById(bidderId)
+            .orElseThrow(() -> new NotFoundException("No se encontró el oferente: " + bidderId));
         notificationService.createUserNotification(
             bidder,
             NotificationType.AUCTION_CANCELLED,
@@ -184,7 +202,7 @@ public class AuctionService {
     }
 
     /**
-     * Paginated search of active auctions with filters (country, team, category, name).
+     * Búsqueda paginada de subastas activas con filtros (country, team, category, name).
      */
     public PaginationDtoOutput<AuctionDto> searchActiveAuctions(Integer page, Integer per_page, SearchPublicationsFilters filters) {
        Pageable pageable = pageableGenerator.buildPageable(
@@ -201,7 +219,7 @@ public class AuctionService {
     }
 
     /**
-     * Auctions created by the user, paginated and ordered by creation date descending.
+     * Subastas creadas por el user, paginadas y ordenadas por fecha de creación descendente.
      */
     public Page<Auction> getMyAuctions(String userId, Integer page, Integer per_page) {
       Pageable pageable = pageableGenerator.buildPageable(page, per_page, 10,
@@ -213,7 +231,7 @@ public class AuctionService {
     }
 
     /**
-     * Marks the user as interested in the auction.
+     * Marca al user como interesado en la subasta.
      */
     @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
     @Transactional
@@ -232,7 +250,7 @@ public class AuctionService {
     }
 
     /**
-     * Flat list of offers made by a user, with the auction context.
+     * Lista plana de ofertas hechas por un user, con el contexto de la subasta.
      */
     public List<UserBidDto> getMyOffers(String userId) {
         List<Auction> auctions = this.auctionRepository.findByOffersBidderId(userId);
@@ -272,7 +290,7 @@ public class AuctionService {
     }
 
     public Auction getAuctionById(String id) throws NotFoundException {
-        return this.auctionRepository.findById(id).orElseThrow(() -> new NotFoundException("Auction not found"));
+        return this.auctionRepository.findById(id).orElseThrow(() -> new NotFoundException("Subasta no encontrada"));
     }
 
     @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
@@ -299,7 +317,7 @@ public class AuctionService {
       auctionRepository.save(auction);
       // Re-fetch by bidderId: @DocumentReference does not hydrate properly inside embedded subdocs
       User bidder = userRepository.findById(rejectedOffer.getBidderId())
-          .orElseThrow(() -> new NotFoundException("Bidder not found: " + rejectedOffer.getBidderId()));
+          .orElseThrow(() -> new NotFoundException("No se encontró el oferente: " +rejectedOffer.getBidderId()));
       //return cards to bidder
       for(AuctionItem oi : rejectedOffer.getOfferedItems()) {
         bidder.findCollectionItem(oi.getCard().getId()).ifPresent(item -> item.release(oi.getAmount()));
@@ -314,38 +332,32 @@ public class AuctionService {
     }
 
     /**
-     * Closes an auction whose `closeDate` has passed. Awards to `bestOffer` if it exists,
-     * otherwise cancels and releases commits if there are no offers. Entry point for the cron job.
+     * Cierra una subasta cuyo `closeDate` ya pasó. Adjudica a la `bestOffer` si existe;
+     * si no hay ofertas, cancela y libera commits. Entry point del cron job.
      */
     @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
     @Transactional
     public void closeExpiredAuction(String auctionId) throws NotFoundException, AuctionClosedException, OfferAlreadyProcessedException, OfferNotFoundException {
         Auction auction = getAuctionById(auctionId);
         if (auction.getStatus() != AuctionStatus.ACTIVE) {
-            throw new ConflictException("The auction is already closed");
+            throw new ConflictException("La subasta ya está cerrada");
         }
 
         AuctionOffer best = auction.getBestOffer();
         if (best != null) {
             awardAuctionTo(auction, best);
         } else {
-            User publisher = auction.getPublisherUser();
-            List<User> bidders = auction.getOffers().stream()
-                .filter(AuctionOffer::isPending)
-                .map(o -> userRepository.findById(o.getBidderId())
-                    .orElseThrow(() -> new NotFoundException("Bidder not found: " + o.getBidderId())))
-                .toList();
-            auction.cancel(publisher, bidders);
-            userRepository.save(publisher);
-            bidders.forEach(this.userRepository::save);
+            CancelResult result = auction.cancel();
+            applyReleases(result.releases());
+            notifyCancelledBidders(auction, result.notifyBidderIds());
         }
 
         auctionRepository.save(auction);
     }
 
     /**
-     * The publisher manually accepts an offer and closes the auction. Same flow as
-     * the cron job but the winner is chosen by the user (no prior `bestOffer` required).
+     * El publisher acepta manualmente una oferta y cierra la subasta. Mismo flow que
+     * el cron job, pero el ganador lo elige el user (no requiere `bestOffer` previa).
      */
     @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
     @Transactional
@@ -354,7 +366,7 @@ public class AuctionService {
         Auction auction = getAuctionById(auctionId);
         auction.validateOwner(reviewer);
         if (auction.getStatus() != AuctionStatus.ACTIVE) {
-            throw new ConflictException("The auction is already closed");
+            throw new ConflictException("La subasta ya está cerrada");
         }
         AuctionOffer offer = auction.findOfferById(offerId);
         awardAuctionTo(auction, offer);
@@ -366,9 +378,9 @@ public class AuctionService {
         // (case of AuctionOffer.bidder within Auction.offers). Re-fetch by id to
         // ensure the user's collection is complete before modifying it.
         User publisher = userRepository.findById(auction.getPublisherUser().getId())
-            .orElseThrow(() -> new NotFoundException("Publisher not found"));
+            .orElseThrow(() -> new NotFoundException("No se encontró el publicante"));
         User winner = userRepository.findById(winningOffer.getBidderId())
-            .orElseThrow(() -> new NotFoundException("Winner not found"));
+            .orElseThrow(() -> new NotFoundException("No se encontró al ganador"));
         Card publishedCard = auction.getCard();
 
         auction.acceptOffer(winningOffer);
@@ -392,7 +404,7 @@ public class AuctionService {
             if (other.getStatus() != AuctionOfferStatus.CANCELLED) {
                 User bidder = bidderCache.computeIfAbsent(other.getBidderId(), id ->
                     userRepository.findById(id)
-                        .orElseThrow(() -> new NotFoundException("Bidder not found: " + id)));
+                        .orElseThrow(() -> new NotFoundException("No se encontró el oferente: " +id)));
                 for (AuctionItem oi : other.getOfferedItems()) {
                     bidder.findCollectionItem(oi.getCard().getId()).ifPresent(item -> item.release(oi.getAmount()));
                 }
@@ -436,7 +448,7 @@ public class AuctionService {
       User user = userService.getById(userId);
       Auction auction = getAuctionById(auctionId);
       if(auction.isExpired()) {
-        throw new ConflictException("Cannot cancel an offer on a finalized auction");
+        throw new ConflictException("No se puede cancelar una oferta sobre una subasta finalizada");
       }
       AuctionOffer offer = auction.findOfferById(offerId);
       offer.validateCreator(userId);
@@ -444,7 +456,7 @@ public class AuctionService {
       //return cards to  bidder
       // Re-fetch by bidderId: @DocumentReference does not hydrate properly inside embedded subdocs
       User bidder = userRepository.findById(offer.getBidderId())
-          .orElseThrow(() -> new NotFoundException("Bidder not found: " + offer.getBidderId()));
+          .orElseThrow(() -> new NotFoundException("No se encontró el oferente: " +offer.getBidderId()));
       for(AuctionItem oi : offer.getOfferedItems()) {
         bidder.findCollectionItem(oi.getCard().getId()).ifPresent(item -> item.release(oi.getAmount()));
       }
@@ -452,7 +464,7 @@ public class AuctionService {
       auctionRepository.save(auction);
     }
   /**
-   * Closes all active auctions whose close date has already passed. Returns how many were closed.
+   * Cierra todas las subastas activas cuya fecha de cierre ya pasó. Devuelve cuántas se cerraron.
    */
     public int closeAllExpiredAuctions() {
         List<Auction> active = auctionRepository.findByStatus(AuctionStatus.ACTIVE);
@@ -470,9 +482,9 @@ public class AuctionService {
     }
 
     /**
-     * Transfers {@code amount} units of {@code card} from {@code from} to {@code to}.
-     * In `from` releases the compromise and decrements quantity. In `to` increments quantity
-     * (creating the subdocument if it did not exist).
+     * Transfiere {@code amount} unidades de {@code card} desde {@code from} hacia {@code to}.
+     * En `from` libera el compromiso y decrementa la cantidad. En `to` incrementa la cantidad
+     * (creando el subdocumento si no existía).
      */
     private void transferCard(User from, User to, Card card, int amount) {
         from.releaseAndDecrement(card.getId(), amount);

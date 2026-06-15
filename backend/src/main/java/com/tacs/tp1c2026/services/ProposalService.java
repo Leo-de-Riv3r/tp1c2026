@@ -56,7 +56,7 @@ public class ProposalService {
     }
 
     /**
-     * Creates a proposal on a publication. Commits the offered cards in the proposer's collection.
+     * Crea una propuesta sobre una publicación. Compromete las figuritas ofrecidas en la colección del proponente.
      */
     @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
     @Transactional
@@ -64,7 +64,7 @@ public class ProposalService {
             throws NotFoundException, NotFoundException, InsufficientCardException, MissingCardException {
         TradePublication publication = publicationService.findPublication(dto.publicationId());
         if (!publication.isActive()) {
-            throw new ConflictException("The publication is not active");
+            throw new ConflictException("La publicación no está activa");
         }
 
         Integer requested = dto.requestedCount();
@@ -73,7 +73,7 @@ public class ProposalService {
         }
         // No se puede pedir más figuritas de las que la publicación tiene disponibles.
         if (requested > publication.getRemainingCount()) {
-            throw new ConflictException("The proposal requests " + requested + " but only " + publication.getRemainingCount() + " remain");
+            throw new ConflictException("La propuesta pide " + requested + " pero quedan " + publication.getRemainingCount() + " disponibles");
         }
 
         // Modelo marketplace: una publicación admite hasta N propuestas PENDIENTES (configurable
@@ -87,9 +87,14 @@ public class ProposalService {
         // @Retryable). Para hacerlo estricto habría que bumpear la @Version de la publicación acá
         // y dejar que el retry recuente. Diferido para revisar después.
         int maxPending = settingsService.getMaxPendingProposals();
-        long currentPending = proposalRepository
-            .findByPublicationIdAndStatus(publication.getId(), TradeProposalStatus.PENDING).size();
-        if (currentPending >= maxPending) {
+        List<TradeProposal> pending = proposalRepository
+            .findByPublicationIdAndStatus(publication.getId(), TradeProposalStatus.PENDING);
+        boolean alreadyProposed = pending.stream()
+            .anyMatch(p -> Objects.equals(p.getProposerUser().getId(), userId));
+        if (alreadyProposed) {
+            throw new ConflictException("Ya tenés una propuesta pendiente en esta publicación");
+        }
+        if (pending.size() >= maxPending) {
             throw new ConflictException("La publicación alcanzó el máximo de propuestas pendientes (" + maxPending + ")");
         }
 
@@ -97,18 +102,18 @@ public class ProposalService {
         User publisher = publication.getPublisherUser();
 
         if (Objects.equals(proposer.getId(), publisher.getId())) {
-            throw new ConflictException("The user cannot propose on their own publication");
+            throw new ConflictException("No podés proponer sobre tu propia publicación");
         }
 
         List<Card> cards = new ArrayList<>();
         for (String cardId : dto.cardIds()) {
             cards.add(cardService.getById(cardId));
         }
-        // Individual commit per occurrence — if the bidder offers 3x the same cardId, adds 3 to
-        // that CollectionCard's compromisedCount. The invariant validation lives in commit().
+        // Commit individual por ocurrencia — si el oferente ofrece 3x la misma cardId, se le suma 3
+        // al compromisedCount de ese CollectionCard. La validación del invariante vive en commit().
         for (Card c : cards) {
             CollectionCard item = proposer.findCollectionItem(c.getId())
-                .orElseThrow(() -> new MissingCardException("User does not have card " + c.getId()));
+                .orElseThrow(() -> new MissingCardException("El user no tiene la figurita " + c.getId()));
             item.commit(1);
         }
 
@@ -126,16 +131,16 @@ public class ProposalService {
 
     public TradeProposal findProposal(String proposalId) throws NotFoundException {
         return proposalRepository.findById(proposalId)
-            .orElseThrow(() -> new NotFoundException("Proposal not found: " + proposalId));
+            .orElseThrow(() -> new NotFoundException("No se encontró la propuesta: " + proposalId));
     }
 
     /**
-     * Lists proposals related to a user.
+     * Lista las propuestas relacionadas a un user.
      *
-     * @param userId id of the participating user
-     * @param role   "proposer" → proposals made by the user;
-     *               "publisher" / "receiver" → proposals received (on the user's publications)
-     * @param status optional filter by status
+     * @param userId id del user participante
+     * @param role   "proposer" → propuestas hechas por el user;
+     *               "publisher" / "receiver" → propuestas recibidas (sobre las publicaciones del user)
+     * @param status filtro opcional por estado
      */
     public List<TradeProposal> searchProposals(String userId, String role, TradeProposalStatus status) {
         List<TradeProposal> base;
@@ -151,10 +156,10 @@ public class ProposalService {
     }
 
     /**
-     * Lists proposals on a publication, filtered by caller visibility:
-     *  - publisher sees all proposals (to accept/reject)
-     *  - any other user sees only their own proposals on that publication
-     * Returns empty list if the publication does not exist.
+     * Lista las propuestas sobre una publicación, filtradas por la visibilidad del caller:
+     *  - el publisher ve todas las propuestas (para aceptar/rechazar).
+     *  - cualquier otro user ve sólo sus propias propuestas sobre esa publicación.
+     * Devuelve lista vacía si la publicación no existe.
      */
     public List<TradeProposal> findByPublicationIdForUser(String publicationId, String currentUserId) {
         List<TradeProposal> all = proposalRepository.findByPublicationId(publicationId);
@@ -167,17 +172,17 @@ public class ProposalService {
     }
 
     /**
-     * Accepts a proposal. Executes the full bilateral flow:
-     *  - publisher gives M (= requestedCount) units of the published card
-     *  - proposer gives N (= offeredCards.size()) units of the offered cards
-     *  - each receives the other's cards in their collection (proposer gets M of the published card)
-     *  - increments exchangesAmount for both
-     *  - creates the historical Exchange document
-     *  - decrements publication's remainingCount by M; if it reaches 0, finalizes and cascades
-     *    to cancel pending proposals (releasing their compromisedCount as well).
-     */
-    /**
-     * @return the id of the created {@link com.tacs.tp1c2026.entities.exchange.Exchange}, so the controller can expose it in the response and the FE can redirect to the detail without an extra GET
+     * Acepta una propuesta. Ejecuta el flow bilateral completo:
+     *  - el publisher cede M (= requestedCount) unidades de la figurita publicada.
+     *  - el proponente cede N (= offeredCards.size()) unidades de las figuritas ofrecidas.
+     *  - cada uno recibe las figuritas del otro en su colección (el proponente recibe M de la publicada).
+     *  - incrementa el {@code exchangesAmount} de ambos.
+     *  - crea el documento histórico {@link com.tacs.tp1c2026.entities.exchange.Exchange}.
+     *  - decrementa el {@code remainingCount} de la publicación en M; si llega a 0, finaliza y
+     *    cancela en cascada las propuestas pendientes (liberando también su compromisedCount).
+     *
+     * @return el id del {@link com.tacs.tp1c2026.entities.exchange.Exchange} creado, para que el
+     * controller lo exponga en la response y el FE pueda redirigir al detalle sin un GET extra.
      */
     @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
     @Transactional
@@ -198,11 +203,11 @@ public class ProposalService {
         Card publishedCard = publication.getCard();
         List<Card> offeredCards = proposal.getCards();
 
-        // Proposer gives away N offered cards (1 per occurrence)
+        // El proponente cede N figuritas ofrecidas (1 por ocurrencia).
         for (Card c : offeredCards) {
             proposer.releaseAndDecrement(c.getId(), 1);
         }
-        // Publisher receives N offered cards
+        // El publisher recibe N figuritas ofrecidas.
         for (Card c : offeredCards) {
             CollectionCard publisherItem = publisher.findCollectionItem(c.getId()).orElse(null);
             if (publisherItem != null) {
@@ -211,16 +216,16 @@ public class ProposalService {
                 publisher.addToCollection(CollectionCard.fromCatalog(c));
             }
         }
-        // Publisher gives away M units of the published card (release + decrement + remove if quantity=0)
+        // El publisher cede M unidades de la figurita publicada (release + decrement + remove si quantity=0).
         publisher.releaseAndDecrement(publishedCard.getId(), requested);
-        // Proponente recibe M unidades de la card publicada
+        // El proponente recibe M unidades de la figurita publicada.
         CollectionCard proposerItem = proposer.findCollectionItem(publishedCard.getId()).orElse(null);
         if (proposerItem != null) {
             proposerItem.increment(requested);
         } else {
             CollectionCard fresh = CollectionCard.fromCatalog(publishedCard);
             proposer.addToCollection(fresh);
-            // fromCatalog initializes quantity=1; add the remaining M-1 if requested > 1
+            // fromCatalog inicializa quantity=1; suma las M-1 restantes si requested > 1.
             if (requested > 1) {
                 proposer.findCollectionItem(publishedCard.getId()).ifPresent(item -> item.increment(requested - 1));
             }
@@ -252,7 +257,7 @@ public class ProposalService {
     }
 
     /**
-     * Rejects a proposal. Only releases the proposer's compromisedCount; does not transfer anything.
+     * Rechaza una propuesta. Sólo libera el compromisedCount del proponente; no transfiere nada.
      */
     @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
     @Transactional
@@ -280,7 +285,7 @@ public class ProposalService {
     }
 
     /**
-     * Cancels a proposal from the proposer's side. Releases the compromisedCount.
+     * Cancela una propuesta desde el lado del proponente. Libera su compromisedCount.
      */
     @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
     @Transactional
@@ -288,7 +293,7 @@ public class ProposalService {
             throws NotFoundException, NotFoundException, OfferAlreadyProcessedException, ForbiddenException {
         TradeProposal proposal = findProposal(proposalId);
         if (!Objects.equals(proposal.getProposerUser().getId(), userId)) {
-            throw new ForbiddenException("Only the proposer can cancel the proposal");
+            throw new ForbiddenException("Sólo el proponente puede cancelar su propia propuesta");
         }
         proposal.validatePending();
         proposal.cancel();
@@ -323,8 +328,8 @@ public class ProposalService {
     }
 
     /**
-     * Cancels all pending proposals of a publication (optionally excluding one) and releases
-     * each proposer's compromisedCount. Used by manual publication cancel.
+     * Cancela todas las propuestas pendientes de una publicación (opcionalmente excluyendo una)
+     * y libera el compromisedCount de cada proponente. Lo usa la cancelación manual de la publicación.
      */
     public void cancelPendingProposalsAndRelease(String publicationId, String exceptProposalId) {
         List<TradeProposal> pendings = proposalRepository

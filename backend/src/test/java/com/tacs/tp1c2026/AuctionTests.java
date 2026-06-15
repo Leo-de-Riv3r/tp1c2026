@@ -50,8 +50,10 @@ public class AuctionTests extends IntegrationTestBase {
             .content(createAuctionBody(cardId, 24, List.of())))
         .andExpect(status().is2xxSuccessful());
 
+    // El search activo excluye las subastas propias, así que busca otro user.
+    Session buyer = register("buyer", "buyer@java.com", "password123");
     MvcResult res = mockMvc.perform(get("/api/auctions")
-            .header("Authorization", "Bearer " + seller.token()))
+            .header("Authorization", "Bearer " + buyer.token()))
         .andExpect(status().isOk())
         .andReturn();
 

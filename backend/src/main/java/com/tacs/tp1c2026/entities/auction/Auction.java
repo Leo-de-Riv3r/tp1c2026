@@ -148,29 +148,41 @@ public class Auction {
     return this.status != AuctionStatus.CANCELLED;
   }
 
-  public void cancel(User publisher, List<User> bidders) {
+  /**
+   * Cancela la subasta como invariante atómico:
+   *   - Cambia status a CANCELLED.
+   *   - Rechaza todas las offers que estaban PENDING (las que ya estaban REJECTED no se tocan).
+   *
+   * <p>Devuelve un {@link CancelResult} con (a) los commits a liberar — publisher + bidders cuyas
+   * offers se rechazan en este paso — y (b) los bidder IDs a los que hay que notificar la
+   * cancelación. El service aplica esos cambios contra el {@code UserRepository} y dispara las
+   * notificaciones.
+   */
+  public CancelResult cancel() {
     if (this.status != AuctionStatus.ACTIVE) {
-      throw new AuctionClosedException("Only an active auction can be cancelled");
+      throw new AuctionClosedException("Sólo se puede cancelar una subasta activa");
     }
     if (isExpired()) {
-      throw new AuctionClosedException("The auction has already expired");
+      throw new AuctionClosedException("La subasta ya expiró");
     }
     this.status = AuctionStatus.CANCELLED;
 
-    publisher.findCollectionItem(this.card.getId()).ifPresent(item -> item.release(1));
+    List<CommitRelease> releases = new ArrayList<>();
+    List<String> notifyBidderIds = new ArrayList<>();
+
+    // Publisher recupera 1 unidad de la card subastada (la que comprometió al crear la subasta).
+    releases.add(new CommitRelease(this.publisherUser.getId(), this.card.getId(), 1));
 
     for (AuctionOffer offer : this.offers) {
       if (!offer.isPending()) continue;
       offer.reject();
-      bidders.stream()
-          .filter(b -> b.getId().equals(offer.getBidderId()))
-          .findFirst()
-          .ifPresent(bidder -> {
-            for (AuctionItem oi : offer.getOfferedItems()) {
-              bidder.findCollectionItem(oi.getCard().getId()).ifPresent(item -> item.release(oi.getAmount()));
-            }
-          });
+      notifyBidderIds.add(offer.getBidderId());
+      for (AuctionItem oi : offer.getOfferedItems()) {
+        releases.add(new CommitRelease(offer.getBidderId(), oi.getCard().getId(), oi.getAmount()));
+      }
     }
+
+    return new CancelResult(releases, notifyBidderIds);
   }
 
   public boolean isExpired() {

@@ -48,6 +48,13 @@ public class PublicationRepositoryImpl implements PublicationRepositoryCustom {
       query.addCriteria(Criteria.where("cardNumber").is(filters.getCardNumber()));
     }
 
+    // Si se pasa un user a excluir, no devolver sus publicaciones (búsqueda no incluye las propias).
+    // `publisherUser` se persiste como ObjectId; usamos `nin` con String + ObjectId por compatibilidad.
+    if (filters.getExcludeUserId() != null) {
+      query.addCriteria(Criteria.where("publisherUser")
+          .nin(filters.getExcludeUserId(), new ObjectId(filters.getExcludeUserId())));
+    }
+
     query.with(pageable);
 
     List<TradePublication> results = mongoTemplate.find(query, TradePublication.class);

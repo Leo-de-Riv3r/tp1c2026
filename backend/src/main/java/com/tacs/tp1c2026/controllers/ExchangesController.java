@@ -1,5 +1,6 @@
 package com.tacs.tp1c2026.controllers;
 
+import com.tacs.tp1c2026.config.RequiresOwnerOrAdmin;
 import com.tacs.tp1c2026.entities.dto.common.ApiResponse;
 import com.tacs.tp1c2026.entities.dto.common.output.PaginationDtoOutput;
 import com.tacs.tp1c2026.entities.dto.exchange.input.AddFeedbackDto;
@@ -27,22 +28,19 @@ public class ExchangesController {
   }
 
   /**
-  * Lists the exchanges in which the user was involved (as A or B), paginated
-  * If userId is not sent, uses the authenticated user data
-  * @param userId
-  * @return list of the user's exchanges
-  */
+   * Lista los intercambios en los que participó el user (como A o B), paginados.
+   * Si no se envía {@code userId}, usa el user autenticado.
+   * @param userId id del user dueño (opcional)
+   * @return lista de intercambios del user
+   */
   @GetMapping
+  @RequiresOwnerOrAdmin(value = "userId", source = RequiresOwnerOrAdmin.Source.QUERY)
   public ResponseEntity<PaginationDtoOutput<ExchangeDto>> getMyExchanges(
       @RequestAttribute("userId") String currentUserId,
       @RequestParam(required = false) String userId,
       @RequestParam(defaultValue = "1") Integer page,
       @RequestParam(defaultValue = "10") Integer per_page
-  ) throws ForbiddenException {
-    // Guard: prevent querying another user's exchanges (info leak)
-    if (userId != null && !userId.equals(currentUserId)) {
-      throw new ForbiddenException("You cannot view another user's exchanges");
-    }
+  ) {
     String targetUserId = userId != null ? userId : currentUserId;
     Page<Exchange> result = exchangeService.findByUserId(targetUserId, page, per_page);
     return ResponseEntity.ok(new PaginationDtoOutput<>(
@@ -53,10 +51,10 @@ public class ExchangesController {
   }
 
   /**
-  * Returns the detail of a single exchange by its ID. Only accessible to participants.
-  * @param exchangeId
-  * @return the exchangeDto, or 404 if not found, or 403 if the caller did not participate
-  */
+   * Devuelve el detalle de un intercambio por su ID. Solo accesible para los participantes.
+   * @param exchangeId id del intercambio
+   * @return el {@link ExchangeDto}; 404 si no existe, 403 si el caller no participó
+   */
   @GetMapping("/{exchangeId}")
   public ResponseEntity<ExchangeDto> getExchange(
       @PathVariable String exchangeId,
@@ -64,21 +62,21 @@ public class ExchangesController {
   ) throws NotFoundException, ForbiddenException {
     Exchange exchange = exchangeService.findById(exchangeId);
     if (!exchange.involves(currentUserId)) {
-      throw new ForbiddenException("You cannot view an exchange you are not part of");
+      throw new ForbiddenException("No podés ver un intercambio en el que no participaste");
     }
     return ResponseEntity.ok(exchangeMapper.mapExchange(exchange));
   }
 
   /**
-  * Leaves feedback about the other participant of the exchange
-  * It fails if the user is not related to the exchange or if the feedback was already given
-  */
+   * Deja una calificación sobre la otra parte del intercambio.
+   * Falla si el user no participa del intercambio o si ya dejó su calificación.
+   */
   @PostMapping("/{exchangeId}/feedback")
   public ResponseEntity<ApiResponse<Void>> addFeedback(@PathVariable String exchangeId,
       @RequestAttribute("userId") String userId,
       @Valid @RequestBody AddFeedbackDto body
   ) throws NotFoundException {
     exchangeService.addFeedback(exchangeId, userId, body.getScore(), body.getComment());
-    return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.of("Feedback recorded"));
+    return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.of("Calificación registrada"));
   }
 }

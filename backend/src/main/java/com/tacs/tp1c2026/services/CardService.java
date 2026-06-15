@@ -86,8 +86,8 @@ public class CardService {
     }
 
     /**
-     * Returns the full card catalog
-     * @return list of all {@link Card} documents
+     * Devuelve el catálogo completo de figuritas.
+     * @return lista de todos los documentos {@link Card}
      */
     public List<Card> getCatalog() {
         return cardRepository.findAll();
@@ -114,19 +114,19 @@ public class CardService {
     @Transactional
     public CardDTO searchForCard(CardSearchParamsDTO dto) throws NotFoundException {
         if (dto.number() != null) {
-            Card card = this.cardRepository.findByNumber(dto.number()).orElseThrow(() -> new NotFoundException("Card not found"));
+            Card card = this.cardRepository.findByNumber(dto.number()).orElseThrow(() -> new NotFoundException("Figurita no encontrada"));
             return CardMapper.toDto(card);
         }
         return this.cardRepository.findAll().stream()
                 .filter(s -> matchesSearchParams(s, dto))
                 .findFirst()
                 .map(CardMapper::toDto)
-                .orElseThrow(() -> new NotFoundException("Card not found with given parameters"));
+                .orElseThrow(() -> new NotFoundException("No se encontró ninguna figurita con esos parámetros"));
     }
 
     @Transactional
     public Card getById(String cardId) throws NotFoundException {
-        return this.cardRepository.findById(cardId).orElseThrow(() -> new NotFoundException("Card not found"));
+        return this.cardRepository.findById(cardId).orElseThrow(() -> new NotFoundException("Figurita no encontrada"));
     }
 
     private boolean matchesSearchParams(Card s, CardSearchParamsDTO dto) {

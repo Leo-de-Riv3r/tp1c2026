@@ -5,7 +5,6 @@ import com.tacs.tp1c2026.entities.enums.TradeProposalStatus;
 import com.tacs.tp1c2026.entities.user.User;
 import com.tacs.tp1c2026.exceptions.ForbiddenException;
 import com.tacs.tp1c2026.exceptions.OfferAlreadyProcessedException;
-import com.tacs.tp1c2026.exceptions.UnauthorizedException;
 import lombok.Getter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.TypeAlias;
@@ -83,7 +82,7 @@ public class TradeProposal {
     }
   }
 
-  public void validateOwner(String userId) throws UnauthorizedException {
+  public void validateOwner(String userId) {
     if (!Objects.equals(this.proposerUser.getId(), userId)) {
       throw new ForbiddenException("The user is not the owner of the proposal");
     }

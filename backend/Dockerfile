@@ -8,6 +8,13 @@ RUN mvn dependency:go-offline
 
 # Copiamos el código y compilamos
 COPY src ./src
+
+# Los tests usan Testcontainers, que necesita un Docker daemon accesible.
+# Adentro de este build no hay Docker-in-Docker configurado, así que los tests no
+# pueden correr acá y rompen el build. La validación de tests se hace en CI: el
+# workflow `.github/workflows/backend-tests.yml` corre `./mvnw test` en Ubuntu con
+# Testcontainers funcionando, en cada PR a master que toca `backend/**`. Por eso
+# el `-DskipTests` es intencional, no descuido.
 RUN mvn clean package -DskipTests
 
 # Etapa 2: Ejecución (Run) - ARREGLO: Cambiado a Java 21
@@ -17,7 +24,10 @@ WORKDIR /app
 # 2. Optimización de Encoding: Previene errores con tildes y caracteres especiales
 ENV JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF-8"
 
-# 3. Optimización de Seguridad: Correr sin permisos de root (Best Practice)
+# 3. curl para el HEALTHCHECK contra /actuator/health (alpine no lo trae por default)
+RUN apk add --no-cache curl
+
+# 4. Optimización de Seguridad: Correr sin permisos de root (Best Practice)
 RUN addgroup -S spring && adduser -S spring -G spring
 USER spring:spring
 
@@ -26,6 +36,11 @@ COPY --from=build /app/target/*.jar app.jar
 
 # Exponemos el puerto
 EXPOSE 8080
+
+# Healthcheck contra el endpoint expuesto por Spring Boot Actuator.
+# --start-period=40s le da margen a Spring para arrancar antes de contar fallos.
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD curl -f http://localhost:8080/actuator/health || exit 1
 
 # Comando para arrancar
 ENTRYPOINT ["java", "-jar", "app.jar"]

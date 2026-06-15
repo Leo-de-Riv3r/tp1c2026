@@ -1,5 +1,6 @@
 package com.tacs.tp1c2026.controllers;
 
+import com.tacs.tp1c2026.config.RequiresOwnerOrAdmin;
 import com.tacs.tp1c2026.entities.auction.Auction;
 import com.tacs.tp1c2026.entities.auction.AuctionOffer;
 import com.tacs.tp1c2026.entities.dto.common.ApiResponse;
@@ -42,7 +43,7 @@ public class AuctionsController {
   }
 
   /**
-   * Creates a new auction on a duplicate card from the user's collection.
+   * Crea una nueva subasta sobre una figurita repetida de la colección del user.
    */
   @PostMapping
   public ResponseEntity<ApiResponse<AuctionDto>> createAuction(
@@ -53,17 +54,18 @@ public class AuctionsController {
     AuctionDto body = auctionMapper.mapAuction(auction);
     return ResponseEntity
         .created(URI.create("/api/auctions/" + auction.getId()))
-        .body(ApiResponse.of("Auction created successfully", body));
+        .body(ApiResponse.of("Subasta creada correctamente", body));
   }
 
   /**
-   * Paginated search of auctions.
-   *   - If {@code userId} is sent, returns all auctions created by that user
-   *     (any status), without applying activity filters.
-   *   - Otherwise, returns active auctions with optional filters (name, country, team,
+   * Búsqueda paginada de subastas.
+   *   - Si se envía {@code userId}, devuelve todas las subastas creadas por ese user
+   *     (cualquier estado), sin aplicar filtros de actividad.
+   *   - Si no, devuelve subastas activas con filtros opcionales (name, country, team,
    *     category, cardType).
    */
   @GetMapping
+  @RequiresOwnerOrAdmin(value = "userId", source = RequiresOwnerOrAdmin.Source.QUERY)
   public ResponseEntity<PaginationDtoOutput<AuctionDto>> searchAuctions(
       @RequestAttribute("userId") String currentUserId,
       @RequestParam(defaultValue = "1") Integer page,
@@ -83,16 +85,18 @@ public class AuctionsController {
           result.getTotalPages()
       ));
     }
-    SearchPublicationsFilters filters = new SearchPublicationsFilters(name, country, team, category, cardType, null);
+    // Búsqueda activa: excluye las subastas del propio user (no tiene sentido ofertar en una propia).
+    SearchPublicationsFilters filters = new SearchPublicationsFilters(name, country, team, category, cardType, null, currentUserId);
     return ResponseEntity.ok(auctionService.searchActiveAuctions(page, per_page, filters));
   }
 
   /**
-   * Offers made by a user ("My Offers" view). Returns a flat list of {@link UserBidDto},
-   * not Auction (different shape from search, hence its own endpoint).
-   * If {@code userId} is not sent, uses the token user.
+   * Ofertas hechas por un user (vista "Mis Ofertas"). Devuelve una lista plana de {@link UserBidDto},
+   * no de Auction (shape distinto al de search, por eso es un endpoint propio).
+   * Si no se envía {@code userId}, usa el user del token.
    */
   @GetMapping("/offers")
+  @RequiresOwnerOrAdmin(value = "userId", source = RequiresOwnerOrAdmin.Source.QUERY)
   public ResponseEntity<java.util.List<UserBidDto>> getOffers(
       @RequestAttribute("userId") String currentUserId,
       @RequestParam(required = false) String userId
@@ -102,7 +106,7 @@ public class AuctionsController {
   }
 
   /**
-   * Auction detail.
+   * Detalle de subasta.
    */
   @GetMapping("/{auctionId}")
   public ResponseEntity<AuctionDto> getAuction(@PathVariable String auctionId) throws NotFoundException {
@@ -111,7 +115,7 @@ public class AuctionsController {
   }
 
   /**
-   * Creates an offer on an existing auction.
+   * Crea una oferta sobre una subasta existente.
    */
   @PostMapping("/{auctionId}/offers")
   public ResponseEntity<ApiResponse<AuctionOfferDto>> createOffer(
@@ -123,11 +127,11 @@ public class AuctionsController {
     AuctionOfferDto offerDto = auctionMapper.mapOffer(auctionId, offer);
     return ResponseEntity
         .created(URI.create("/api/auctions/" + auctionId + "/offers/" + offer.getId()))
-        .body(ApiResponse.of("Offer published successfully", offerDto));
+        .body(ApiResponse.of("Oferta publicada correctamente", offerDto));
   }
 
   /**
-   * Marks the user as interested in the auction.
+   * Marca al user como interesado en la subasta.
    */
   @PostMapping("/{auctionId}/interested")
   public ResponseEntity<ApiResponse<Void>> addInterested(
@@ -135,11 +139,11 @@ public class AuctionsController {
       @RequestAttribute("userId") String userId
   ) throws NotFoundException, NotFoundException {
     auctionService.addInterestedUser(auctionId, userId);
-    return ResponseEntity.ok(ApiResponse.of("Marked as interested"));
+    return ResponseEntity.ok(ApiResponse.of("Marcado como interesado"));
   }
 
   /**
-   * Cancels an auction from the user.
+   * Cancela una subasta del user.
    */
   @DeleteMapping("/{auctionId}")
   public ResponseEntity<ApiResponse<Void>> cancelAuction(
@@ -149,11 +153,11 @@ public class AuctionsController {
     CancelAuctionDto dto = new CancelAuctionDto();
     dto.setAuctionId(auctionId);
     auctionService.cancelAuction(userId, dto);
-    return ResponseEntity.ok(ApiResponse.of("Auction cancelled"));
+    return ResponseEntity.ok(ApiResponse.of("Subasta cancelada"));
   }
 
   /**
-   * Cancels an offer from the user.
+   * Cancela una oferta del user.
    */
   @DeleteMapping("/{auctionId}/offers/{offerId}")
   public ResponseEntity<ApiResponse<Void>> cancelAuctionOffer(
@@ -162,9 +166,12 @@ public class AuctionsController {
       @RequestAttribute("userId") String userId
   ) {
     auctionService.cancelOffer(offerId, userId, auctionId);
-    return ResponseEntity.ok(ApiResponse.of("Offer cancelled"));
+    return ResponseEntity.ok(ApiResponse.of("Oferta cancelada"));
   }
 
+  /**
+   * Marca una oferta como la mejor de la subasta.
+   */
   @PutMapping("/{auctionId}/offers/{offerId}/best")
   public ResponseEntity<ApiResponse<Void>> setOfferAsBest(
       @PathVariable String auctionId,
@@ -172,9 +179,12 @@ public class AuctionsController {
       @RequestAttribute("userId") String userId
   ) {
     auctionService.setAuctionOfferAsBest(auctionId, offerId, userId);
-    return ResponseEntity.ok(ApiResponse.of("Offer marked as best"));
+    return ResponseEntity.ok(ApiResponse.of("Oferta marcada como la mejor"));
   }
 
+  /**
+   * Rechaza una oferta de la subasta.
+   */
   @PutMapping("/{auctionId}/offers/{offerId}/reject")
   public ResponseEntity<ApiResponse<Void>> rejectOffer(
       @PathVariable String auctionId,
@@ -182,9 +192,12 @@ public class AuctionsController {
       @RequestAttribute("userId") String userId
   ) {
     auctionService.rejectAuctionOffer(auctionId, offerId, userId);
-    return ResponseEntity.ok(ApiResponse.of("Offer rejected"));
+    return ResponseEntity.ok(ApiResponse.of("Oferta rechazada"));
   }
 
+  /**
+   * Acepta la oferta ganadora de la subasta. Dispara la transferencia de figuritas y crea el Exchange histórico.
+   */
   @PutMapping("/{auctionId}/offers/{offerId}/accept")
   public ResponseEntity<ApiResponse<Void>> acceptOffer(
       @PathVariable String auctionId,
@@ -192,7 +205,7 @@ public class AuctionsController {
       @RequestAttribute("userId") String userId
   ) throws AuctionClosedException, NotFoundException, NotFoundException, ForbiddenException, OfferAlreadyProcessedException, OfferNotFoundException {
     auctionService.acceptAuctionOffer(auctionId, offerId, userId);
-    return ResponseEntity.ok(ApiResponse.of("Offer accepted"));
+    return ResponseEntity.ok(ApiResponse.of("Oferta aceptada"));
   }
 
 }

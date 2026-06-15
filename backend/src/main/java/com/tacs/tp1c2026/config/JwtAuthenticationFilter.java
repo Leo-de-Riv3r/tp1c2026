@@ -1,7 +1,8 @@
 package com.tacs.tp1c2026.config;
 
+import com.tacs.tp1c2026.entities.session.Session;
 import com.tacs.tp1c2026.repositories.UserRepository;
-import com.tacs.tp1c2026.services.AuthService;
+import com.tacs.tp1c2026.services.SessionService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,21 +12,22 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Optional;
 
 /**
- * HTTP filter that validates the JWT in the Authorization header. If the token is valid,
- * sets {@code userId} and {@code role} as request attributes so controllers can retrieve
- * them with {@code @RequestAttribute}.
+ * Filtro HTTP que valida la sesión del header {@code Authorization} (token opaco = sessionId).
+ * Si la sesión es válida la "toca" (sliding) y deja {@code userId} y {@code role} como atributos
+ * del request para que los controllers los recuperen con {@code @RequestAttribute}.
  */
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-  private final AuthService authService;
+  private final SessionService sessionService;
   private final ApiErrorResponseWriter errorWriter;
   private final UserRepository userRepository;
 
-  public JwtAuthenticationFilter(AuthService authService, ApiErrorResponseWriter errorWriter, UserRepository userRepository) {
-    this.authService = authService;
+  public JwtAuthenticationFilter(SessionService sessionService, ApiErrorResponseWriter errorWriter, UserRepository userRepository) {
+    this.sessionService = sessionService;
     this.errorWriter = errorWriter;
     this.userRepository = userRepository;
   }
@@ -49,25 +51,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     String header = request.getHeader("Authorization");
     if (header == null || !header.startsWith("Bearer ")) {
-      errorWriter.write(response, HttpStatus.UNAUTHORIZED, "Authentication token not provided");
+      errorWriter.write(response, HttpStatus.UNAUTHORIZED, "No se provee un token de autenticación");
       return;
     }
 
     try {
       String token = header.substring(7);
-      if (!authService.isTokenValid(token)) {
-        errorWriter.write(response, HttpStatus.UNAUTHORIZED, "Invalid authentication token");
+      Optional<Session> sessionOpt = sessionService.validateAndTouch(token);
+      if (sessionOpt.isEmpty()) {
+        errorWriter.write(response, HttpStatus.UNAUTHORIZED, "Sesión inválida o expirada");
         return;
       }
-      String userId = authService.extractUserId(token);
-      if (!userRepository.existsById(userId)) {
-        errorWriter.write(response, HttpStatus.UNAUTHORIZED, "The token user no longer exists");
+      Session session = sessionOpt.get();
+      if (!userRepository.existsById(session.getUserId())) {
+        sessionService.delete(token);
+        errorWriter.write(response, HttpStatus.UNAUTHORIZED, "El usuario de la sesión ya no existe");
         return;
       }
-      request.setAttribute("userId", userId);
-      request.setAttribute("role", authService.extractRole(token));
+      request.setAttribute("userId", session.getUserId());
+      request.setAttribute("role", session.getRole());
     } catch (Exception e) {
-      errorWriter.write(response, HttpStatus.UNAUTHORIZED, "Invalid authentication token");
+      errorWriter.write(response, HttpStatus.UNAUTHORIZED, "Sesión inválida o expirada");
       return;
     }
 
