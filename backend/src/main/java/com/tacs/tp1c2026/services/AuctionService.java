@@ -4,6 +4,8 @@ package com.tacs.tp1c2026.services;
 import com.tacs.tp1c2026.entities.auction.Auction;
 import com.tacs.tp1c2026.entities.auction.AuctionItem;
 import com.tacs.tp1c2026.entities.auction.AuctionOffer;
+import com.tacs.tp1c2026.entities.auction.CancelResult;
+import com.tacs.tp1c2026.entities.auction.CommitRelease;
 import com.tacs.tp1c2026.entities.auction.conditions.AuctionCondition;
 import com.tacs.tp1c2026.entities.card.Card;
 import com.tacs.tp1c2026.entities.dto.auction.input.CancelAuctionDto;
@@ -40,7 +42,9 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -143,37 +147,51 @@ public class AuctionService {
     }
 
     /**
-     * Cancela una subasta activa. Libera el `compromisedCount` de las figuritas involucradas
-     * (la del subastador y las ofrecidas en cada oferta pendiente).
+     * Cancela una subasta activa. La entidad {@link Auction#cancel()} maneja el invariante interno
+     * (status + reject de offers PENDING) y devuelve un {@link CancelResult} con los commits a
+     * liberar y los bidders a notificar; este service ejecuta esos efectos contra el
+     * {@link UserRepository} + {@link NotificationService}.
      */
     @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
     @Transactional
     public void cancelAuction(String userId, CancelAuctionDto dto) throws AuctionClosedException, NotFoundException, NotFoundException, ForbiddenException {
-      User user = this.userService.getById(userId);
       Auction auction = this.getAuctionById(dto.getAuctionId());
 
-      if (!Objects.equals(auction.getPublisherUser().getId(), user.getId())) {
+      if (!Objects.equals(auction.getPublisherUser().getId(), userId)) {
         throw new ForbiddenException("El user no es dueño de la subasta");
       }
 
-      List<User> bidders = auction.getOffers().stream()
-          .filter(AuctionOffer::isPending)
-          .map(o -> userRepository.findById(o.getBidderId())
-              .orElseThrow(() -> new NotFoundException("No se encontró el oferente: " +o.getBidderId())))
-          .toList();
-
-      auction.cancel(user, bidders);
+      CancelResult result = auction.cancel();
       this.auctionRepository.save(auction);
-      this.userRepository.save(user);
-      bidders.forEach(this.userRepository::save);
+      applyReleases(result.releases());
+      notifyCancelledBidders(auction, result.notifyBidderIds());
+    }
 
-      for (AuctionOffer offer : auction.getOffers()) {
-        User bidder = userRepository.findById(offer.getBidderId())
-            .orElseThrow(() -> new NotFoundException("No se encontró el oferente: " +offer.getBidderId()));
-        for (AuctionItem oi : offer.getOfferedItems()) {
-          bidder.findCollectionItem(oi.getCard().getId()).ifPresent(item -> item.release(oi.getAmount()));
+    /**
+     * Aplica una lista de {@link CommitRelease}: agrupa por user, carga cada uno, libera los
+     * items correspondientes y persiste. Un solo save por user.
+     */
+    private void applyReleases(List<CommitRelease> releases) {
+      Map<String, List<CommitRelease>> byUser = releases.stream()
+          .collect(Collectors.groupingBy(CommitRelease::userId));
+      for (Map.Entry<String, List<CommitRelease>> entry : byUser.entrySet()) {
+        User u = userRepository.findById(entry.getKey())
+            .orElseThrow(() -> new NotFoundException("No se encontró el user: " + entry.getKey()));
+        for (CommitRelease r : entry.getValue()) {
+          u.findCollectionItem(r.cardId()).ifPresent(item -> item.release(r.amount()));
         }
-        userRepository.save(bidder);
+        userRepository.save(u);
+      }
+    }
+
+    /**
+     * Envía la notificación de subasta cancelada a los bidders cuyas offers estaban PENDING
+     * al momento de cancelar (los identificados por {@link CancelResult#notifyBidderIds()}).
+     */
+    private void notifyCancelledBidders(Auction auction, List<String> bidderIds) {
+      for (String bidderId : bidderIds) {
+        User bidder = userRepository.findById(bidderId)
+            .orElseThrow(() -> new NotFoundException("No se encontró el oferente: " + bidderId));
         notificationService.createUserNotification(
             bidder,
             NotificationType.AUCTION_CANCELLED,
@@ -329,15 +347,9 @@ public class AuctionService {
         if (best != null) {
             awardAuctionTo(auction, best);
         } else {
-            User publisher = auction.getPublisherUser();
-            List<User> bidders = auction.getOffers().stream()
-                .filter(AuctionOffer::isPending)
-                .map(o -> userRepository.findById(o.getBidderId())
-                    .orElseThrow(() -> new NotFoundException("No se encontró el oferente: " +o.getBidderId())))
-                .toList();
-            auction.cancel(publisher, bidders);
-            userRepository.save(publisher);
-            bidders.forEach(this.userRepository::save);
+            CancelResult result = auction.cancel();
+            applyReleases(result.releases());
+            notifyCancelledBidders(auction, result.notifyBidderIds());
         }
 
         auctionRepository.save(auction);
