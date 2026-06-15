@@ -14,10 +14,10 @@ import java.io.IOException;
 import java.util.Map;
 
 /**
- * Checks the {@link ValidatesPathUser} annotation on the handler method.
- * If present, extracts the path variable indicated by {@link ValidatesPathUser#value()}
- * and verifies that a user with that ID exists in the database.
- * If not found → 404 Not Found with body {@link com.tacs.tp1c2026.entities.dto.common.ApiError}.
+ * Verifica la anotación {@link ValidatesPathUser} en el handler del request.
+ * Si está presente, extrae el path variable indicado por {@link ValidatesPathUser#value()}
+ * y valida que exista un user con ese ID en la BD.
+ * Si no se encuentra → 404 Not Found con body {@link com.tacs.tp1c2026.entities.dto.common.ApiError}.
  */
 @Component
 public class UserValidationInterceptor implements HandlerInterceptor {
@@ -42,7 +42,7 @@ public class UserValidationInterceptor implements HandlerInterceptor {
 
         String userId = extractPathVariable(request, annotation.value());
         if (userId == null) {
-            errorWriter.write(response, HttpStatus.BAD_REQUEST, "User ID required in the URL");
+            errorWriter.write(response, HttpStatus.BAD_REQUEST, "Se requiere el ID del usuario en la URL");
             return false;
         }
 

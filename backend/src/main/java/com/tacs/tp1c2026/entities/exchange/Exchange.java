@@ -18,9 +18,9 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Historical record of a completed exchange between two users.
- * Created when a proposal is accepted or an auction is awarded. It is the source of truth
- * for history, statistics, and received feedback.
+ * Registro histórico de un intercambio concretado entre dos users.
+ * Se crea cuando una propuesta es aceptada o una subasta es adjudicada. Es la fuente de verdad
+ * para historial, estadísticas y feedback recibido.
  */
 @Document(collection = "exchanges")
 @TypeAlias("exchange")
@@ -56,8 +56,8 @@ public class Exchange {
     }
 
     /**
-     * Builds an Exchange from an accepted proposal.
-     * Convention: A = publisher (gives the publication card), B = proposer (gives the offered cards).
+     * Construye un Exchange a partir de una propuesta aceptada.
+     * Convención: A = publicante (cede la figurita de la publicación), B = proponente (cede las figuritas ofrecidas).
      */
     public static Exchange fromAcceptedProposal(String proposalId,
                                                 User publisher, User proposer,
@@ -72,8 +72,8 @@ public class Exchange {
     }
 
     /**
-     * Builds an Exchange from an awarded auction.
-     * Convention: A = auctioneer (gives the auctioned card), B = winning bidder (gives the offered cards).
+     * Construye un Exchange a partir de una subasta adjudicada.
+     * Convención: A = subastador (cede la figurita subastada), B = oferente ganador (cede las figuritas ofrecidas).
      */
     public static Exchange fromAcceptedAuction(String auctionId,
                                                 User publisher, User winner,
@@ -96,18 +96,18 @@ public class Exchange {
     }
 
     /**
-     * Records feedback from one of the two sides. Fails if that side already rated
-     * or if the user did not participate in the exchange.
+     * Registra el feedback de una de las dos partes. Falla si esa parte ya calificó
+     * o si el user no participó del intercambio.
      */
     public void leaveFeedback(String reviewerUserId, Feedback feedback) {
         if (!involves(reviewerUserId)) {
-            throw new ForbiddenException("The user did not participate in this exchange");
+            throw new ForbiddenException("El user no participó de este intercambio");
         }
         if (isUserA(reviewerUserId)) {
-            if (feedbackFromA != null) throw new ConflictException("The user has already left feedback on this exchange");
+            if (feedbackFromA != null) throw new ConflictException("El user ya dejó su calificación en este intercambio");
             this.feedbackFromA = feedback;
         } else {
-            if (feedbackFromB != null) throw new ConflictException("The user has already left feedback on this exchange");
+            if (feedbackFromB != null) throw new ConflictException("El user ya dejó su calificación en este intercambio");
             this.feedbackFromB = feedback;
         }
     }

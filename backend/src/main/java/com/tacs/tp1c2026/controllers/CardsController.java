@@ -12,10 +12,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * Handles everything related to cards as catalog entries (not as user subdocuments)
- * /cards/catalog         → full catalog (all existing cards, read-only)
- * /cards/catalog/{id}    → detail of a single catalog card
- * /cards/search          → search cards available in active publications and auctions
+ * Maneja todo lo relacionado a figuritas como entradas del catálogo (no como subdocumentos del user).
+ * /cards/catalog         → catálogo completo (todas las figuritas existentes, read-only)
+ * /cards/catalog/{id}    → detalle de una figurita del catálogo
+ * /cards/search          → busca figuritas disponibles en publicaciones y subastas activas
  */
 @RestController
 @RequestMapping("/cards")
@@ -28,8 +28,8 @@ public class CardsController {
     }
 
     /**
-     * Returns the full card catalog (aún no hay api disponible para bajarnos las figuritas oficiales, el 27/4 se estrenan creo)
-     * @return list of all cards
+     * Devuelve el catálogo completo de figuritas (aún no hay API disponible para bajarnos las figuritas oficiales, el 27/4 se estrenan creo).
+     * @return lista de todas las figuritas
      */
     @GetMapping("/catalog")
     public ResponseEntity<List<Card>> getCatalog() {
@@ -37,9 +37,9 @@ public class CardsController {
     }
 
     /**
-     * Returns a single card from the catalog by its ID
-     * @param id the card's MongoDB ID
-     * @return the card, or 404 if not found
+     * Devuelve una sola figurita del catálogo por su ID.
+     * @param id el ID en Mongo de la figurita
+     * @return la figurita, o 404 si no se encuentra
      */
     @GetMapping("/catalog/{id}")
     public ResponseEntity<Card> getCatalogById(@PathVariable String id) throws NotFoundException {

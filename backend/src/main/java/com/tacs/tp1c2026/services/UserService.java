@@ -28,8 +28,9 @@ public class UserService {
     }
 
     /**
-     * Returns all registered regular users (excluding {@link UserRole#ADMIN})
-     * The admin is a User in Mongo but shouldn't appear in candidate lists for trading, suggestions, or listings
+     * Devuelve todos los users regulares registrados (excluyendo {@link UserRole#ADMIN}).
+     * El admin es un User en Mongo, pero no debería aparecer en listas de candidatos
+     * para intercambio, sugerencias ni listados.
      */
     public List<User> getAll() {
         return userRepository.findAll().stream()
@@ -38,35 +39,35 @@ public class UserService {
     }
 
     /**
-     * Returns a user by ID, or throws if not found
-     * @param userId the user's MongoDB ID
-     * @return the {@link User} entity
-     * @throws NotFoundException if no user exists with that ID
+     * Devuelve un user por su ID, o lanza excepción si no existe.
+     * @param userId ID del user en Mongo
+     * @return la entidad {@link User}
+     * @throws NotFoundException si no existe ningún user con ese ID
      */
     public User getById(String userId) throws NotFoundException {
         return userRepository
             .findById(userId)
-            .orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
+            .orElseThrow(() -> new NotFoundException("No se encontró el user con id: " + userId));
     }
 
     /* Collection */
 
     /**
-     * Returns the card collection of a user
-     * @param userId the user's ID
-     * @return list of {@link CollectionCard} entries
+     * Devuelve la colección de figuritas de un user.
+     * @param userId ID del user
+     * @return lista de entradas {@link CollectionCard}
      */
     public List<CollectionCard> getUserCardCollection(String userId) throws NotFoundException {
         return getById(userId).getCollection();
     }
 
     /**
-     * Adds a card to the user's collection
-     * If the card is already there, increments its quantity
-     * Otherwise creates a new entry using the catalog data
-     * @param userId the user's ID
-     * @param cardId the card's catalog ID (e.g. "card_042")
-     * @return the updated {@link CollectionCard} entry wrapped in a {@link CollectionCardResult}
+     * Agrega una figurita a la colección del user.
+     * Si la figurita ya está, incrementa su cantidad.
+     * Si no, crea una entrada nueva usando los datos del catálogo.
+     * @param userId ID del user
+     * @param cardId ID de la figurita en el catálogo (ej. "FWC1")
+     * @return la entrada {@link CollectionCard} actualizada envuelta en {@link CollectionCardResult}
      */
     public CollectionCardResult addCardToUserCollection(String userId, String cardId) throws NotFoundException, NotFoundException {
         Card card = cardService.getById(cardId);
@@ -75,18 +76,18 @@ public class UserService {
         user.addToCollection(CollectionCard.fromCatalog(card));
         userRepository.save(user);
         CollectionCard saved = user.findCollectionItem(cardId)
-            .orElseThrow(() -> new NotFoundException("Card not found in collection after add"));
+            .orElseThrow(() -> new NotFoundException("La figurita no quedó en la colección después del add"));
         return new CollectionCardResult(saved, created);
     }
 
     /**
-     * Decrements the quantity of a card in the user's collection by one
-     * If the quantity reaches zero, removes the entry entirely
-     * @param userId the user's ID
-     * @param cardId the card's catalog ID
+     * Decrementa en uno la cantidad de una figurita en la colección del user.
+     * Si la cantidad llega a cero, elimina la entrada por completo.
+     * @param userId ID del user
+     * @param cardId ID de la figurita en el catálogo
      */
     public void decrementFromCollection(String userId, String cardId) throws InsufficientCardException, MissingCardException, NotFoundException, NotFoundException {
-        // Validate card exists in catalog
+        // Valida que la figurita exista en el catálogo
         cardService.getById(cardId);
         User user = getById(userId);
         user.removeFromCollection(cardId, 1);
@@ -96,26 +97,26 @@ public class UserService {
     /* Missing cards */
 
     /**
-     * Returns the list of cards the user is looking for
-     * @param userId the user's ID
-     * @return list of {@link MissingCard} entries
+     * Devuelve la lista de figuritas que el user está buscando.
+     * @param userId ID del user
+     * @return lista de entradas {@link MissingCard}
      */
     public List<MissingCard> getUserMissingCards(String userId) throws NotFoundException {
         return getById(userId).getMissingCards();
     }
 
     /**
-     * Adds a card as missing for the user
-     * If the card is already on the list, does nothing
-     * @param userId the user's ID
-     * @param cardId the card's catalog ID (e.g. "card_042")
-     * @return the {@link MissingCard} that was added (or that already existed)
+     * Marca una figurita como faltante para el user.
+     * Si la figurita ya está en la lista, no hace nada.
+     * @param userId ID del user
+     * @param cardId ID de la figurita en el catálogo (ej. "FWC1")
+     * @return la {@link MissingCard} agregada (o la que ya existía)
      */
     public MissingCard addMissingCard(String userId, String cardId) throws NotFoundException, NotFoundException {
         Card card = cardService.getById(cardId);
         User user = getById(userId);
         if (user.hasInCollection(cardId)) {
-            throw new ConflictException("Card #" + card.getNumber() + " (" + card.getDescription() + ") is already in your collection");
+            throw new ConflictException("La figurita #" + card.getNumber() + " (" + card.getDescription() + ") ya está en tu colección");
         }
         MissingCard mc = MissingCard.fromCatalog(card);
         user.addToMissingCards(mc);
@@ -124,10 +125,10 @@ public class UserService {
     }
 
     /**
-     * Removes a card from the user's missing list
-     * Called when the user gets the card through an auction, exchange, or manually
-     * @param userId the user's ID
-     * @param cardId the card's catalog ID
+     * Saca una figurita de la lista de faltantes del user.
+     * Se llama cuando el user obtiene la figurita por una subasta, intercambio o manualmente.
+     * @param userId ID del user
+     * @param cardId ID de la figurita en el catálogo
      */
     public void removeFromMissingCards(String userId, String cardId) throws NotFoundException, NotFoundException {
         cardService.getById(cardId);
@@ -139,9 +140,9 @@ public class UserService {
     /* Suggestions */
 
     /**
-     * Returns the persisted suggestions for a user
-     * @param userId the user's ID
-     * @return list of {@link Suggestion} entities
+     * Devuelve las sugerencias persistidas para un user.
+     * @param userId ID del user
+     * @return lista de {@link Suggestion}
      */
     public List<Suggestion> getUserSuggestions(String userId) throws NotFoundException {
         return getById(userId).getSuggestions();

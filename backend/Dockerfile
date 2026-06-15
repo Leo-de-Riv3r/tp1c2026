@@ -8,6 +8,13 @@ RUN mvn dependency:go-offline
 
 # Copiamos el código y compilamos
 COPY src ./src
+
+# Los tests usan Testcontainers, que necesita un Docker daemon accesible.
+# Adentro de este build no hay Docker-in-Docker configurado, así que los tests no
+# pueden correr acá y rompen el build. La validación de tests se hace en CI: el
+# workflow `.github/workflows/backend-tests.yml` corre `./mvnw test` en Ubuntu con
+# Testcontainers funcionando, en cada PR a master que toca `backend/**`. Por eso
+# el `-DskipTests` es intencional, no descuido.
 RUN mvn clean package -DskipTests
 
 # Etapa 2: Ejecución (Run) - ARREGLO: Cambiado a Java 21

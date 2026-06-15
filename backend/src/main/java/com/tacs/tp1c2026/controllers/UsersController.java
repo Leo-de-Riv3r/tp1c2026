@@ -37,8 +37,8 @@ public class UsersController {
     }
 
     /**
-     * Returns all registered users as DTOs. Intended for the admin view
-     * @return list of users as {@link UserDto}
+     * Devuelve todos los users registrados como DTOs. Para la vista de admin.
+     * @return lista de users como {@link UserDto}
      */
     @GetMapping
     @RequiresRole("ADMIN")
@@ -49,9 +49,9 @@ public class UsersController {
     }
 
     /**
-     * Returns a user by their MongoDB ID. Solo accesible para el propio user o ADMIN
-     * @param id the user's ID
-     * @return the user as {@link UserDto}, or 404 if not found
+     * Devuelve un user por su ID de Mongo. Solo accesible para el propio user o ADMIN.
+     * @param id ID del user
+     * @return el user como {@link UserDto}, o 404 si no se encuentra
      */
     @GetMapping("/{id}")
     @RequiresOwnerOrAdmin
@@ -63,9 +63,9 @@ public class UsersController {
     /* Collection endpoints */
 
     /**
-     * Returns the card collection of a user
-     * @param id the user's ID
-     * @return list of cards in the user's collection
+     * Devuelve la colección de figuritas del user.
+     * @param id ID del user
+     * @return lista de figuritas en su colección
      */
     @GetMapping("/{id}/collection")
     @RequiresOwnerOrAdmin
@@ -75,11 +75,11 @@ public class UsersController {
     }
 
     /**
-     * Adds a card to the user's collection. If the card is already there, increments its quantity.
-     * Returns 201 if the card was added for the first time, 200 if the quantity was incremented.
-     * @param id the user's ID
-     * @param request body containing the card ID to add
-     * @return the updated {@link CollectionCard} entry
+     * Agrega una figurita a la colección del user. Si la figurita ya está, incrementa su cantidad.
+     * Devuelve 201 si la figurita se agregó por primera vez, 200 si se incrementó la cantidad.
+     * @param id ID del user
+     * @param request body con el ID de la figurita a agregar
+     * @return el {@link CollectionCard} actualizado
      */
     @PostMapping("/{id}/collection")
     @RequiresOwnerOrAdmin
@@ -94,10 +94,10 @@ public class UsersController {
     }
 
     /**
-     * Decrements the quantity of a card in the user's collection by one.
-     * Removes the entry entirely if the quantity reaches zero.
-     * @param id the user's ID
-     * @param cardId the card ID to decrement
+     * Decrementa en uno la cantidad de una figurita en la colección del user.
+     * Si la cantidad llega a cero, elimina la entrada por completo.
+     * @param id ID del user
+     * @param cardId ID de la figurita a decrementar
      */
     @PatchMapping("/{id}/collection/{cardId}")
     @RequiresOwnerOrAdmin
@@ -112,9 +112,9 @@ public class UsersController {
     /* Missing cards endpoints */
 
     /**
-     * Returns the list of cards the user is looking for
-     * @param id the user's ID
-     * @return list of missing cards
+     * Devuelve la lista de figuritas que el user está buscando.
+     * @param id ID del user
+     * @return lista de figuritas faltantes
      */
     @GetMapping("/{id}/missing-cards")
     @RequiresOwnerOrAdmin
@@ -124,10 +124,10 @@ public class UsersController {
     }
 
     /**
-     * Marks a card as missing for the user. Does nothing if it's already on the list.
-     * @param id the user's ID
-     * @param request body containing the card ID to mark as missing
-     * @return 201 with the created {@link MissingCard} entry
+     * Marca una figurita como faltante para el user. No hace nada si ya está en la lista.
+     * @param id ID del user
+     * @param request body con el ID de la figurita a marcar como faltante
+     * @return 201 con la entrada {@link MissingCard} creada
      */
     @PostMapping("/{id}/missing-cards")
     @RequiresOwnerOrAdmin
@@ -141,9 +141,9 @@ public class UsersController {
     }
 
     /**
-     * Removes a card from the user's missing list.
-     * @param id the user's ID
-     * @param cardId the card ID to remove
+     * Saca una figurita de la lista de faltantes del user.
+     * @param id ID del user
+     * @param cardId ID de la figurita a quitar
      */
     @DeleteMapping("/{id}/missing-cards/{cardId}")
     @RequiresOwnerOrAdmin
@@ -158,12 +158,12 @@ public class UsersController {
     /* Suggestions endpoint */
 
     /**
-     * Returns the exchange suggestions for a user.
-     * Suggestions are computed periodically by the scheduled SuggestionGenerator.
-     * Each suggestion points to a specific active publication or auction (from another user
-     * with similar profile) whose card matches one of this user's missing cards.
-     * @param id the user's ID
-     * @return list of {@link SuggestionResult}
+     * Devuelve las sugerencias de intercambio para un user.
+     * Las sugerencias las computa periódicamente el SuggestionGenerator agendado.
+     * Cada sugerencia apunta a una publicación o subasta activa específica (de otro user
+     * con perfil similar) cuya figurita matchea con un faltante del user.
+     * @param id ID del user
+     * @return lista de {@link SuggestionResult}
      */
     @GetMapping("/{id}/suggestions")
     @RequiresOwnerOrAdmin

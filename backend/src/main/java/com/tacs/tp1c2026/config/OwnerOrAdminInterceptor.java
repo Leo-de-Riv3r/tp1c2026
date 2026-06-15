@@ -15,18 +15,18 @@ import java.io.IOException;
 import java.util.Map;
 
 /**
- * Checks the {@link RequiresOwnerOrAdmin} annotation on the handler method.
+ * Verifica la anotación {@link RequiresOwnerOrAdmin} en el handler del request.
  *
- * <p>If present: extracts the identifier (from path variable or query param according to
- * {@link RequiresOwnerOrAdmin#source()}) and compares it with the JWT {@code userId} (set by
- * {@link JwtAuthenticationFilter}). Bypass if the JWT role is {@code ADMIN}.
+ * <p>Si está presente: extrae el identificador (de un path variable o query param según
+ * {@link RequiresOwnerOrAdmin#source()}) y lo compara contra el {@code userId} del JWT
+ * (seteado por {@link JwtAuthenticationFilter}). Si el rol del JWT es {@code ADMIN}, bypassa.
  *
- * <p>Path-variable mode: the variable is required; absent → 403 (configuration error).
+ * <p>Modo path variable: la variable es obligatoria; si falta → 403 (error de configuración).
  *
- * <p>Query-param mode: if the param is absent, the check bypasses (meaning "default to current
- * user"). If present and does not match → 403.
+ * <p>Modo query param: si el param está ausente, la verificación bypassa (significa "usar el
+ * user actual por default"). Si está presente y no matchea → 403.
  *
- * <p>No match and not ADMIN → 403 Forbidden with body {@link com.tacs.tp1c2026.entities.dto.common.ApiError}.
+ * <p>Si no matchea y no es ADMIN → 403 Forbidden con body {@link com.tacs.tp1c2026.entities.dto.common.ApiError}.
  */
 @Component
 public class OwnerOrAdminInterceptor implements HandlerInterceptor {
@@ -57,16 +57,16 @@ public class OwnerOrAdminInterceptor implements HandlerInterceptor {
         String resourceUserId;
         if (required.source() == RequiresOwnerOrAdmin.Source.QUERY) {
             resourceUserId = request.getParameter(required.value());
-            // Query param absent → bypass (the controller defaults to the JWT user)
+            // Query param ausente → bypass (el controller defaultea al user del JWT)
             if (resourceUserId == null) {
                 return true;
             }
         } else {
             resourceUserId = extractPathVariable(request, required.value());
             if (resourceUserId == null) {
-                // Configuration error: the endpoint declares @RequiresOwnerOrAdmin but does not have the expected path variable
+                // Error de configuración: el endpoint declara @RequiresOwnerOrAdmin pero no expone el path variable esperado
                 log.error("@RequiresOwnerOrAdmin on {} expects path variable '{}' which is not present", hm.getMethod(), required.value());
-                errorWriter.write(response, HttpStatus.FORBIDDEN, "Not authorized");
+                errorWriter.write(response, HttpStatus.FORBIDDEN, "No autorizado");
                 return false;
             }
         }
@@ -74,7 +74,7 @@ public class OwnerOrAdminInterceptor implements HandlerInterceptor {
         String jwtUserId = (String) request.getAttribute("userId");
         if (!resourceUserId.equals(jwtUserId)) {
             log.warn("Cross-user access denied: caller userId={} attempted to access resource of userId={}", jwtUserId, resourceUserId);
-            errorWriter.write(response, HttpStatus.FORBIDDEN, "You cannot access another user's resources");
+            errorWriter.write(response, HttpStatus.FORBIDDEN, "No podés acceder a recursos de otro usuario");
             return false;
         }
 

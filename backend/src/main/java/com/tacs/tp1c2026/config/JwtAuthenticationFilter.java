@@ -13,9 +13,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 /**
- * HTTP filter that validates the JWT in the Authorization header. If the token is valid,
- * sets {@code userId} and {@code role} as request attributes so controllers can retrieve
- * them with {@code @RequestAttribute}.
+ * Filtro HTTP que valida el JWT del header {@code Authorization}. Si el token es válido,
+ * deja {@code userId} y {@code role} como atributos del request para que los controllers
+ * los recuperen con {@code @RequestAttribute}.
  */
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -49,25 +49,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     String header = request.getHeader("Authorization");
     if (header == null || !header.startsWith("Bearer ")) {
-      errorWriter.write(response, HttpStatus.UNAUTHORIZED, "Authentication token not provided");
+      errorWriter.write(response, HttpStatus.UNAUTHORIZED, "No se provee un token de autenticación");
       return;
     }
 
     try {
       String token = header.substring(7);
       if (!authService.isTokenValid(token)) {
-        errorWriter.write(response, HttpStatus.UNAUTHORIZED, "Invalid authentication token");
+        errorWriter.write(response, HttpStatus.UNAUTHORIZED, "Token de autenticación inválido");
         return;
       }
       String userId = authService.extractUserId(token);
       if (!userRepository.existsById(userId)) {
-        errorWriter.write(response, HttpStatus.UNAUTHORIZED, "The token user no longer exists");
+        errorWriter.write(response, HttpStatus.UNAUTHORIZED, "El usuario del token ya no existe");
         return;
       }
       request.setAttribute("userId", userId);
       request.setAttribute("role", authService.extractRole(token));
     } catch (Exception e) {
-      errorWriter.write(response, HttpStatus.UNAUTHORIZED, "Invalid authentication token");
+      errorWriter.write(response, HttpStatus.UNAUTHORIZED, "Token de autenticación inválido");
       return;
     }
 

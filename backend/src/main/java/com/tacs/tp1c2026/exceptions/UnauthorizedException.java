@@ -3,9 +3,9 @@ package com.tacs.tp1c2026.exceptions;
 import org.springframework.http.HttpStatus;
 
 /**
- * Thrown when the request lacks valid authentication credentials
- * Maps to HTTP 401 Unauthorized
- * Note: in most cases Spring Security handles this before reaching the controller
+ * Se lanza cuando el request no trae credenciales de autenticación válidas.
+ * Mapea a HTTP 401 Unauthorized.
+ * Nota: en la mayoría de los casos Spring Security lo maneja antes de llegar al controller.
  */
 public class UnauthorizedException extends CustomException {
     public UnauthorizedException(String message) {

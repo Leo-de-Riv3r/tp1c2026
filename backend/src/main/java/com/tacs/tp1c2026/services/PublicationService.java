@@ -54,7 +54,7 @@ public class PublicationService {
     }
 
     /**
-     * Creates a publication of N units of a card. Commits N units in the publisher's collection.
+     * Crea una publicación de N unidades de una figurita. Compromete N unidades en la colección del publicante.
      */
     @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
     @Transactional
@@ -63,7 +63,7 @@ public class PublicationService {
         User user = this.userService.getById(userId);
         Card card = this.cardService.getById(dto.cardId());
         CollectionCard item = user.findCollectionItem(card.getId())
-            .orElseThrow(() -> new MissingCardException("User does not have card " + card.getId()));
+            .orElseThrow(() -> new MissingCardException("El user no tiene la figurita " + card.getId()));
         item.commit(dto.quantity());
         TradePublication publication = new TradePublication(user, card, dto.quantity());
         TradePublication saved = this.publicationRepository.save(publication);
@@ -78,8 +78,8 @@ public class PublicationService {
     }
 
     /**
-     * Cancels a publication. Releases all remaining committed units
-     * (from the published card and from pending proposals that get cancelled in cascade).
+     * Cancela una publicación. Libera todas las unidades comprometidas que quedaban
+     * (de la figurita publicada y de las propuestas pendientes que se cancelan en cascada).
      */
     @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
     @Transactional
@@ -90,7 +90,7 @@ public class PublicationService {
         publication.validateOwner(user);
 
         if (!publication.isActive()) {
-            throw new ConflictException("Only an active publication can be cancelled");
+            throw new ConflictException("Sólo se puede cancelar una publicación activa");
         }
 
         Integer remaining = publication.getRemainingCount();
@@ -116,7 +116,7 @@ public class PublicationService {
     }
 
     /**
-     * Paginated search of active publications with filters.
+     * Búsqueda paginada de publicaciones activas con filtros.
      */
     public Page<TradePublication> searchActivePublications(Integer page, Integer perPage, SearchPublicationsFilters filters) {
         Pageable pageable = pageableGenerator.buildPageable(page, perPage, 10, null);
@@ -124,7 +124,7 @@ public class PublicationService {
     }
 
     /**
-     * User's publications, paginated and sorted by date descending.
+     * Publicaciones del user, paginadas y ordenadas por fecha descendente.
      */
     public Page<TradePublication> getMyPublications(String userId, Integer page, Integer perPage) {
         Pageable pageable = pageableGenerator.buildPageable(page, perPage, 10,
@@ -134,6 +134,6 @@ public class PublicationService {
 
     public TradePublication findPublication(String publicationId) throws NotFoundException {
         return this.publicationRepository.findById(publicationId)
-            .orElseThrow(() -> new NotFoundException("Publication not found: " + publicationId));
+            .orElseThrow(() -> new NotFoundException("No se encontró la publicación: " + publicationId));
     }
 }
