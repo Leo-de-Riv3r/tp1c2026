@@ -105,6 +105,6 @@ class EquipoStrategy {
 }
 
 class SeleccionStrategy{
-
+ - testear arch
 }
 @enduml
