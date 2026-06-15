@@ -1,24 +1,59 @@
 package com.tacs.tp1c2026.services;
 
 import com.tacs.tp1c2026.entities.dto.statistics.output.MostWantedCardEntry;
-import com.tacs.tp1c2026.entities.user.User;
+import com.tacs.tp1c2026.entities.dto.statistics.output.OverviewDto;
+import com.tacs.tp1c2026.entities.enums.AuctionStatus;
+import com.tacs.tp1c2026.entities.enums.PublicationStatus;
 import com.tacs.tp1c2026.entities.user.embedded.MissingCard;
+import com.tacs.tp1c2026.repositories.AuctionRepository;
+import com.tacs.tp1c2026.repositories.ExchangeRepository;
+import com.tacs.tp1c2026.repositories.PublicationRepository;
 import com.tacs.tp1c2026.repositories.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Métricas para el dashboard del admin. Sirve las 3 capas del diseño:
+ * <ul>
+ *   <li><b>Capa 1</b> (counts puntuales): {@link #getOverview()} usa {@code count()} con índice,
+ *       sin cache.</li>
+ *   <li><b>Capa 3</b> (top-N): {@link #getMostWantedCardsInLastDays(int)} corre aggregation live.</li>
+ * </ul>
+ * Capa 2 (timeseries por snapshot) vive en {@code StatsSnapshotService}.
+ */
 @Service
-public class StatisticsService {
+public class AdminStatsService {
 
     private final UserRepository userRepository;
+    private final AuctionRepository auctionRepository;
+    private final PublicationRepository publicationRepository;
+    private final ExchangeRepository exchangeRepository;
 
-    public StatisticsService(UserRepository userRepository) {
+    public AdminStatsService(UserRepository userRepository,
+                             AuctionRepository auctionRepository,
+                             PublicationRepository publicationRepository,
+                             ExchangeRepository exchangeRepository) {
         this.userRepository = userRepository;
+        this.auctionRepository = auctionRepository;
+        this.publicationRepository = publicationRepository;
+        this.exchangeRepository = exchangeRepository;
+    }
+
+    /**
+     * Snapshot del estado actual del sistema. Cuatro counts triviales (índice + O(log n)), live.
+     * No incluye filtro de role para {@code totalUsers}: el dashboard cuenta todos los registros.
+     */
+    public OverviewDto getOverview() {
+        return new OverviewDto(
+            userRepository.count(),
+            auctionRepository.countByStatus(AuctionStatus.ACTIVE),
+            publicationRepository.countByStatus(PublicationStatus.ACTIVE),
+            exchangeRepository.count()
+        );
     }
 
     /**
@@ -28,7 +63,7 @@ public class StatisticsService {
      * Lógica: itera todos los users, filtra sus missing cards por {@code addedAt >= hoy - days},
      * agrupa por cardId y cuenta. Devuelve la lista ordenada con número y descripción
      * (snapshot del primer MissingCard que aparece para ese cardId) — el FE no necesita
-     * un fetch adicional al catálogo
+     * un fetch adicional al catálogo.
      */
     public List<MostWantedCardEntry> getMostWantedCardsInLastDays(int days) {
         if (days <= 0) return List.of();
@@ -39,11 +74,9 @@ public class StatisticsService {
             .filter(mc -> mc.getAddedAt() != null && !mc.getAddedAt().isBefore(cutoff))
             .toList();
 
-        // count por cardId
         Map<String, Long> countByCardId = recent.stream()
             .collect(Collectors.groupingBy(MissingCard::getCardId, Collectors.counting()));
 
-        // representante por cardId (para tomar number/description del snapshot)
         Map<String, MissingCard> sampleByCardId = recent.stream()
             .collect(Collectors.toMap(MissingCard::getCardId, mc -> mc, (a, b) -> a));
 

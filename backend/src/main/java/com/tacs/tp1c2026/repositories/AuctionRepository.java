@@ -19,4 +19,6 @@ public interface AuctionRepository extends Repository<Auction, String>, AuctionR
       LocalDateTime from,
       LocalDateTime to
   );
+
+  long countByStatus(AuctionStatus status);
 }

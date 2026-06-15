@@ -25,9 +25,19 @@ public class SettingsService {
     return get().getMaxPendingProposals();
   }
 
+  public int getMaxOffersPerAuction() {
+    return get().getMaxOffersPerAuction();
+  }
+
   public AppSettings setMaxPendingProposals(int value) {
     AppSettings settings = get();
     settings.setMaxPendingProposals(value); // valida >= 1
+    return settingsRepository.save(settings);
+  }
+
+  public AppSettings setMaxOffersPerAuction(int value) {
+    AppSettings settings = get();
+    settings.setMaxOffersPerAuction(value); // valida 1 <= value <= MAX_OFFERS_HARD_CAP
     return settingsRepository.save(settings);
   }
 }

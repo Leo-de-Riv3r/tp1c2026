@@ -58,6 +58,7 @@ public class AuctionService {
     private final ApplicationEventPublisher eventPublisher;
     private final NotificationService notificationService;
     private final AuctionMapper auctionMapper;
+    private final SettingsService settingsService;
     public AuctionService(UserRepository userRepository,
                           UserService userService,
                           CardService cardService,
@@ -66,7 +67,8 @@ public class AuctionService {
                           ExchangeService exchangeService,
                           ApplicationEventPublisher eventPublisher,
                           NotificationService notificationService,
-                          AuctionMapper auctionMapper) {
+                          AuctionMapper auctionMapper,
+                          SettingsService settingsService) {
         this.userRepository = userRepository;
         this.userService = userService;
         this.cardService = cardService;
@@ -76,6 +78,7 @@ public class AuctionService {
         this.eventPublisher = eventPublisher;
         this.notificationService = notificationService;
         this.auctionMapper = auctionMapper;
+        this.settingsService = settingsService;
     }
 
     /**
@@ -123,6 +126,14 @@ public class AuctionService {
         }
         if (auction.isExpired()) {
             throw new ConflictException("La subasta ya expiró");
+        }
+
+        // Cap de ofertas PENDIENTES (configurable por admin). Modelo análogo a maxPendingProposals:
+        // soft cap anti-spam, no invariante. La adjudicación final se resuelve al aceptar.
+        int maxOffers = settingsService.getMaxOffersPerAuction();
+        long currentPending = auction.getOffers().stream().filter(AuctionOffer::isPending).count();
+        if (currentPending >= maxOffers) {
+            throw new ConflictException("La subasta alcanzó el máximo de ofertas pendientes (" + maxOffers + ")");
         }
 
         List<AuctionItem> offerItems = new ArrayList<>();
@@ -274,6 +285,7 @@ public class AuctionService {
                 .toList();
         return new UserBidDto(
             auction.getId(),
+            auction.getCardId(),
             auction.getCardNumber(),
             auction.getCardDescription(),
             auction.getCardCountry(),
