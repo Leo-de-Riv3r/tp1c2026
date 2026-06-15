@@ -10,9 +10,6 @@ jobs:
   # 🐳 Test de Integración de Entorno (Docker Compose en Múltiples Arquitecturas)
   test-environment:
     runs-on: ubuntu-latest
-
-    env:
-      TESTCONTAINERS_MONGO: "true"
       
     # 📊 Definimos la matriz para correr el test tanto en x64 como en ARM64
     strategy:
