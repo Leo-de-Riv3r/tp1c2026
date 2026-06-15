@@ -24,12 +24,14 @@ public class SettingsController {
     this.settingsService = settingsService;
   }
 
+  /** Devuelve la configuración global actual (hoy, el tope de propuestas pendientes). Solo admin. */
   @RequiresRole("ADMIN")
   @GetMapping
   public ResponseEntity<SettingsDto> getSettings() {
     return ResponseEntity.ok(SettingsDto.from(settingsService.get()));
   }
 
+  /** Actualiza la configuración global (valida {@code maxPendingProposals >= 1}). Solo admin. */
   @RequiresRole("ADMIN")
   @PutMapping
   public ResponseEntity<SettingsDto> updateSettings(@RequestBody SettingsDto body) {

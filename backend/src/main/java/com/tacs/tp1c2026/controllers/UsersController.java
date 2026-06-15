@@ -178,6 +178,10 @@ public class UsersController {
 
     /* Notification endpoints */
 
+    /**
+     * Notificaciones del user, paginadas y filtradas por {@code status} (READ / UNREAD).
+     * Solo el dueño o un admin.
+     */
     @GetMapping("/{id}/notifications")
     @RequiresOwnerOrAdmin
     @ValidatesPathUser
@@ -190,6 +194,7 @@ public class UsersController {
         return ResponseEntity.ok(new PaginationDtoOutput<>(result.getContent(), result.getNumber() + 1, result.getTotalPages()));
     }
 
+    /** Marca todas las notificaciones del user como leídas. Solo el dueño o un admin. */
     @PutMapping("/{id}/notifications/read")
     @RequiresOwnerOrAdmin
     @ValidatesPathUser
@@ -198,6 +203,7 @@ public class UsersController {
         return ResponseEntity.noContent().build();
     }
 
+    /** Marca una notificación puntual como leída. Solo el dueño o un admin. */
     @PutMapping("/{id}/notifications/{notificationId}/read")
     @RequiresOwnerOrAdmin
     @ValidatesPathUser
