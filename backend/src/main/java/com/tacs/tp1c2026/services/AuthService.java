@@ -95,8 +95,9 @@ public class AuthService {
     if (user.getPasswordHash() == null || !passwordEncoder.matches(dto.getPassword(), user.getPasswordHash())) {
       throw new UnauthorizedException("Invalid credentials");
     }
-    user.setLastLogin(LocalDateTime.now());
-    userRepository.save(user);
+    // No tocamos lastLogin acá: el load test detectó que dos logins concurrentes del mismo user
+    // chocaban en el @Version del User al hacer save() y agotaban los 3 retries del @Retryable
+    // → 409 Conflict. El campo no se usa en ningún endpoint, así que lo más limpio es borrarlo.
     UserRole role = user.getRole() == null ? UserRole.USER : user.getRole();
     return new LoginResponseDto(sessionService.create(user.getId(), role.name()), UserDto.from(user));
   }

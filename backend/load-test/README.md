@@ -106,6 +106,25 @@ Cada usuario virtual:
 
 Sobre **free tier**: el BE corre en Render free → no esperes RPS de producción real. El objetivo del load test acá es **detectar regresiones** (si un cambio mete latencia 10x, lo vas a ver) y **demostrar que la app soporta concurrencia** (no se cae con 50 users en simultáneo).
 
+## Resultados de la primera corrida (evidencia)
+
+El primer load test corrido con la config sugerida (20 users, 2/s spawn, 60s) **detectó un race condition real** en `AuthService.login()`: el handler hacía `user.setLastLogin(now()); userRepository.save(user)`, lo cual bumpaba el `@Version` del `User`. Con varias VUs logueando como el mismo seed user simultáneamente, los 3 retries del `@Retryable` no alcanzaban y devolvía **409 Conflict** ("The resource was modified by another operation. Please retry."). Cascada: cada login fallido dejaba a su VU sin token → todos sus requests siguientes pegaban 401. Resultado pre-fix: **15.07% error rate**.
+
+**Fix aplicado**: removí el `setLastLogin` + el `save()` consecuente del login. El campo `lastLogin` no se leía en ningún endpoint (era write-only data), así que también borré el field del entity `User` y del seed. Post-fix:
+
+| Métrica            | Pre-fix    | Post-fix      |
+|--------------------|------------|---------------|
+| Requests           | 564        | 574           |
+| **Failures**       | **15.07%** | **0.00%**     |
+| RPS                | 9.64       | 9.84          |
+| p50 latencia       | 25ms       | 32ms          |
+| p95 latencia       | 67ms       | 75ms          |
+| Exit code          | 1          | 0             |
+
+Los 0 fails confirman que el race era el único bug expuesto bajo carga. El p95 levemente mayor post-fix es ruido medible (la corrida es de 1 min, no estable estadísticamente para diferencias de 8ms).
+
+> **Tip**: para repetir esto, basta con `docker compose --profile demo up -d --build` y el comando headless de la sección de arriba. Los CSVs y `results.html` quedan en `backend/` con todos los detalles.
+
 ## Próximos pasos / mejoras posibles
 
 - **JMeter**: si Lautaro prefiere herramientas con tradición más industrial, se puede portar el escenario a JMeter (`.jmx`) y mantener ambos.

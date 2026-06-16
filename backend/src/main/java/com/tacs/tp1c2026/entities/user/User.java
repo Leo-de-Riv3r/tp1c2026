@@ -63,10 +63,6 @@ public class User {
     private Integer exchangesAmount = 0;
 
     @Getter
-    @Setter
-    private LocalDateTime lastLogin;
-
-    @Getter
     private LocalDateTime creationDate = LocalDateTime.now();
 
     @Getter

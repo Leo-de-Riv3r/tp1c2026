@@ -81,7 +81,6 @@ if (existingUsers > 0) {
     role: "USER",
     rating: null,
     exchangesAmount: 0,
-    lastLogin: null,
     creationDate: new Date(),
     collection: [
       toCollection("FWC1", 3),   // Official Emblem
@@ -104,7 +103,6 @@ if (existingUsers > 0) {
     role: "USER",
     rating: null,
     exchangesAmount: 0,
-    lastLogin: null,
     creationDate: new Date(),
     collection: [
       toCollection("FWC3", 1),    // Official Mascots
@@ -129,7 +127,6 @@ if (existingUsers > 0) {
     role: "ADMIN",
     rating: null,
     exchangesAmount: 0,
-    lastLogin: null,
     creationDate: new Date(),
     collection: [],
     missingCards: [],
@@ -147,7 +144,6 @@ if (existingUsers > 0) {
     role: "USER",
     rating: null,
     exchangesAmount: 0,
-    lastLogin: null,
     creationDate: new Date(),
     collection: [],
     missingCards: [],
