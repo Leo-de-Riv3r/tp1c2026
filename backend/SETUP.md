@@ -1,55 +1,37 @@
 # Setup local con Docker
 
-## Prerequisitos
+> El paso a paso completo (con modo demo, usuarios de prueba, y troubleshooting)
+> vive en el [README del repo](../README.md). Para detalles operativos
+> (Mongo nativo sin Docker, gotchas de Render, visualizar la base) ver la
+> [Wiki](https://github.com/Leo-de-Riv3r/tp1c2026/wiki).
 
-- Docker Desktop corriendo
-- `mongosh` instalado y en el PATH ([descargar acá](https://www.mongodb.com/try/download/shell))
-- Ambos repos clonados en la misma carpeta padre con estos nombres exactos:
-  ```
-  /alguna-carpeta/
-  ├── tp1c2026/          ← repo backend
-  └── tacs-2026-c1-FE/   ← repo frontend
-  ```
+## TL;DR
 
-## Primera vez (o al resetear la base)
+Desde dentro de `backend/`, con Docker Desktop corriendo:
 
-Desde la carpeta padre (`/alguna-carpeta/`):
+```bash
+docker compose up -d --build
+```
+
+Eso levanta Mongo (con replica set), corre el seed automáticamente y arranca el BE + FE.
+No hace falta clonar el repo del FE: viene como imagen pulleada de GHCR.
+
+| Servicio  | URL                                          |
+|-----------|----------------------------------------------|
+| Frontend  | http://localhost                             |
+| Backend   | http://localhost:8080                        |
+| MongoDB   | localhost:27018                              |
+| Health    | http://localhost:8080/actuator/health        |
+
+Para resetear la base:
 
 ```bash
 docker compose down -v
-docker compose up --build -d
+docker compose up -d --build
 ```
 
-Esperá ~10 segundos a que Mongo esté listo, luego corré el seed desde la misma carpeta:
+Para una demo más rica (con publicaciones, subastas, exchanges y snapshots preseedeados):
 
 ```bash
-mongosh "mongodb://localhost:27018/tacs_db" --file tp1c2026/backend/seed/seed.js
-```
-
-> El seed es idempotente: si ya hay datos, los saltea sin pisar nada.
-
-## Levantar sin resetear
-
-```bash
-docker compose up -d
-```
-
-## Servicios
-
-| Servicio  | URL                   |
-|-----------|-----------------------|
-| Frontend  | http://localhost (puerto 80, default HTTP) |
-| Backend   | http://localhost:8080 |
-| MongoDB   | localhost:27018       |
-
-## Bajar los containers
-
-```bash
-docker compose down
-```
-
-Para borrar también los datos de Mongo:
-
-```bash
-docker compose down -v
+docker compose --profile demo up -d --build
 ```
