@@ -87,11 +87,11 @@ public class AuctionService {
      */
     @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
     @Transactional
-    public Auction createAuction(String userId, CreateAuctionDto dto) throws InsufficientCardException, MissingCardException, NotFoundException, NotFoundException {
+    public Auction createAuction(String userId, CreateAuctionDto dto) throws ConflictException, NotFoundException, NotFoundException, NotFoundException {
         User user = this.userService.getById(userId);
         Card card = this.cardService.getById(dto.getCardId());
         CollectionCard item = user.findCollectionItem(card.getId())
-            .orElseThrow(() -> new MissingCardException("El user no tiene la figurita " + card.getId()));
+            .orElseThrow(() -> new NotFoundException("El user no tiene la figurita " + card.getId()));
         item.commit(1);
         List<AuctionCondition> conditions = CreateAuctionDtoMapper.toDomainConditions(dto.getConditions());
         Auction auction = new Auction(user, card, dto.getAuctionDurationHours(), conditions);
@@ -117,7 +117,7 @@ public class AuctionService {
      */
     @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
     @Transactional
-    public AuctionOffer createAuctionOffer(String userId, String auctionId, CreationAuctionOfferDto dto) throws InsufficientCardException, MissingCardException, NotFoundException, NotFoundException {
+    public AuctionOffer createAuctionOffer(String userId, String auctionId, CreationAuctionOfferDto dto) throws ConflictException, NotFoundException, NotFoundException, NotFoundException {
         User proposer = this.userService.getById(userId);
         Auction auction = this.getAuctionById(auctionId);
 
@@ -140,7 +140,7 @@ public class AuctionService {
         for (CreationAuctionOfferDto.Item it : dto.items()) {
             Card card = this.cardService.getById(it.cardId());
             CollectionCard item = proposer.findCollectionItem(card.getId())
-                .orElseThrow(() -> new MissingCardException("El user no tiene la figurita " + card.getId()));
+                .orElseThrow(() -> new NotFoundException("El user no tiene la figurita " + card.getId()));
             item.commit(it.amount());
             offerItems.add(new AuctionItem(card, it.amount()));
         }
@@ -165,7 +165,7 @@ public class AuctionService {
      */
     @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
     @Transactional
-    public void cancelAuction(String userId, CancelAuctionDto dto) throws AuctionClosedException, NotFoundException, NotFoundException, ForbiddenException {
+    public void cancelAuction(String userId, CancelAuctionDto dto) throws ConflictException, NotFoundException, NotFoundException, ForbiddenException {
       Auction auction = this.getAuctionById(dto.getAuctionId());
 
       if (!Objects.equals(auction.getPublisherUser().getId(), userId)) {
@@ -349,7 +349,7 @@ public class AuctionService {
      */
     @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
     @Transactional
-    public void closeExpiredAuction(String auctionId) throws NotFoundException, AuctionClosedException, OfferAlreadyProcessedException, OfferNotFoundException {
+    public void closeExpiredAuction(String auctionId) throws NotFoundException, ConflictException, ConflictException, NotFoundException {
         Auction auction = getAuctionById(auctionId);
         if (auction.getStatus() != AuctionStatus.ACTIVE) {
             throw new ConflictException("La subasta ya está cerrada");
@@ -373,7 +373,7 @@ public class AuctionService {
      */
     @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
     @Transactional
-    public void acceptAuctionOffer(String auctionId, String offerId, String userId) throws NotFoundException, NotFoundException, AuctionClosedException, OfferAlreadyProcessedException, OfferNotFoundException, ForbiddenException {
+    public void acceptAuctionOffer(String auctionId, String offerId, String userId) throws NotFoundException, NotFoundException, ConflictException, ConflictException, NotFoundException, ForbiddenException {
         User reviewer = userService.getById(userId);
         Auction auction = getAuctionById(auctionId);
         auction.validateOwner(reviewer);
@@ -385,7 +385,7 @@ public class AuctionService {
         auctionRepository.save(auction);
     }
 
-    private void awardAuctionTo(Auction auction, AuctionOffer winningOffer) throws AuctionClosedException, OfferAlreadyProcessedException, OfferNotFoundException {
+    private void awardAuctionTo(Auction auction, AuctionOffer winningOffer) throws ConflictException, ConflictException, NotFoundException {
         // @DocumentReference does not hydrate correctly inside embedded subdocuments in arrays
         // (case of AuctionOffer.bidder within Auction.offers). Re-fetch by id to
         // ensure the user's collection is complete before modifying it.

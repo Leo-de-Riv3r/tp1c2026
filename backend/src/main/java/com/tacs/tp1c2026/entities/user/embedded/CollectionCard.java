@@ -1,7 +1,7 @@
 package com.tacs.tp1c2026.entities.user.embedded;
 
 import com.tacs.tp1c2026.entities.card.Card;
-import com.tacs.tp1c2026.exceptions.InsufficientCardException;
+import com.tacs.tp1c2026.exceptions.ConflictException;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -54,11 +54,11 @@ public class CollectionCard {
         this.quantity += amount;
     }
 
-    public void decrement(int amount) throws InsufficientCardException {
+    public void decrement(int amount) throws ConflictException {
         if (amount <= 0) throw new IllegalArgumentException("amount must be positive");
         int available = this.quantity - this.compromisedCount;
         if (available < amount) {
-            throw new InsufficientCardException("Insufficient cards: requested " + amount + ", available " + available);
+            throw new ConflictException("Insufficient cards: requested " + amount + ", available " + available);
         }
         this.quantity -= amount;
     }
@@ -73,11 +73,11 @@ public class CollectionCard {
      * incrementa {@code compromisedCount}, dejando indisponibles esas unidades
      * hasta que la operación se acepte o se cancele.
      */
-    public void commit(int amount) throws InsufficientCardException {
+    public void commit(int amount) throws ConflictException {
         if (amount <= 0) throw new IllegalArgumentException("amount must be positive");
         int available = this.quantity - this.compromisedCount;
         if (available < amount) {
-            throw new InsufficientCardException("Insufficient cards: requested " + amount + ", available " + available);
+            throw new ConflictException("Insufficient cards: requested " + amount + ", available " + available);
         }
         this.compromisedCount += amount;
     }

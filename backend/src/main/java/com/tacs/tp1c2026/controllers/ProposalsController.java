@@ -35,7 +35,7 @@ public class ProposalsController {
   public ResponseEntity<ApiResponse<TradeProposalDto>> createProposal(
       @RequestAttribute("userId") String userId,
       @Valid @RequestBody CreateTradeProposalDto body
-  ) throws NotFoundException, NotFoundException, InsufficientCardException, MissingCardException {
+  ) throws NotFoundException, NotFoundException, ConflictException, NotFoundException {
     TradeProposal proposal = proposalService.createProposal(userId, body);
     TradeProposalDto dto = tradeMapper.mapProposal(proposal);
     return ResponseEntity
@@ -91,7 +91,7 @@ public class ProposalsController {
   public ResponseEntity<ApiResponse<String>> acceptProposal(
       @PathVariable String proposalId,
       @RequestAttribute("userId") String userId
-  ) throws NotFoundException, NotFoundException, ProposalNotInPublicationException, OfferAlreadyProcessedException, ForbiddenException, MissingCardException, InsufficientCardException {
+  ) throws NotFoundException, NotFoundException, BadInputException, ConflictException, ForbiddenException, NotFoundException, ConflictException {
     String exchangeId = proposalService.acceptProposal(userId, proposalId);
     return ResponseEntity.ok(ApiResponse.of("Propuesta aceptada correctamente", exchangeId));
   }
@@ -103,7 +103,7 @@ public class ProposalsController {
   public ResponseEntity<ApiResponse<Void>> rejectProposal(
       @PathVariable String proposalId,
       @RequestAttribute("userId") String userId
-  ) throws NotFoundException, NotFoundException, ProposalNotInPublicationException, OfferAlreadyProcessedException, ForbiddenException {
+  ) throws NotFoundException, NotFoundException, BadInputException, ConflictException, ForbiddenException {
     proposalService.rejectProposal(userId, proposalId);
     return ResponseEntity.ok(ApiResponse.of("Propuesta rechazada"));
   }
@@ -115,7 +115,7 @@ public class ProposalsController {
   public ResponseEntity<ApiResponse<Void>> cancelProposal(
       @PathVariable String proposalId,
       @RequestAttribute("userId") String userId
-  ) throws NotFoundException, NotFoundException, OfferAlreadyProcessedException, ForbiddenException {
+  ) throws NotFoundException, NotFoundException, ConflictException, ForbiddenException {
     proposalService.cancelProposal(userId, proposalId);
     return ResponseEntity.ok(ApiResponse.of("Propuesta cancelada"));
   }

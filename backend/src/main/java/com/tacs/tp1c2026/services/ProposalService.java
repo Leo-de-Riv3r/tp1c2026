@@ -61,7 +61,7 @@ public class ProposalService {
     @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
     @Transactional
     public TradeProposal createProposal(String userId, CreateTradeProposalDto dto)
-            throws NotFoundException, NotFoundException, InsufficientCardException, MissingCardException {
+            throws NotFoundException, NotFoundException, ConflictException, NotFoundException {
         TradePublication publication = publicationService.findPublication(dto.publicationId());
         if (!publication.isActive()) {
             throw new ConflictException("La publicación no está activa");
@@ -113,7 +113,7 @@ public class ProposalService {
         // al compromisedCount de ese CollectionCard. La validación del invariante vive en commit().
         for (Card c : cards) {
             CollectionCard item = proposer.findCollectionItem(c.getId())
-                .orElseThrow(() -> new MissingCardException("El user no tiene la figurita " + c.getId()));
+                .orElseThrow(() -> new NotFoundException("El user no tiene la figurita " + c.getId()));
             item.commit(1);
         }
 
@@ -187,7 +187,7 @@ public class ProposalService {
     @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
     @Transactional
     public String acceptProposal(String userId, String proposalId)
-            throws NotFoundException, NotFoundException, ProposalNotInPublicationException, OfferAlreadyProcessedException, ForbiddenException, MissingCardException, InsufficientCardException {
+            throws NotFoundException, NotFoundException, BadInputException, ConflictException, ForbiddenException, NotFoundException, ConflictException {
         User reviewer = userService.getById(userId);
         TradeProposal proposal = findProposal(proposalId);
         TradePublication publication = publicationService.findPublication(proposal.getPublication().getId());
@@ -262,7 +262,7 @@ public class ProposalService {
     @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
     @Transactional
     public void rejectProposal(String userId, String proposalId)
-            throws NotFoundException, NotFoundException, ProposalNotInPublicationException, OfferAlreadyProcessedException, ForbiddenException {
+            throws NotFoundException, NotFoundException, BadInputException, ConflictException, ForbiddenException {
         User reviewer = userService.getById(userId);
         TradeProposal proposal = findProposal(proposalId);
         TradePublication publication = publicationService.findPublication(proposal.getPublication().getId());
@@ -290,7 +290,7 @@ public class ProposalService {
     @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
     @Transactional
     public void cancelProposal(String userId, String proposalId)
-            throws NotFoundException, NotFoundException, OfferAlreadyProcessedException, ForbiddenException {
+            throws NotFoundException, NotFoundException, ConflictException, ForbiddenException {
         TradeProposal proposal = findProposal(proposalId);
         if (!Objects.equals(proposal.getProposerUser().getId(), userId)) {
             throw new ForbiddenException("Sólo el proponente puede cancelar su propia propuesta");

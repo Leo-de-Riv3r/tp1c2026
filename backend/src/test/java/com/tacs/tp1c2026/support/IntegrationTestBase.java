@@ -68,6 +68,8 @@ public abstract class IntegrationTestBase {
     scheduledUserNotificationsRepository.deleteAll();
     mongoTemplate.dropCollection("proposals");
     mongoTemplate.dropCollection("exchanges");
+    mongoTemplate.dropCollection("sessions");
+    mongoTemplate.dropCollection("settings");
 
     if (!seeded) {
       try (InputStream stream = getClass().getResourceAsStream("/catalog.json")) {

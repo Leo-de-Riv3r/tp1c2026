@@ -12,8 +12,8 @@ import com.tacs.tp1c2026.config.RequiresOwnerOrAdmin;
 import com.tacs.tp1c2026.config.RequiresRole;
 import com.tacs.tp1c2026.config.ValidatesPathUser;
 import com.tacs.tp1c2026.entities.enums.NotificationStatus;
-import com.tacs.tp1c2026.exceptions.InsufficientCardException;
-import com.tacs.tp1c2026.exceptions.MissingCardException;
+import com.tacs.tp1c2026.exceptions.ConflictException;
+import com.tacs.tp1c2026.exceptions.NotFoundException;
 import com.tacs.tp1c2026.exceptions.NotFoundException;
 import com.tacs.tp1c2026.services.NotificationService;
 import com.tacs.tp1c2026.services.UserService;
@@ -86,7 +86,7 @@ public class UsersController {
     @ValidatesPathUser
     public ResponseEntity<CollectionCard> addToCollection(
             @PathVariable String id,
-            @Valid @RequestBody AddToCollectionRequest request) throws MissingCardException, NotFoundException, NotFoundException {
+            @Valid @RequestBody AddToCollectionRequest request) throws NotFoundException, NotFoundException, NotFoundException {
         CollectionCardResult result = userService.addCardToUserCollection(id, request.cardId());
         return ResponseEntity
             .status(result.created() ? HttpStatus.CREATED : HttpStatus.OK)
@@ -104,7 +104,7 @@ public class UsersController {
     @ValidatesPathUser
     public ResponseEntity<Void> decrementFromCollection(
             @PathVariable String id,
-            @PathVariable String cardId) throws InsufficientCardException, MissingCardException, NotFoundException, NotFoundException {
+            @PathVariable String cardId) throws ConflictException, NotFoundException, NotFoundException, NotFoundException {
         userService.decrementFromCollection(id, cardId);
         return ResponseEntity.noContent().build();
     }

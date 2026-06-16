@@ -7,8 +7,8 @@ import com.tacs.tp1c2026.entities.user.embedded.CollectionCard;
 import com.tacs.tp1c2026.entities.user.embedded.MissingCard;
 import com.tacs.tp1c2026.entities.user.embedded.Suggestion;
 import com.tacs.tp1c2026.exceptions.ConflictException;
-import com.tacs.tp1c2026.exceptions.InsufficientCardException;
-import com.tacs.tp1c2026.exceptions.MissingCardException;
+import com.tacs.tp1c2026.exceptions.ConflictException;
+import com.tacs.tp1c2026.exceptions.NotFoundException;
 import com.tacs.tp1c2026.exceptions.NotFoundException;
 import com.tacs.tp1c2026.entities.dto.user.output.CollectionCardResult;
 import com.tacs.tp1c2026.repositories.UserRepository;
@@ -86,7 +86,7 @@ public class UserService {
      * @param userId ID del user
      * @param cardId ID de la figurita en el catálogo
      */
-    public void decrementFromCollection(String userId, String cardId) throws InsufficientCardException, MissingCardException, NotFoundException, NotFoundException {
+    public void decrementFromCollection(String userId, String cardId) throws ConflictException, NotFoundException, NotFoundException, NotFoundException {
         // Valida que la figurita exista en el catálogo
         cardService.getById(cardId);
         User user = getById(userId);

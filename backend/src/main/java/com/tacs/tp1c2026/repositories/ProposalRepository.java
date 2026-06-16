@@ -5,6 +5,7 @@ import com.tacs.tp1c2026.entities.exchange.TradeProposal;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.repository.Query;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -42,4 +43,8 @@ public interface ProposalRepository extends Repository<TradeProposal, String> {
   default List<TradeProposal> findByReceiverId(String userId) {
     return findByReceiverIdAny(userId, new ObjectId(userId));
   }
+
+  /** Proposals creadas en el rango {@code [startInclusive, endExclusive)}. Usado por el snapshot diario y el delta del día en curso. */
+  @Query(value = "{ 'creationDate': { $gte: ?0, $lt: ?1 } }", count = true)
+  long countCreatedBetween(LocalDateTime startInclusive, LocalDateTime endExclusive);
 }
