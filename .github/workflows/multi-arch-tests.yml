@@ -36,6 +36,13 @@ jobs:
 
       # Paso 3: Validar e iniciar el entorno usando la arquitectura de la matriz actual
       - name: Lift Environment and Verify Health (${{ matrix.platform }})
+        env:
+          # Smoke test: valores dummy para CI. NO son secrets — el Mongo del compose es local
+          # al runner. JWT_SECRET necesita >=32 chars (AuthService valida al startup).
+          SPRING_MONGODB_URI: 'mongodb://mongo:27017/tacs_db?directConnection=true&replicaSet=rs0'
+          JWT_SECRET: 'ci-test-jwt-secret-at-least-32-chars-long-aaaa'
+          JWT_EXPIRATION: '3600000'
+          FRONTEND_URI: 'http://localhost'
         run: |
           echo "🚀 Configurando entorno para la plataforma: ${{ matrix.platform }}..."
           # 🌟 Inyectamos la variable dinámica de la matriz
