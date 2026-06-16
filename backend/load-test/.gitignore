@@ -1,3 +1,7 @@
 # Output local del load test — no commitear los CSV / HTML generados
 results*.csv
 results*.html
+
+# Cache de bytecode de Python — generado por py_compile y por correr locust
+__pycache__/
+*.pyc
