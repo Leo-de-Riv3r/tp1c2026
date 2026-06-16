@@ -24,4 +24,11 @@ public interface ExchangeRepository extends Repository<Exchange, String> {
    * Usado para recalcular el rating del usuario reviewado.
    */
   java.util.List<Exchange> findByUserBUserIdAndFeedbackFromANotNull(String userId);
+
+  /** Exchanges creados en el rango {@code [startInclusive, endExclusive)}. Usado por el snapshot diario y el delta del día en curso. */
+  @Query(value = "{ 'createdAt': { $gte: ?0, $lt: ?1 } }", count = true)
+  long countCreatedBetween(java.time.LocalDateTime startInclusive, java.time.LocalDateTime endExclusive);
+
+  /** Exchanges creados después de {@code cutoff}, sin paginar. Usado para top-N agregados in-memory en Capa 3. */
+  java.util.List<Exchange> findByCreatedAtAfter(java.time.LocalDateTime cutoff);
 }

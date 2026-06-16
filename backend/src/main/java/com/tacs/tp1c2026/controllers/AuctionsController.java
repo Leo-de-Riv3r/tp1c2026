@@ -15,13 +15,13 @@ import com.tacs.tp1c2026.entities.dto.common.output.PaginationDtoOutput;
 import com.tacs.tp1c2026.entities.dto.mappers.AuctionMapper;
 import com.tacs.tp1c2026.entities.enums.CardType;
 import com.tacs.tp1c2026.entities.enums.Category;
-import com.tacs.tp1c2026.exceptions.AuctionClosedException;
+import com.tacs.tp1c2026.exceptions.ConflictException;
 import com.tacs.tp1c2026.exceptions.ForbiddenException;
-import com.tacs.tp1c2026.exceptions.InsufficientCardException;
-import com.tacs.tp1c2026.exceptions.MissingCardException;
+import com.tacs.tp1c2026.exceptions.ConflictException;
 import com.tacs.tp1c2026.exceptions.NotFoundException;
-import com.tacs.tp1c2026.exceptions.OfferAlreadyProcessedException;
-import com.tacs.tp1c2026.exceptions.OfferNotFoundException;
+import com.tacs.tp1c2026.exceptions.NotFoundException;
+import com.tacs.tp1c2026.exceptions.ConflictException;
+import com.tacs.tp1c2026.exceptions.NotFoundException;
 import com.tacs.tp1c2026.services.AuctionService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -49,7 +49,7 @@ public class AuctionsController {
   public ResponseEntity<ApiResponse<AuctionDto>> createAuction(
       @RequestAttribute("userId") String userId,
       @Valid @RequestBody CreateAuctionDto dto
-  ) throws InsufficientCardException, MissingCardException, NotFoundException, NotFoundException {
+  ) throws ConflictException, NotFoundException, NotFoundException, NotFoundException {
     Auction auction = auctionService.createAuction(userId, dto);
     AuctionDto body = auctionMapper.mapAuction(auction);
     return ResponseEntity
@@ -122,7 +122,7 @@ public class AuctionsController {
       @PathVariable String auctionId,
       @RequestAttribute("userId") String userId,
       @Valid @RequestBody CreationAuctionOfferDto body
-  ) throws InsufficientCardException, MissingCardException, NotFoundException, NotFoundException {
+  ) throws ConflictException, NotFoundException, NotFoundException, NotFoundException {
     AuctionOffer offer = auctionService.createAuctionOffer(userId, auctionId, body);
     AuctionOfferDto offerDto = auctionMapper.mapOffer(auctionId, offer);
     return ResponseEntity
@@ -149,7 +149,7 @@ public class AuctionsController {
   public ResponseEntity<ApiResponse<Void>> cancelAuction(
       @PathVariable String auctionId,
       @RequestAttribute("userId") String userId
-  ) throws AuctionClosedException, NotFoundException, NotFoundException, ForbiddenException {
+  ) throws ConflictException, NotFoundException, NotFoundException, ForbiddenException {
     CancelAuctionDto dto = new CancelAuctionDto();
     dto.setAuctionId(auctionId);
     auctionService.cancelAuction(userId, dto);
@@ -203,7 +203,7 @@ public class AuctionsController {
       @PathVariable String auctionId,
       @PathVariable String offerId,
       @RequestAttribute("userId") String userId
-  ) throws AuctionClosedException, NotFoundException, NotFoundException, ForbiddenException, OfferAlreadyProcessedException, OfferNotFoundException {
+  ) throws ConflictException, NotFoundException, NotFoundException, ForbiddenException, ConflictException, NotFoundException {
     auctionService.acceptAuctionOffer(auctionId, offerId, userId);
     return ResponseEntity.ok(ApiResponse.of("Oferta aceptada"));
   }

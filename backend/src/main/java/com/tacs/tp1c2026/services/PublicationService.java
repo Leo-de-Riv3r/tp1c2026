@@ -59,11 +59,11 @@ public class PublicationService {
     @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
     @Transactional
     public TradePublication createPublication(String userId, CreateTradePublicationDto dto)
-            throws NotFoundException, NotFoundException, InsufficientCardException, MissingCardException {
+            throws NotFoundException, NotFoundException, ConflictException, NotFoundException {
         User user = this.userService.getById(userId);
         Card card = this.cardService.getById(dto.cardId());
         CollectionCard item = user.findCollectionItem(card.getId())
-            .orElseThrow(() -> new MissingCardException("El user no tiene la figurita " + card.getId()));
+            .orElseThrow(() -> new NotFoundException("El user no tiene la figurita " + card.getId()));
         item.commit(dto.quantity());
         TradePublication publication = new TradePublication(user, card, dto.quantity());
         TradePublication saved = this.publicationRepository.save(publication);

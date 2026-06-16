@@ -6,8 +6,8 @@ import com.tacs.tp1c2026.entities.profiles.Profile;
 import com.tacs.tp1c2026.entities.user.embedded.CollectionCard;
 import com.tacs.tp1c2026.entities.user.embedded.MissingCard;
 import com.tacs.tp1c2026.entities.user.embedded.Suggestion;
-import com.tacs.tp1c2026.exceptions.InsufficientCardException;
-import com.tacs.tp1c2026.exceptions.MissingCardException;
+import com.tacs.tp1c2026.exceptions.ConflictException;
+import com.tacs.tp1c2026.exceptions.NotFoundException;
 import com.tacs.tp1c2026.exceptions.NotFoundException;
 import lombok.Getter;
 import lombok.Setter;
@@ -129,9 +129,9 @@ public class User {
         removeFromMissingCards(newCard.getCardId());
     }
 
-    public void removeFromCollection(String cardId, int amount) throws MissingCardException, InsufficientCardException {
+    public void removeFromCollection(String cardId, int amount) throws NotFoundException, ConflictException {
         CollectionCard item = findCollectionItem(cardId)
-            .orElseThrow(() -> new MissingCardException("User does not have card " + cardId));
+            .orElseThrow(() -> new NotFoundException("User does not have card " + cardId));
         item.decrement(amount);
         if (item.getQuantity() == 0) {
             this.collection.remove(item);
@@ -150,7 +150,7 @@ public class User {
             item.release(amount);
             try {
                 item.decrement(amount);
-            } catch (InsufficientCardException ignored) {
+            } catch (ConflictException ignored) {
                 // Should not happen — compromise guarantees availability
             }
             if (item.getQuantity() == 0) {

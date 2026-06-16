@@ -4,7 +4,7 @@ import com.tacs.tp1c2026.entities.card.Card;
 import com.tacs.tp1c2026.entities.enums.TradeProposalStatus;
 import com.tacs.tp1c2026.entities.user.User;
 import com.tacs.tp1c2026.exceptions.ForbiddenException;
-import com.tacs.tp1c2026.exceptions.OfferAlreadyProcessedException;
+import com.tacs.tp1c2026.exceptions.ConflictException;
 import lombok.Getter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.TypeAlias;
@@ -76,9 +76,9 @@ public class TradeProposal {
     return TradeProposalStatus.PENDING.equals(this.status);
   }
 
-  public void validatePending() throws OfferAlreadyProcessedException {
+  public void validatePending() throws ConflictException {
     if (!isPending()) {
-      throw new OfferAlreadyProcessedException("The proposal has already been accepted or rejected");
+      throw new ConflictException("The proposal has already been accepted or rejected");
     }
   }
 

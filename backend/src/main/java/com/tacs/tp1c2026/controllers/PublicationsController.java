@@ -37,7 +37,7 @@ public class PublicationsController {
   public ResponseEntity<ApiResponse<TradePublicationDto>> createPublication(
       @RequestAttribute("userId") String userId,
       @Valid @RequestBody CreateTradePublicationDto dto
-  ) throws NotFoundException, NotFoundException, InsufficientCardException, MissingCardException {
+  ) throws NotFoundException, NotFoundException, ConflictException, NotFoundException {
     TradePublication publication = publicationService.createPublication(userId, dto);
     TradePublicationDto body = tradeMapper.mapPublication(publication);
     return ResponseEntity

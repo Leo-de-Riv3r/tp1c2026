@@ -26,16 +26,28 @@ public class AuthController {
     this.sessionService = sessionService;
   }
 
+  /**
+   * Login único (user y admin comparten flujo). Valida email + password contra Mongo y
+   * devuelve el token de sesión + el {@link LoginResponseDto} con el UserDto.
+   */
   @PostMapping("/login")
   public ResponseEntity<LoginResponseDto> login(@Valid @RequestBody LoginDTO dto) {
     return ResponseEntity.ok(authService.login(dto));
   }
 
+  /**
+   * Registra un user nuevo y lo deja logueado (token + UserDto), para que el FE no necesite
+   * un segundo round-trip al login.
+   */
   @PostMapping("/register")
   public ResponseEntity<LoginResponseDto> register(@Valid @RequestBody RegisterDTO dto) {
     return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(dto));
   }
 
+  /**
+   * Cierra la sesión: revoca la sesión server-side (borra el doc) si viene el token en el
+   * header {@code Authorization}. Idempotente: 204 aunque el token no exista.
+   */
   @PostMapping("/logout")
   public ResponseEntity<Void> logout(@RequestHeader(value = "Authorization", required = false) String authHeader) {
     if (authHeader != null && authHeader.startsWith("Bearer ")) {

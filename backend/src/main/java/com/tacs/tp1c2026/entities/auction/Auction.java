@@ -7,11 +7,11 @@ import com.tacs.tp1c2026.entities.enums.AuctionStatus;
 import com.tacs.tp1c2026.entities.enums.CardType;
 import com.tacs.tp1c2026.entities.enums.Category;
 import com.tacs.tp1c2026.entities.user.User;
-import com.tacs.tp1c2026.exceptions.AuctionClosedException;
+import com.tacs.tp1c2026.exceptions.ConflictException;
 import com.tacs.tp1c2026.exceptions.ForbiddenException;
-import com.tacs.tp1c2026.exceptions.OfferAlreadyProcessedException;
-import com.tacs.tp1c2026.exceptions.OfferAlreadyRejectedException;
-import com.tacs.tp1c2026.exceptions.OfferNotFoundException;
+import com.tacs.tp1c2026.exceptions.ConflictException;
+import com.tacs.tp1c2026.exceptions.ConflictException;
+import com.tacs.tp1c2026.exceptions.NotFoundException;
 import com.tacs.tp1c2026.exceptions.UnprocessableException;
 import lombok.Getter;
 import lombok.Setter;
@@ -105,12 +105,12 @@ public class Auction {
     return true;
   }
 
-  public void rejectOffer(AuctionOffer offer) throws OfferNotFoundException, OfferAlreadyRejectedException {
+  public void rejectOffer(AuctionOffer offer) throws NotFoundException, ConflictException {
     if (!offers.contains(offer)) {
-      throw new OfferNotFoundException("Offer does not correspond to auction");
+      throw new NotFoundException("Offer does not correspond to auction");
     }
     if (!offer.isPending()) {
-      throw new OfferAlreadyRejectedException("Offer was already rejected");
+      throw new ConflictException("Offer was already rejected");
     }
     offer.reject();
   }
@@ -119,12 +119,12 @@ public class Auction {
     return this.status == AuctionStatus.ACTIVE;
   }
 
-  public void acceptOffer(AuctionOffer offer) throws AuctionClosedException, OfferAlreadyProcessedException, OfferNotFoundException {
+  public void acceptOffer(AuctionOffer offer) throws ConflictException, ConflictException, NotFoundException {
     if (!allowsOfferAcceptance()) {
-      throw new AuctionClosedException("The auction does not allow accepting offers");
+      throw new ConflictException("The auction does not allow accepting offers");
     }
     if (!offer.isPending()) {
-      throw new OfferAlreadyProcessedException("The offer has already been accepted or rejected");
+      throw new ConflictException("The offer has already been accepted or rejected");
     }
     findOfferById(offer.getId());
     offer.accept();
@@ -160,10 +160,10 @@ public class Auction {
    */
   public CancelResult cancel() {
     if (this.status != AuctionStatus.ACTIVE) {
-      throw new AuctionClosedException("Sólo se puede cancelar una subasta activa");
+      throw new ConflictException("Sólo se puede cancelar una subasta activa");
     }
     if (isExpired()) {
-      throw new AuctionClosedException("La subasta ya expiró");
+      throw new ConflictException("La subasta ya expiró");
     }
     this.status = AuctionStatus.CANCELLED;
 

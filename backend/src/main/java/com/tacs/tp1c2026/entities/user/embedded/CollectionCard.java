@@ -1,7 +1,7 @@
 package com.tacs.tp1c2026.entities.user.embedded;
 
 import com.tacs.tp1c2026.entities.card.Card;
-import com.tacs.tp1c2026.exceptions.InsufficientCardException;
+import com.tacs.tp1c2026.exceptions.ConflictException;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -31,6 +31,10 @@ public class CollectionCard {
     private String acquisitionOrigin;
 
     public static CollectionCard fromCatalog(Card card) {
+        return fromCatalog(card, 1);
+    }
+
+    public static CollectionCard fromCatalog(Card card, int quantity) {
         return CollectionCard.builder()
             .cardId(card.getId())
             .number(card.getNumber())
@@ -38,7 +42,7 @@ public class CollectionCard {
             .country(card.getCountry())
             .team(card.getTeam())
             .category(card.getCategory() == null ? null : card.getCategory().getValue())
-            .quantity(1)
+            .quantity(quantity)
             .compromisedCount(0)
             .acquisitionDate(LocalDate.now())
             .acquisitionOrigin("MANUAL")
@@ -54,11 +58,11 @@ public class CollectionCard {
         this.quantity += amount;
     }
 
-    public void decrement(int amount) throws InsufficientCardException {
+    public void decrement(int amount) throws ConflictException {
         if (amount <= 0) throw new IllegalArgumentException("amount must be positive");
         int available = this.quantity - this.compromisedCount;
         if (available < amount) {
-            throw new InsufficientCardException("Insufficient cards: requested " + amount + ", available " + available);
+            throw new ConflictException("Insufficient cards: requested " + amount + ", available " + available);
         }
         this.quantity -= amount;
     }
@@ -73,11 +77,11 @@ public class CollectionCard {
      * incrementa {@code compromisedCount}, dejando indisponibles esas unidades
      * hasta que la operación se acepte o se cancele.
      */
-    public void commit(int amount) throws InsufficientCardException {
+    public void commit(int amount) throws ConflictException {
         if (amount <= 0) throw new IllegalArgumentException("amount must be positive");
         int available = this.quantity - this.compromisedCount;
         if (available < amount) {
-            throw new InsufficientCardException("Insufficient cards: requested " + amount + ", available " + available);
+            throw new ConflictException("Insufficient cards: requested " + amount + ", available " + available);
         }
         this.compromisedCount += amount;
     }

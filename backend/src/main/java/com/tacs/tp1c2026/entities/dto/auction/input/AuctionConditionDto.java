@@ -14,6 +14,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AuctionConditionDto {
+
+  /** El rating va de 0 a 5 estrellas; un MIN_REPUTATION fuera de ese rango deja la subasta inalcanzable. */
+  public static final int MAX_REPUTATION = 5;
+
   @NotBlank(message = "El tipo de condición es obligatorio")
   private String filterName;
 
@@ -33,6 +37,15 @@ public class AuctionConditionDto {
     } else {
       return this.quantity != null && this.quantity > 0;
     }
+  }
+
+  @JsonIgnore
+  @AssertTrue(message = "MIN_REPUTATION debe estar entre 0 y 5 (escala de estrellas)")
+  public boolean isReputationWithinRange() {
+    if (!"MIN_REPUTATION".equals(this.filterName) || this.quantity == null) {
+      return true; // no aplica
+    }
+    return this.quantity >= 0 && this.quantity <= MAX_REPUTATION;
   }
 
 }

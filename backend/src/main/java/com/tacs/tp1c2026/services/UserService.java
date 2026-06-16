@@ -7,8 +7,8 @@ import com.tacs.tp1c2026.entities.user.embedded.CollectionCard;
 import com.tacs.tp1c2026.entities.user.embedded.MissingCard;
 import com.tacs.tp1c2026.entities.user.embedded.Suggestion;
 import com.tacs.tp1c2026.exceptions.ConflictException;
-import com.tacs.tp1c2026.exceptions.InsufficientCardException;
-import com.tacs.tp1c2026.exceptions.MissingCardException;
+import com.tacs.tp1c2026.exceptions.ConflictException;
+import com.tacs.tp1c2026.exceptions.NotFoundException;
 import com.tacs.tp1c2026.exceptions.NotFoundException;
 import com.tacs.tp1c2026.entities.dto.user.output.CollectionCardResult;
 import com.tacs.tp1c2026.repositories.UserRepository;
@@ -63,17 +63,18 @@ public class UserService {
 
     /**
      * Agrega una figurita a la colección del user.
-     * Si la figurita ya está, incrementa su cantidad.
-     * Si no, crea una entrada nueva usando los datos del catálogo.
+     * Si la figurita ya está, incrementa su cantidad en {@code quantity}.
+     * Si no, crea una entrada nueva con esa cantidad usando los datos del catálogo.
      * @param userId ID del user
      * @param cardId ID de la figurita en el catálogo (ej. "FWC1")
+     * @param quantity cantidad de copias a agregar (≥ 1)
      * @return la entrada {@link CollectionCard} actualizada envuelta en {@link CollectionCardResult}
      */
-    public CollectionCardResult addCardToUserCollection(String userId, String cardId) throws NotFoundException, NotFoundException {
+    public CollectionCardResult addCardToUserCollection(String userId, String cardId, int quantity) throws NotFoundException {
         Card card = cardService.getById(cardId);
         User user = getById(userId);
         boolean created = !user.hasInCollection(cardId);
-        user.addToCollection(CollectionCard.fromCatalog(card));
+        user.addToCollection(CollectionCard.fromCatalog(card, quantity));
         userRepository.save(user);
         CollectionCard saved = user.findCollectionItem(cardId)
             .orElseThrow(() -> new NotFoundException("La figurita no quedó en la colección después del add"));
@@ -86,7 +87,7 @@ public class UserService {
      * @param userId ID del user
      * @param cardId ID de la figurita en el catálogo
      */
-    public void decrementFromCollection(String userId, String cardId) throws InsufficientCardException, MissingCardException, NotFoundException, NotFoundException {
+    public void decrementFromCollection(String userId, String cardId) throws ConflictException, NotFoundException, NotFoundException, NotFoundException {
         // Valida que la figurita exista en el catálogo
         cardService.getById(cardId);
         User user = getById(userId);

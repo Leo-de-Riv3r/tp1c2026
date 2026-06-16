@@ -14,4 +14,6 @@ import java.util.List;
 public interface PublicationRepository extends Repository<TradePublication, String>, PublicationRepositoryCustom {
 
   List<TradePublication> findByStatus(PublicationStatus status);
+
+  long countByStatus(PublicationStatus status);
 }

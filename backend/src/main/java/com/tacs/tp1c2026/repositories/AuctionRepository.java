@@ -2,6 +2,7 @@ package com.tacs.tp1c2026.repositories;
 
 import com.tacs.tp1c2026.entities.auction.Auction;
 import com.tacs.tp1c2026.entities.enums.AuctionStatus;
+import org.springframework.data.mongodb.repository.Query;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,4 +20,10 @@ public interface AuctionRepository extends Repository<Auction, String>, AuctionR
       LocalDateTime from,
       LocalDateTime to
   );
+
+  long countByStatus(AuctionStatus status);
+
+  /** Auctions creadas en el rango {@code [startInclusive, endExclusive)}. Usado por el snapshot diario y el delta del día en curso. */
+  @Query(value = "{ 'creationDate': { $gte: ?0, $lt: ?1 } }", count = true)
+  long countCreatedBetween(LocalDateTime startInclusive, LocalDateTime endExclusive);
 }
