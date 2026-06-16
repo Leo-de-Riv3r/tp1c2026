@@ -117,6 +117,72 @@ public class UsersTests extends IntegrationTestBase {
     assertEquals(2, (Integer) JsonPath.read(body, "$[0].quantity"));
   }
 
+  @Test
+  void addToCollectionWithQuantityCreatesEntryWithThatQuantity() throws Exception {
+    Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
+
+    String body = "{ \"cardId\": \"FWC1\", \"quantity\": 3 }";
+    mockMvc.perform(post("/api/users/" + pepe.userId() + "/collection")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Authorization", "Bearer " + pepe.token())
+            .content(body))
+        .andExpect(status().isCreated());
+
+    String collection = mockMvc.perform(get("/api/users/" + pepe.userId() + "/collection")
+            .header("Authorization", "Bearer " + pepe.token()))
+        .andReturn().getResponse().getContentAsString();
+    assertEquals(1, ((List<?>) JsonPath.read(collection, "$")).size(), "una sola entry");
+    assertEquals(3, (Integer) JsonPath.read(collection, "$[0].quantity"));
+  }
+
+  @Test
+  void addToCollectionWithQuantityIncrementsExistingByThatAmount() throws Exception {
+    Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
+    addToCollection(pepe.userId(), "FWC1", pepe.token()); // quantity=1
+
+    String body = "{ \"cardId\": \"FWC1\", \"quantity\": 4 }";
+    mockMvc.perform(post("/api/users/" + pepe.userId() + "/collection")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Authorization", "Bearer " + pepe.token())
+            .content(body))
+        .andExpect(status().isOk());
+
+    String collection = mockMvc.perform(get("/api/users/" + pepe.userId() + "/collection")
+            .header("Authorization", "Bearer " + pepe.token()))
+        .andReturn().getResponse().getContentAsString();
+    assertEquals(5, (Integer) JsonPath.read(collection, "$[0].quantity"), "1 + 4");
+  }
+
+  @Test
+  void addToCollectionWithoutQuantityDefaultsToOne() throws Exception {
+    // Compat: los otros flujos (intercambios, "ya la conseguí") no mandan quantity → suma 1.
+    Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
+
+    String body = "{ \"cardId\": \"FWC1\" }";
+    mockMvc.perform(post("/api/users/" + pepe.userId() + "/collection")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Authorization", "Bearer " + pepe.token())
+            .content(body))
+        .andExpect(status().isCreated());
+
+    String collection = mockMvc.perform(get("/api/users/" + pepe.userId() + "/collection")
+            .header("Authorization", "Bearer " + pepe.token()))
+        .andReturn().getResponse().getContentAsString();
+    assertEquals(1, (Integer) JsonPath.read(collection, "$[0].quantity"));
+  }
+
+  @Test
+  void addToCollectionWithZeroQuantityFails() throws Exception {
+    Session pepe = register("Pepe Argento", "peperacing@gmail.com", "password123");
+
+    String body = "{ \"cardId\": \"FWC1\", \"quantity\": 0 }";
+    mockMvc.perform(post("/api/users/" + pepe.userId() + "/collection")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Authorization", "Bearer " + pepe.token())
+            .content(body))
+        .andExpect(status().isBadRequest());
+  }
+
   // ──────────────────── OK: Collection PATCH (decrement) ────────────────────
 
   @Test

@@ -63,17 +63,18 @@ public class UserService {
 
     /**
      * Agrega una figurita a la colección del user.
-     * Si la figurita ya está, incrementa su cantidad.
-     * Si no, crea una entrada nueva usando los datos del catálogo.
+     * Si la figurita ya está, incrementa su cantidad en {@code quantity}.
+     * Si no, crea una entrada nueva con esa cantidad usando los datos del catálogo.
      * @param userId ID del user
      * @param cardId ID de la figurita en el catálogo (ej. "FWC1")
+     * @param quantity cantidad de copias a agregar (≥ 1)
      * @return la entrada {@link CollectionCard} actualizada envuelta en {@link CollectionCardResult}
      */
-    public CollectionCardResult addCardToUserCollection(String userId, String cardId) throws NotFoundException, NotFoundException {
+    public CollectionCardResult addCardToUserCollection(String userId, String cardId, int quantity) throws NotFoundException {
         Card card = cardService.getById(cardId);
         User user = getById(userId);
         boolean created = !user.hasInCollection(cardId);
-        user.addToCollection(CollectionCard.fromCatalog(card));
+        user.addToCollection(CollectionCard.fromCatalog(card, quantity));
         userRepository.save(user);
         CollectionCard saved = user.findCollectionItem(cardId)
             .orElseThrow(() -> new NotFoundException("La figurita no quedó en la colección después del add"));

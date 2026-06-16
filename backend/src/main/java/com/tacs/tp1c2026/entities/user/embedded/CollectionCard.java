@@ -31,6 +31,10 @@ public class CollectionCard {
     private String acquisitionOrigin;
 
     public static CollectionCard fromCatalog(Card card) {
+        return fromCatalog(card, 1);
+    }
+
+    public static CollectionCard fromCatalog(Card card, int quantity) {
         return CollectionCard.builder()
             .cardId(card.getId())
             .number(card.getNumber())
@@ -38,7 +42,7 @@ public class CollectionCard {
             .country(card.getCountry())
             .team(card.getTeam())
             .category(card.getCategory() == null ? null : card.getCategory().getValue())
-            .quantity(1)
+            .quantity(quantity)
             .compromisedCount(0)
             .acquisitionDate(LocalDate.now())
             .acquisitionOrigin("MANUAL")

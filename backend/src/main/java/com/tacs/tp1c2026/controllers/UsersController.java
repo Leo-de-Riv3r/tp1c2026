@@ -87,7 +87,7 @@ public class UsersController {
     public ResponseEntity<CollectionCard> addToCollection(
             @PathVariable String id,
             @Valid @RequestBody AddToCollectionRequest request) throws NotFoundException, NotFoundException, NotFoundException {
-        CollectionCardResult result = userService.addCardToUserCollection(id, request.cardId());
+        CollectionCardResult result = userService.addCardToUserCollection(id, request.cardId(), request.quantity());
         return ResponseEntity
             .status(result.created() ? HttpStatus.CREATED : HttpStatus.OK)
             .body(result.card());
