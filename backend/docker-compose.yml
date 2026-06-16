@@ -41,6 +41,23 @@ services:
       mongosh "mongodb://mongo:27017/tacs_db?directConnection=true" --file /seed/seed.js
     restart: "no"
 
+  # Seed con datos demo (publications, auctions, proposals, offers, exchanges, snapshots).
+  # Sólo se levanta con `docker compose --profile demo up`. Corre DESPUÉS de mongo-seed
+  # y agrega actividad encima del catálogo + 4 users base.
+  mongo-seed-full:
+    image: mongo:7.0
+    profiles: [demo]
+    depends_on:
+      mongo-seed:
+        condition: service_completed_successfully
+    volumes:
+      - ./seed:/seed:ro
+    networks:
+      - tacs-network
+    command: >
+      mongosh "mongodb://mongo:27017/tacs_db?directConnection=true" --file /seed/seed_full.js
+    restart: "no"
+
   backend:
     build:
       context: .
