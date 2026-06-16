@@ -33,7 +33,7 @@ No hay publicaciones, subastas, propuestas ni intercambios preseedeados — los 
 
 ## Levantar con Docker (stack completo, local)
 
-Útil para **load tests** y desarrollo. Apunta a una Mongo local (no Atlas), tiene seed propio y no comparte estado con el cloud.
+Útil para **load tests** (ver [`backend/load-test/`](backend/load-test/)) y desarrollo. Apunta a una Mongo local (no Atlas), tiene seed propio y no comparte estado con el cloud.
 
 **Requisitos:** [Docker Desktop](https://www.docker.com/products/docker-desktop/) corriendo
 
@@ -103,7 +103,11 @@ docker compose --profile demo up -d --build     # o sin --profile para modo base
 
 **Catálogo**: 991 figuritas estilo Panini en [`backend/seed/catalog.json`](backend/seed/catalog.json) que el contenedor `mongo-seed` inserta automáticamente en la colección `cards` al levantar el stack, junto con usuarios de prueba en la colección `users`
 
-**Autenticación**: integrada vía JWT. Único endpoint `POST /api/auth/login` que detecta admin vs user según el `role` del User en Mongo (no hay endpoint admin separado). Todas las respuestas del API están en **inglés**. El filtro JWT valida además que el usuario del token siga existiendo en la base (`JwtAuthenticationFilter.java:53`).
+**Autenticación**: **sesiones server-side en Mongo con índice TTL** (collection `sessions`). El token es un `sessionId` opaco (no JWT decodificable) — el FE lo guarda en `localStorage` y lo envía como `Authorization: Bearer <sessionId>`. Cada request vigente la **sliding**: extiende el `expiresAt` server-side (default 1h, configurable via `SESSION_TTL`). Logout revoca la sesión (borra el doc). Único endpoint `POST /api/auth/login` que detecta admin vs user según el `role` del User en Mongo (no hay endpoint admin separado).
+
+Mensajes de error de la API hacia el cliente están en **español**. Identificadores de código y paths REST quedan en inglés.
+
+El filtro de auth ([`JwtAuthenticationFilter.java`](backend/src/main/java/com/tacs/tp1c2026/config/JwtAuthenticationFilter.java)) valida el `sessionId`, hace el sliding, y además chequea que el `userId` de la sesión siga existiendo en la base (si el user se borró → revoca la sesión y devuelve 401).
 
 **Interceptor de usuario**: `@ValidatesPathUser` en endpoints que reciben un `userId` como path variable — valida que el usuario exista antes de llegar al handler.
 
@@ -173,7 +177,7 @@ Desde dentro de `backend/`:
 mongosh "mongodb+srv://<user>:<password>@<cluster-host>/tacs_db?appName=<app>" --file seed/seed.js
 ```
 
-El connection string completo (con password) queda solo en el password manager — nunca en el repo. El seed deja la base con 991 cards, 4 users de prueba, sin publications/auctions/proposals/exchanges (esos los crean los users desde el FE).
+El connection string completo (con password) queda solo en el password manager — nunca en el repo. El seed base deja la base con 991 cards + 4 users de prueba, sin actividad. Si querés popular Atlas también con datos demo (publications, auctions, proposals, exchanges, snapshots), corré después `seed/seed_full.js` con la misma URI.
 
 ## Deploy en Render (gotchas)
 
@@ -247,8 +251,11 @@ Y reemplazá el servicio `frontend` en `backend/docker-compose.yml` por:
 | Variable             | Por defecto                          | Requerida | Descripción                                           |
 |----------------------|--------------------------------------|-----------|-------------------------------------------------------|
 | SPRING_MONGODB_URI   | —                                     | ✅        | URI de conexión a Mongo (ej: `mongodb://mongo:27017/tacs_db`) |
-| JWT_SECRET           | —                                     | ✅        | Secreto para firmar JWTs (mínimo 32 caracteres)       |
-| JWT_EXPIRATION       | 31536000000 (1 año)                   | ❌        | Duración del token en ms                              |
+| JWT_SECRET           | —                                     | ✅        | Legacy: queda para los métodos de parse/validación que aún usan los tests. Mínimo 32 caracteres |
+| JWT_EXPIRATION       | 31536000000 (1 año)                   | ❌        | Legacy (ver `JWT_SECRET`)                             |
+| SESSION_TTL          | 3600000 (1 hora)                      | ❌        | Vida de la sesión en ms. Cada request la estira (sliding) |
 | FRONTEND_URI         | —                                     | ✅        | Origen(es) CORS permitidos (separados por coma)       |
 
-> **Importante:** `JWT_SECRET` ya no tiene un valor por defecto de desarrollo. El backend falla al iniciar si no se configura. Creá un archivo `.env` en `backend/` basado en [`backend/.env.example`](backend/.env.example) antes de levantar el stack.
+> **Sobre el "legacy" de `JWT_SECRET`**: el flujo de auth migró a sesiones server-side en Mongo (token = `sessionId` opaco con TTL). Las props `jwt.*` quedaron porque `AuthService` mantiene métodos de parse/validación de tokens que algunos tests siguen ejerciendo. Para el deploy real lo que manda es `SESSION_TTL`.
+
+> **Importante:** `JWT_SECRET` no tiene valor por defecto. El backend falla al iniciar si no se configura. Creá un archivo `.env` en `backend/` basado en [`backend/.env.example`](backend/.env.example) antes de levantar el stack.

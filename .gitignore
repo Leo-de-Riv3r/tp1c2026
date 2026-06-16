@@ -45,3 +45,7 @@ docker-compose.override.yaml
 
 # Notas WIP personales (no compartidas)
 notes/
+
+# Output local del load test (locust headless con --csv/--html deja archivos en backend/)
+backend/results*.csv
+backend/results*.html
