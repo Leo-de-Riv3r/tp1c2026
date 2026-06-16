@@ -123,6 +123,8 @@ El primer load test corrido con la config sugerida (20 users, 2/s spawn, 60s) **
 
 Los 0 fails confirman que el race era el único bug expuesto bajo carga. El p95 levemente mayor post-fix es ruido medible (la corrida es de 1 min, no estable estadísticamente para diferencias de 8ms).
 
+El reporte HTML de una corrida real está commiteado como evidencia en [`results-sample.html`](results-sample.html) (566 requests / 0 fails / p95 130ms). Abrir directo en el browser para ver gráficos, ratios y tabla completa.
+
 > **Tip**: para repetir esto, basta con `docker compose --profile demo up -d --build` y el comando headless de la sección de arriba. Los CSVs y `results.html` quedan en `backend/` con todos los detalles.
 
 ## Próximos pasos / mejoras posibles
