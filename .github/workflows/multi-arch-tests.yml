@@ -49,20 +49,14 @@ jobs:
           export DOCKER_DEFAULT_PLATFORM=${{ matrix.platform }}
           
           echo "🏗️ Compilando y levantando el ecosistema con Docker Compose..."
-          docker compose up -d --build
+          # `--wait` espera nativamente a que los healthchecks pasen y exitea con error si timeoutea
+          # (240s). Reemplaza el bucle manual con `docker compose ps --filter health=...` que en
+          # esta versión de docker compose no soporta el filter "health".
+          docker compose up -d --build --wait --wait-timeout 240
 
-          echo "⏳ Esperando a que los 3 servicios (Mongo, Backend, Frontend) pasen sus Healthchecks..."
-          # El bucle espera hasta que los 3 servicios principales queden en status "healthy"
-          timeout 240s bash -c '
-            while [ "$(docker compose ps --filter "status=running" --filter "health=healthy" -q | wc -l)" -lt 3 ]; do
-              echo "Aún levantando y verificando contenedores en ${{ matrix.platform }}..."
-              sleep 5
-            done
-          '
-          
           echo "📋 Estado final de los contenedores para ${{ matrix.platform }}:"
           docker compose ps
-          
+
           echo "✅ ¡Entorno verificado con éxito para la arquitectura ${{ matrix.platform }}!"
 
       # Paso 4: Limpieza absoluta al terminar cada variante
