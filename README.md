@@ -105,7 +105,7 @@ docker compose --profile demo up -d --build     # o sin --profile para modo base
 
 **Autenticación**: **sesiones server-side en Mongo con índice TTL** (collection `sessions`). El token es un `sessionId` opaco (no JWT decodificable) — el FE lo guarda en `localStorage` y lo envía como `Authorization: Bearer <sessionId>`. Cada request vigente la **sliding**: extiende el `expiresAt` server-side (default 1h, configurable via `SESSION_TTL`). Logout revoca la sesión (borra el doc). Único endpoint `POST /api/auth/login` que detecta admin vs user según el `role` del User en Mongo (no hay endpoint admin separado).
 
-Mensajes de error de la API hacia el cliente están en **español** (rioplatense — UI en es-AR). Identificadores de código y paths REST quedan en inglés.
+Mensajes de error de la API hacia el cliente están en **español**. Identificadores de código y paths REST quedan en inglés.
 
 El filtro de auth ([`JwtAuthenticationFilter.java`](backend/src/main/java/com/tacs/tp1c2026/config/JwtAuthenticationFilter.java)) valida el `sessionId`, hace el sliding, y además chequea que el `userId` de la sesión siga existiendo en la base (si el user se borró → revoca la sesión y devuelve 401).
 
