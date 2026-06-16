@@ -1,138 +1,82 @@
 # Load Test — primer approach con Locust
 
-> ⚠️ **Esto es un primer approach** para cumplir el RNF-7 del TP (*"La aplicación debe soportar un load test, se utilizará alguna tool como Vegeta, Wrk, etc."*). Sirve como base testable y como evidencia de que el RNF está cubierto. El compañero del equipo (Lautaro) puede preferir migrar a **JMeter** o agregar **OpenTelemetry** para observabilidad detallada — esta carpeta es punto de partida, no la versión final.
+> ⚠️ **Esto es un primer approach** para cumplir el RNF-7 del TP (*"La aplicación debe soportar un load test, se utilizará alguna tool como Vegeta, Wrk, etc."*). Para la próxima entrega planeamos: portar el escenario a **JMeter** (en paralelo, no reemplazo), instrumentar el BE con **OpenTelemetry** para ver qué método se vuelve lento bajo carga, y agregar más tasks de escritura (`POST /publications`, `POST /proposals`, bids de subasta). El análisis detallado de resultados y la motivación de la elección de tool están en la [Wiki](https://github.com/Leo-de-Riv3r/tp1c2026/wiki).
 
-## Por qué Locust
+## Tool elegida: Locust
 
-Los profes nombraron Locust como una de las tools válidas. Se eligió porque:
-
-- **UI web en vivo** (`http://localhost:8089`) que muestra curvas de RPS, percentiles de latencia y errores — útil para screenshots de defensa.
-- Scripts en **Python** (el código de cada task es legible sin learning curve adicional).
-- Setup mínimo: `pip install locust` y listo, no requiere Docker ni Java extra.
-- Soporte nativo para autenticación con headers persistentes por usuario virtual.
+- Los profes la nombraron como una de las válidas (junto a Vegeta, Wrk, JMeter, etc.).
+- Scripts en Python (los del equipo ya manejan el lenguaje).
+- UI web en vivo (`http://localhost:8089`) con gráficos de RPS, percentiles y errores.
+- Setup mínimo: `pip install locust`.
 
 ## Setup local
 
 ```bash
-# 1. Tener Python 3.10+ instalado
+# 1. Python 3.10+
 python --version
 
-# 2. Instalar Locust
+# 2. Locust
 pip install locust
-
-# 3. Verificar
-locust --version
 ```
 
 ## Cómo correr
 
-**Pre-requisito**: el stack del backend tiene que estar arriba en `localhost:8080`. La forma típica:
+**Pre-requisito**: el stack del BE arriba en `localhost:8080`:
 
 ```bash
 cd backend
 docker compose --profile demo up -d --build    # con datos demo (recomendado)
-# o sin --profile para arrancar con base limpia
 ```
 
-### Modo interactivo (con UI)
+### Modo interactivo (UI)
 
 ```bash
-# Desde la carpeta backend/
 locust -f load-test/locustfile.py --host http://localhost:8080
 ```
 
 Abrir [`http://localhost:8089`](http://localhost:8089) y configurar:
 
-| Parámetro          | Valor sugerido | Por qué                                                |
-|--------------------|----------------|--------------------------------------------------------|
-| Number of users    | `50`           | Carga concurrente realista para un free tier           |
-| Spawn rate         | `5`            | 5 users nuevos por segundo (ramp-up suave de 10s)      |
-| Host               | `http://localhost:8080` | Pre-cargado por el flag `--host`              |
-| Run time           | `1m`           | Suficiente para mostrar la curva estable                |
+| Parámetro       | Valor sugerido |
+|-----------------|----------------|
+| Number of users | `20`           |
+| Spawn rate      | `2`            |
+| Run time        | `1m`           |
 
-### Modo headless (sin UI, exporta resultados)
+### Modo headless (exporta CSV + HTML)
 
 ```bash
 locust -f load-test/locustfile.py --host http://localhost:8080 \
-       --users 50 --spawn-rate 5 --run-time 1m --headless \
+       --users 20 --spawn-rate 2 --run-time 1m --headless \
        --csv results --html results.html
 ```
 
-Genera:
-
-- `results_stats.csv` — un row por endpoint con count/avg/min/max/p50/p95.
-- `results_failures.csv` — detalle de cada fallo.
-- `results.html` — reporte HTML standalone (ideal para adjuntar a la entrega).
+Genera `results_stats.csv`, `results_failures.csv` y `results.html` en `backend/`.
 
 ## Qué simula el script
 
-Cada usuario virtual:
+Cada usuario virtual loguea con uno de los 3 users seedeados (Pepe / Moni / Dardo) y entra en un loop con pausa de 1-3 segundos entre acciones:
 
-1. **`on_start`**: loguea con uno de los 3 usuarios seedeados (`peperacing`, `moniargento`, `dfuseneco`) y guarda el `sessionId` en los headers.
-2. Loop con pausa **1-3 segundos** entre acciones (simula lectura humana). Mix de tasks pesado en GETs (≈90% del tráfico real):
+| Task                  | Peso | Endpoint                                |
+|-----------------------|------|-----------------------------------------|
+| Listar publicaciones  | 4    | `GET /api/publications?page=1`          |
+| Listar subastas       | 3    | `GET /api/auctions?page=1`              |
+| Buscar cartas         | 2    | `GET /api/cards/search?q=...`           |
+| GET user propio       | 1    | `GET /api/users/{id}`                   |
 
-| Task                      | Peso | Endpoint                                |
-|---------------------------|------|-----------------------------------------|
-| Listar publicaciones      | 4    | `GET /api/publications?page=1`          |
-| Listar subastas           | 3    | `GET /api/auctions?page=1`              |
-| Buscar cartas             | 2    | `GET /api/cards/search?q=...`           |
-| GET user propio           | 1    | `GET /api/users/{id}` — toca sliding TTL |
+Un listener interno (`@events.quitting`) hace exit con código != 0 si error rate > 1% o p95 > 3s — útil para integrar en CI.
 
-3. Cuando termina la corrida, un listener interno (`@events.quitting`) chequea:
-   - **Error rate** debe ser ≤ 1%.
-   - **Latencia p95** ≤ 3000ms.
+## Evidencia de corrida real
 
-   Si alguno falla, Locust exitea con código != 0 — útil para integrar en CI.
+[`results-sample.html`](results-sample.html) — corrida headless de 1 min, 566 requests, **0 failures**, p95 130ms. Abrir directo en el browser para ver gráficos y métricas por endpoint.
 
 ## Troubleshooting
 
-**Si ves muchos fallos en `/api/auth/login` con latencia alta (~1s)**:
-- Spring Security usa **BCrypt** para hashear passwords con cost factor 10 — eso es **CPU-bound y lento a propósito** (defensa contra fuerza bruta). Con 50 logins concurrentes, la JVM single-core que corre el BE en compose se satura.
-- **Fix**: bajar la concurrencia inicial. En el UI, configurar `Number of users = 20` y `Spawn rate = 2`. Eso ramp-uppea más suave y deja al BCrypt respirar.
+**Errores 401 en publications/auctions/search**: el login de ese user virtual falló → no tiene `Authorization` header. Mirar primero la fila de `/api/auth/login`.
 
-**Si ves errores 401 en otras tasks (publications/auctions/search)**:
-- Significa que el login del user virtual falló. El user queda sin `Authorization` header → 401 en todo lo demás. Mirar primero la fila de `/api/auth/login` para entender la raíz.
+**Logins lentos (~150ms)**: Spring Security usa BCrypt cost=10, que es CPU-bound a propósito (defensa contra fuerza bruta). Esperable.
 
-**Si la corrida termina muy rápido (5-10 requests totales)**:
-- El runner quedó sin VUs activos. Verificar que Docker no se haya parado a mitad de camino (`docker compose ps`).
+**Corrida termina sin requests**: el runner se quedó sin VUs activos. Verificar `docker compose ps` que todo esté `healthy`.
 
-## Cómo interpretar los resultados
+---
 
-| Métrica            | Verde      | Amarillo    | Rojo          |
-|--------------------|------------|-------------|---------------|
-| RPS                | > 30/s     | 10-30/s     | < 10/s        |
-| Latencia p95       | < 500ms    | 500ms-2s    | > 2s          |
-| Error rate         | < 0.1%     | 0.1-1%      | > 1%          |
-
-Sobre **free tier**: el BE corre en Render free → no esperes RPS de producción real. El objetivo del load test acá es **detectar regresiones** (si un cambio mete latencia 10x, lo vas a ver) y **demostrar que la app soporta concurrencia** (no se cae con 50 users en simultáneo).
-
-## Resultados de la primera corrida (evidencia)
-
-El primer load test corrido con la config sugerida (20 users, 2/s spawn, 60s) **detectó un race condition real** en `AuthService.login()`: el handler hacía `user.setLastLogin(now()); userRepository.save(user)`, lo cual bumpaba el `@Version` del `User`. Con varias VUs logueando como el mismo seed user simultáneamente, los 3 retries del `@Retryable` no alcanzaban y devolvía **409 Conflict** ("The resource was modified by another operation. Please retry."). Cascada: cada login fallido dejaba a su VU sin token → todos sus requests siguientes pegaban 401. Resultado pre-fix: **15.07% error rate**.
-
-**Fix aplicado**: removí el `setLastLogin` + el `save()` consecuente del login. El campo `lastLogin` no se leía en ningún endpoint (era write-only data), así que también borré el field del entity `User` y del seed. Post-fix:
-
-| Métrica            | Pre-fix    | Post-fix      |
-|--------------------|------------|---------------|
-| Requests           | 564        | 574           |
-| **Failures**       | **15.07%** | **0.00%**     |
-| RPS                | 9.64       | 9.84          |
-| p50 latencia       | 25ms       | 32ms          |
-| p95 latencia       | 67ms       | 75ms          |
-| Exit code          | 1          | 0             |
-
-Los 0 fails confirman que el race era el único bug expuesto bajo carga. El p95 levemente mayor post-fix es ruido medible (la corrida es de 1 min, no estable estadísticamente para diferencias de 8ms).
-
-El reporte HTML de una corrida real está commiteado como evidencia en [`results-sample.html`](results-sample.html) (566 requests / 0 fails / p95 130ms). Abrir directo en el browser para ver gráficos, ratios y tabla completa.
-
-> **Tip**: para repetir esto, basta con `docker compose --profile demo up -d --build` y el comando headless de la sección de arriba. Los CSVs y `results.html` quedan en `backend/` con todos los detalles.
-
-## Próximos pasos / mejoras posibles
-
-- **JMeter**: si Lautaro prefiere herramientas con tradición más industrial, se puede portar el escenario a JMeter (`.jmx`) y mantener ambos.
-- **OpenTelemetry**: instrumentar el BE con OTel para emitir traces durante la carga → permite ver qué query Mongo se vuelve lenta o qué método tiene contención. Setup ≈ 2-3h.
-- **Más tasks**: hoy el load test sólo modela usuarios "lectores". Se puede agregar:
-  - `POST /api/publications` (publicar una figurita) — escenario de escritura.
-  - `POST /api/proposals` (hacer propuesta) — más representativo del marketplace.
-  - `POST /api/auctions/{id}/bids` (ofertar en subasta) — concurrencia + optimistic locking real.
-- **Escenarios con thresholds más estrictos** para CI.
+Más detalle (motivación de Locust, análisis del finding del race condition, interpretación de métricas, comparativa con JMeter) en la [Wiki del repo](https://github.com/Leo-de-Riv3r/tp1c2026/wiki).
