@@ -33,7 +33,7 @@ No hay publicaciones, subastas, propuestas ni intercambios preseedeados — los 
 
 ## Levantar con Docker (stack completo, local)
 
-Útil para **load tests** y desarrollo. Apunta a una Mongo local (no Atlas), tiene seed propio y no comparte estado con el cloud.
+Útil para **load tests** (ver [`backend/load-test/`](backend/load-test/)) y desarrollo. Apunta a una Mongo local (no Atlas), tiene seed propio y no comparte estado con el cloud.
 
 **Requisitos:** [Docker Desktop](https://www.docker.com/products/docker-desktop/) corriendo
 

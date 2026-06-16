@@ -1,0 +1,3 @@
+# Output local del load test — no commitear los CSV / HTML generados
+results*.csv
+results*.html
