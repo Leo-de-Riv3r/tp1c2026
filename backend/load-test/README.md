@@ -84,6 +84,18 @@ Cada usuario virtual:
 
    Si alguno falla, Locust exitea con código != 0 — útil para integrar en CI.
 
+## Troubleshooting
+
+**Si ves muchos fallos en `/api/auth/login` con latencia alta (~1s)**:
+- Spring Security usa **BCrypt** para hashear passwords con cost factor 10 — eso es **CPU-bound y lento a propósito** (defensa contra fuerza bruta). Con 50 logins concurrentes, la JVM single-core que corre el BE en compose se satura.
+- **Fix**: bajar la concurrencia inicial. En el UI, configurar `Number of users = 20` y `Spawn rate = 2`. Eso ramp-uppea más suave y deja al BCrypt respirar.
+
+**Si ves errores 401 en otras tasks (publications/auctions/search)**:
+- Significa que el login del user virtual falló. El user queda sin `Authorization` header → 401 en todo lo demás. Mirar primero la fila de `/api/auth/login` para entender la raíz.
+
+**Si la corrida termina muy rápido (5-10 requests totales)**:
+- El runner quedó sin VUs activos. Verificar que Docker no se haya parado a mitad de camino (`docker compose ps`).
+
 ## Cómo interpretar los resultados
 
 | Métrica            | Verde      | Amarillo    | Rojo          |

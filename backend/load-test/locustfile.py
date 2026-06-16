@@ -46,8 +46,14 @@ class TacsUser(HttpUser):
     wait_time = between(1, 3)
 
     def on_start(self):
-        """Loguea contra el BE real y guarda el sessionId para los siguientes requests."""
+        """
+        Loguea contra el BE real y guarda el sessionId para los siguientes requests.
+        Si el login falla NO abortamos el runner — el user virtual queda inactivo (no
+        tendrá auth header → sus tasks pegarán 401 que se reflejan en métricas, pero
+        el resto de los users siguen). Esto evita que 1 login lento mate la corrida.
+        """
         creds = random.choice(SEED_USERS)
+        self.user_id = None
         with self.client.post(
             "/api/auth/login",
             json={"email": creds["email"], "password": creds["password"]},
@@ -56,13 +62,15 @@ class TacsUser(HttpUser):
         ) as resp:
             if resp.status_code != 200:
                 resp.failure(f"Login falló ({resp.status_code}): {resp.text[:200]}")
-                self.environment.runner.quit()
                 return
-            data = resp.json()
+            try:
+                data = resp.json()
+            except Exception as e:
+                resp.failure(f"Login response no es JSON: {e}")
+                return
             token = data.get("token")
             if not token:
-                resp.failure(f"Login OK pero sin token en el body: {data}")
-                self.environment.runner.quit()
+                resp.failure(f"Login OK pero sin token: {data}")
                 return
             self.client.headers["Authorization"] = f"Bearer {token}"
             self.user_id = data.get("user", {}).get("id")
