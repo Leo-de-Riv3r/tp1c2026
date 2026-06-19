@@ -24,6 +24,20 @@ import {
     SEARCH_NEXT_PAGE,
     withNavbar,
 } from "./transitions.js";
+import {
+    ACCEPT_OFFER,
+    ACCEPT_PROPOSAL,
+    CANCEL_AUCTION,
+    CANCEL_OFFER,
+    CANCEL_PROPOSAL,
+    CANCEL_PUBLICATION,
+    CREATE_AUCTION,
+    MAKE_PROPOSAL,
+    PLACE_BID,
+    PUBLISH_CARD,
+    REJECT_OFFER,
+    REJECT_PROPOSAL,
+} from "./transitions_writes.js";
 
 export const IDLE_STATE = new State(StateIds.IDLE, []);
 export const UNLOGGED_STATE = new State(StateIds.UNLOGGED, [LOG_IN]);
@@ -59,18 +73,28 @@ export const AUCTIONS_MY_BIDS_STATE = new State(StateIds.AUCTIONS_MY_BIDS, withN
     GO_AUCTIONS_ACTIVE,
     GO_AUCTIONS_MY,
     OPEN_AUCTION_DETAIL,
+    CANCEL_OFFER,
 ));
 
 export const AUCTION_CREATE_STATE = new State(StateIds.AUCTION_CREATE, withNavbar(
     GO_AUCTIONS_ACTIVE,
+    CREATE_AUCTION,
 ));
 
 export const AUCTION_DETAIL_STATE = new State(StateIds.AUCTION_DETAIL, withNavbar(
     GO_BACK,
+    PLACE_BID,
+    ACCEPT_OFFER,
+    REJECT_OFFER,
+    CANCEL_AUCTION,
 ));
 
 export const PUBLICATION_DETAIL_STATE = new State(StateIds.PUBLICATION_DETAIL, withNavbar(
     GO_BACK,
+    MAKE_PROPOSAL,
+    ACCEPT_PROPOSAL,
+    REJECT_PROPOSAL,
+    CANCEL_PUBLICATION,
 ));
 
 export const PROFILE_COLLECTION_STATE = new State(StateIds.PROFILE_COLLECTION, withNavbar(
@@ -79,6 +103,7 @@ export const PROFILE_COLLECTION_STATE = new State(StateIds.PROFILE_COLLECTION, w
     GO_PROFILE_PROPOSALS,
     GO_PROFILE_AUCTIONS,
     GO_PROFILE_EXCHANGES,
+    PUBLISH_CARD,
 ));
 
 export const PROFILE_MISSING_STATE = new State(StateIds.PROFILE_MISSING, withNavbar(
@@ -96,6 +121,7 @@ export const PROFILE_PUBLICATIONS_STATE = new State(StateIds.PROFILE_PUBLICATION
     GO_PROFILE_AUCTIONS,
     GO_PROFILE_EXCHANGES,
     OPEN_PUBLICATION_DETAIL,
+    PUBLISH_CARD,
 ));
 
 export const PROFILE_PROPOSALS_STATE = new State(StateIds.PROFILE_PROPOSALS, withNavbar(
@@ -125,10 +151,13 @@ export const PROFILE_EXCHANGES_STATE = new State(StateIds.PROFILE_EXCHANGES, wit
 
 export const PROPOSALS_RECEIVED_STATE = new State(StateIds.PROPOSALS_RECEIVED, withNavbar(
     GO_PROPOSALS_SENT,
+    ACCEPT_PROPOSAL,
+    REJECT_PROPOSAL,
 ));
 
 export const PROPOSALS_SENT_STATE = new State(StateIds.PROPOSALS_SENT, withNavbar(
     GO_PROPOSALS_RECEIVED,
+    CANCEL_PROPOSAL,
 ));
 
 export const EXCHANGES_STATE = new State(StateIds.EXCHANGES, withNavbar());

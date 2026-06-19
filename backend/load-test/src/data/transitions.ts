@@ -375,6 +375,8 @@ export function withNavbar(...extra: Transition[]): Transition[] {
     return [...NAVBAR_TRANSITIONS, ...extra];
 }
 
+import { WRITE_TRANSITIONS } from "./transitions_writes.js";
+
 export const ALL_TRANSITIONS: Transition[] = [
     LOG_IN,
     LOG_OUT,
@@ -401,4 +403,5 @@ export const ALL_TRANSITIONS: Transition[] = [
     GO_NOTIFICATIONS_UNREAD,
     GO_NOTIFICATIONS_READ,
     GO_BACK,
+    ...WRITE_TRANSITIONS,
 ];
