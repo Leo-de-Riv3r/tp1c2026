@@ -58,6 +58,21 @@ services:
       mongosh "mongodb://mongo:27017/tacs_db?directConnection=true" --file /seed/seed_full.js
     restart: "no"
 
+  mongo-seed-load-test:
+    image: mongo:7.0
+    depends_on:
+      mongo-seed:
+        condition: service_completed_successfully
+    volumes:
+      - ./seed:/seed:ro
+    environment:
+      LOAD_TEST_USER_COUNT: ${LOAD_TEST_USER_COUNT:-50}
+    networks:
+      - tacs-network
+    command: >
+      mongosh "mongodb://mongo:27017/tacs_db?directConnection=true" --file /seed/seed_load_test.js
+    restart: "no"
+
   backend:
     build:
       context: .
@@ -70,9 +85,11 @@ services:
         condition: service_completed_successfully
       mongo-seed:
         condition: service_completed_successfully
+      mongo-seed-load-test:
+        condition: service_completed_successfully
     environment:
       JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF-8
-      SPRING_MONGODB_URI: ${SPRING_MONGODB_URI}
+      SPRING_MONGODB_URI: ${SPRING_MONGODB_URI:-mongodb://mongo:27017/tacs_db}
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRATION: ${JWT_EXPIRATION}
       FRONTEND_URI: ${FRONTEND_URI}
@@ -99,6 +116,22 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
+
+  load-test:
+    build:
+      context: ./load-test
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      API_BASE_URL: http://backend:8080
+      LOAD_TEST_USER_COUNT: ${LOAD_TEST_USER_COUNT:-50}
+      LOAD_TEST_DURATION: ${LOAD_TEST_DURATION:-60}
+      LOAD_TEST_START_USERS: ${LOAD_TEST_START_USERS:-5}
+      LOAD_TEST_MAX_USERS: ${LOAD_TEST_MAX_USERS:-50}
+    networks:
+      - tacs-network
+    restart: "no"
 
 networks:
   tacs-network:

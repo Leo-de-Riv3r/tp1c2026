@@ -1,0 +1,352 @@
+[
+  {
+    "email": "loadtest0@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest1@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest2@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest3@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest4@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest5@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest6@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest7@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest8@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest9@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest10@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest11@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest12@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest13@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest14@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest15@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest16@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest17@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest18@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest19@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest20@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest21@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest22@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest23@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest24@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest25@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest26@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest27@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest28@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest29@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest30@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest31@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest32@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest33@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest34@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest35@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest36@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest37@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest38@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest39@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest40@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest41@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest42@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest43@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest44@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest45@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest46@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest47@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest48@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  },
+  {
+    "email": "loadtest49@tacs.load",
+    "password": "123456",
+    "think_time": 500,
+    "available_cards": [],
+    "missing_cards": []
+  }
+]

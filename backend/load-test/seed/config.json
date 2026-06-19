@@ -1,0 +1,7 @@
+{
+  "userCount": 5,
+  "password": "123456",
+  "emailPrefix": "loadtest",
+  "emailDomain": "tacs.load",
+  "thinkTime": 500
+}
