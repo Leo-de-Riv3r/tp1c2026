@@ -1,5 +1,6 @@
 package com.tacs.tp1c2026.entities.dto.auction.input;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
@@ -14,5 +15,6 @@ public class CreateAuctionDto {
     String cardId;
     @NotNull(message = "La duración de la subasta es obligatoria")
     Integer auctionDurationHours;
+    @Valid
     List<AuctionConditionDto> conditions;
 }
