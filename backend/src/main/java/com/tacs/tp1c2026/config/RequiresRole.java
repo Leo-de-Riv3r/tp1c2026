@@ -6,8 +6,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Marca un endpoint como restringido a un role específico del JWT (ej: "ADMIN")
- * El check lo hace {@link RoleInterceptor} contra el request attribute {@code role} que setea {@link JwtAuthenticationFilter}. Si no matchea, devuelve 403
+ * Marca un endpoint como restringido a un role específico de la sesión (ej: "ADMIN")
+ * El check lo hace {@link RoleInterceptor} contra el request attribute {@code role} que setea {@link SessionAuthenticationFilter}. Si no matchea, devuelve 403
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)

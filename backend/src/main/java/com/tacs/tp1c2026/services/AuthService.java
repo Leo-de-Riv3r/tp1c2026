@@ -10,49 +10,20 @@ import com.tacs.tp1c2026.exceptions.BadInputException;
 import com.tacs.tp1c2026.exceptions.ConflictException;
 import com.tacs.tp1c2026.exceptions.UnauthorizedException;
 import com.tacs.tp1c2026.repositories.UserRepository;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import javax.crypto.SecretKey;
-import java.time.LocalDateTime;
-import java.util.Date;
 
 @Service
 public class AuthService {
 
   private final UserRepository userRepository;
   private final SessionService sessionService;
-  private final SecretKey jwtSecretKey;
-  private final long jwtExpirationMs;
   private final PasswordEncoder passwordEncoder;
 
-  public AuthService(UserRepository userRepository,
-                     SessionService sessionService,
-                     @Value("${jwt.secret:}") String jwtSecret,
-                     @Value("${jwt.expiration}") long jwtExpirationMs) {
+  public AuthService(UserRepository userRepository, SessionService sessionService) {
     this.userRepository = userRepository;
     this.sessionService = sessionService;
-
-    if (jwtSecret == null || jwtSecret.length() < 32) {
-      throw new IllegalStateException(
-          """
-          JWT_SECRET is not configured or is too short.
-
-          Create a .env file at the project root with:
-            JWT_SECRET=a-key-at-least-32-characters-long
-
-          Or export it as an environment variable on your system.
-          """);
-    }
-
-    this.jwtSecretKey = Keys.hmacShaKeyFor(jwtSecret.getBytes());
-    this.jwtExpirationMs = jwtExpirationMs;
     this.passwordEncoder = new BCryptPasswordEncoder();
   }
 
@@ -82,8 +53,9 @@ public class AuthService {
   }
 
   /**
-   * Single login endpoint. Finds the user by email in Mongo, validates the password and builds the JWT with the actual User role as a claim.
-    * Admin and User share the same flow — the difference lives only in {@link User#getRole()} (seeded as {@link UserRole#ADMIN} in {@code seed.js})
+   * Single login endpoint. Finds the user by email in Mongo, validates the password and creates a
+   * server-side session carrying the actual User role.
+   * Admin and User share the same flow — the difference lives only in {@link User#getRole()} (seeded as {@link UserRole#ADMIN} in {@code seed.js})
    */
   public LoginResponseDto login(LoginDTO dto) {
     if (dto == null || isBlank(dto.getEmail()) || isBlank(dto.getPassword())) {
@@ -100,57 +72,6 @@ public class AuthService {
     // → 409 Conflict. El campo no se usa en ningún endpoint, así que lo más limpio es borrarlo.
     UserRole role = user.getRole() == null ? UserRole.USER : user.getRole();
     return new LoginResponseDto(sessionService.create(user.getId(), role.name()), UserDto.from(user));
-  }
-
-  public boolean isTokenValid(String token) {
-    try {
-      parseClaims(token);
-      return true;
-    } catch (JwtException | IllegalArgumentException e) {
-      return false;
-    }
-  }
-
-  public String extractUserId(String token) {
-    try {
-      String subject = parseClaims(token).getSubject();
-      if (subject == null || subject.trim().isEmpty()) {
-        throw new UnauthorizedException("Invalid token");
-      }
-      return subject;
-    } catch (JwtException e) {
-      throw new UnauthorizedException("Invalid token");
-    }
-  }
-
-  public String extractRole(String token) {
-    try {
-      String role = parseClaims(token).get("role", String.class);
-      return isBlank(role) ? "USER" : role;
-    } catch (JwtException e) {
-      throw new UnauthorizedException("Invalid token");
-    }
-  }
-
-  private String generateJwt(String userId, String email, String role) {
-    Date now = new Date();
-    Date expiry = new Date(now.getTime() + jwtExpirationMs);
-    return Jwts.builder()
-        .subject(userId)
-        .claim("email", email)
-        .claim("role", role)
-        .issuedAt(now)
-        .expiration(expiry)
-        .signWith(jwtSecretKey)
-        .compact();
-  }
-
-  private Claims parseClaims(String token) {
-    return Jwts.parser()
-        .verifyWith(jwtSecretKey)
-        .build()
-        .parseSignedClaims(token)
-        .getPayload();
   }
 
   private boolean isBlank(String value) {

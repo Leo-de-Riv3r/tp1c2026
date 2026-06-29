@@ -20,13 +20,13 @@ import java.util.Optional;
  * del request para que los controllers los recuperen con {@code @RequestAttribute}.
  */
 @Component
-public class JwtAuthenticationFilter extends OncePerRequestFilter {
+public class SessionAuthenticationFilter extends OncePerRequestFilter {
 
   private final SessionService sessionService;
   private final ApiErrorResponseWriter errorWriter;
   private final UserRepository userRepository;
 
-  public JwtAuthenticationFilter(SessionService sessionService, ApiErrorResponseWriter errorWriter, UserRepository userRepository) {
+  public SessionAuthenticationFilter(SessionService sessionService, ApiErrorResponseWriter errorWriter, UserRepository userRepository) {
     this.sessionService = sessionService;
     this.errorWriter = errorWriter;
     this.userRepository = userRepository;

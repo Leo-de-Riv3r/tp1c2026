@@ -18,8 +18,8 @@ import java.util.Map;
  * Verifica la anotación {@link RequiresOwnerOrAdmin} en el handler del request.
  *
  * <p>Si está presente: extrae el identificador (de un path variable o query param según
- * {@link RequiresOwnerOrAdmin#source()}) y lo compara contra el {@code userId} del JWT
- * (seteado por {@link JwtAuthenticationFilter}). Si el rol del JWT es {@code ADMIN}, bypassa.
+ * {@link RequiresOwnerOrAdmin#source()}) y lo compara contra el {@code userId} de la sesión
+ * (seteado por {@link SessionAuthenticationFilter}). Si el rol de la sesión es {@code ADMIN}, bypassa.
  *
  * <p>Modo path variable: la variable es obligatoria; si falta → 403 (error de configuración).
  *
@@ -57,7 +57,7 @@ public class OwnerOrAdminInterceptor implements HandlerInterceptor {
         String resourceUserId;
         if (required.source() == RequiresOwnerOrAdmin.Source.QUERY) {
             resourceUserId = request.getParameter(required.value());
-            // Query param ausente → bypass (el controller defaultea al user del JWT)
+            // Query param ausente → bypass (el controller defaultea al user de la sesión)
             if (resourceUserId == null) {
                 return true;
             }
@@ -71,9 +71,9 @@ public class OwnerOrAdminInterceptor implements HandlerInterceptor {
             }
         }
 
-        String jwtUserId = (String) request.getAttribute("userId");
-        if (!resourceUserId.equals(jwtUserId)) {
-            log.warn("Cross-user access denied: caller userId={} attempted to access resource of userId={}", jwtUserId, resourceUserId);
+        String sessionUserId = (String) request.getAttribute("userId");
+        if (!resourceUserId.equals(sessionUserId)) {
+            log.warn("Cross-user access denied: caller userId={} attempted to access resource of userId={}", sessionUserId, resourceUserId);
             errorWriter.write(response, HttpStatus.FORBIDDEN, "No podés acceder a recursos de otro usuario");
             return false;
         }
