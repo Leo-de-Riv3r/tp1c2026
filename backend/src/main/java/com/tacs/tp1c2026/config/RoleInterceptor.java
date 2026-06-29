@@ -11,7 +11,7 @@ import java.io.IOException;
 
 /**
  * Verifica la anotación {@link RequiresRole} en el handler del request y, si está presente, valida
- * que el rol del atributo del request (seteado por {@link JwtAuthenticationFilter}) coincida.
+ * que el rol del atributo del request (seteado por {@link SessionAuthenticationFilter}) coincida.
  * Si no matchea → 403 Forbidden con body {@link com.tacs.tp1c2026.entities.dto.common.ApiError}.
  */
 @Component

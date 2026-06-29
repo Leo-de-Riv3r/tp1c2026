@@ -19,7 +19,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Cubre el bloqueante "Cross-user authorization missing" de la devolución E3:
  *  - {@code UsersController} endpoints {@code /users/{id}/...} deben rechazar con 403 cuando el caller no es el dueño del recurso ni ADMIN.
  *  - El bypass para role ADMIN debe funcionar.
- *  - Los 401/403 emitidos por {@code JwtAuthenticationFilter}, {@code RoleInterceptor} y {@code OwnerOrAdminInterceptor} deben devolver body con shape {@code ApiError}.
+ *  - Los 401/403 emitidos por {@code SessionAuthenticationFilter}, {@code RoleInterceptor} y {@code OwnerOrAdminInterceptor} deben devolver body con shape {@code ApiError}.
  */
 public class CrossUserAuthorizationTests extends IntegrationTestBase {
 
