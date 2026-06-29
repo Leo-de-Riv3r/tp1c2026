@@ -143,7 +143,9 @@ public class PublicationTests extends IntegrationTestBase {
             .header("Authorization", "Bearer " + pepe.token()))
         .andReturn().getResponse().getContentAsString();
     assertEquals(2, (Integer) JsonPath.read(coll, "$[0].quantity"));
-    assertEquals(1, (Integer) JsonPath.read(coll, "$[0].compromisedCount"));
+    Integer coll146Qty = JsonPath.read(coll, "$[0].quantity");
+    Integer coll146Avail = JsonPath.read(coll, "$[0].available");
+    assertEquals(1, coll146Qty - coll146Avail);
 
     String pub = mockMvc.perform(get("/api/publications/" + pubId)
             .header("Authorization", "Bearer " + pepe.token()))
@@ -164,7 +166,9 @@ public class PublicationTests extends IntegrationTestBase {
             .header("Authorization", "Bearer " + pepe.token()))
         .andReturn().getResponse().getContentAsString();
     assertEquals(3, (Integer) JsonPath.read(coll, "$[0].quantity"));
-    assertEquals(2, (Integer) JsonPath.read(coll, "$[0].compromisedCount"));
+    Integer coll167Qty = JsonPath.read(coll, "$[0].quantity");
+    Integer coll167Avail = JsonPath.read(coll, "$[0].available");
+    assertEquals(2, coll167Qty - coll167Avail);
 
     String pub = mockMvc.perform(get("/api/publications/" + pubId)
             .header("Authorization", "Bearer " + pepe.token()))
@@ -187,7 +191,9 @@ public class PublicationTests extends IntegrationTestBase {
             .header("Authorization", "Bearer " + pepe.token()))
         .andReturn().getResponse().getContentAsString();
     assertEquals(3, (Integer) JsonPath.read(coll, "$[0].quantity"));
-    assertEquals(0, (Integer) JsonPath.read(coll, "$[0].compromisedCount"));
+    Integer coll190Qty = JsonPath.read(coll, "$[0].quantity");
+    Integer coll190Avail = JsonPath.read(coll, "$[0].available");
+    assertEquals(0, coll190Qty - coll190Avail);
   }
 
   @Test
@@ -256,9 +262,9 @@ public class PublicationTests extends IntegrationTestBase {
             .header("Authorization", "Bearer " + pepe.token()))
         .andReturn().getResponse().getContentAsString();
     List<Integer> card001Qty = JsonPath.read(coll, "$[?(@.cardId=='FWC1')].quantity");
-    List<Integer> card001Commit = JsonPath.read(coll, "$[?(@.cardId=='FWC1')].compromisedCount");
+    List<Integer> card001Avail = JsonPath.read(coll, "$[?(@.cardId=='FWC1')].available");
     assertEquals(2, (int) card001Qty.get(0));
-    assertEquals(0, (int) card001Commit.get(0));
+    assertEquals(0, card001Qty.get(0) - card001Avail.get(0));
 
     String pub = mockMvc.perform(get("/api/publications/" + pubId)
             .header("Authorization", "Bearer " + pepe.token()))
@@ -351,7 +357,9 @@ public class PublicationTests extends IntegrationTestBase {
         .andReturn().getResponse().getContentAsString();
     assertEquals(expectedQuantity, (Integer) JsonPath.read(body, "$[0].quantity"),
         "quantity de " + s.userId());
-    assertEquals(expectedCommitted, (Integer) JsonPath.read(body, "$[0].compromisedCount"),
+    Integer quantity = JsonPath.read(body, "$[0].quantity");
+    Integer available = JsonPath.read(body, "$[0].available");
+    assertEquals(expectedCommitted, quantity - available,
         "compromisedCount de " + s.userId());
   }
 

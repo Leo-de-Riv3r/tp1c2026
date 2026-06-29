@@ -1,13 +1,13 @@
 package com.tacs.tp1c2026.controllers;
 
 import com.tacs.tp1c2026.entities.dto.user.input.*;
+import com.tacs.tp1c2026.entities.dto.user.output.CollectionCardDto;
 import com.tacs.tp1c2026.entities.dto.user.output.CollectionCardResult;
 import com.tacs.tp1c2026.entities.dto.common.output.PaginationDtoOutput;
+import com.tacs.tp1c2026.entities.dto.user.output.MissingCardDto;
 import com.tacs.tp1c2026.entities.dto.user.output.NotificationDto;
 import com.tacs.tp1c2026.entities.dto.user.output.SuggestionResult;
 import com.tacs.tp1c2026.entities.dto.user.output.UserDto;
-import com.tacs.tp1c2026.entities.user.embedded.CollectionCard;
-import com.tacs.tp1c2026.entities.user.embedded.MissingCard;
 import com.tacs.tp1c2026.config.RequiresOwnerOrAdmin;
 import com.tacs.tp1c2026.config.RequiresRole;
 import com.tacs.tp1c2026.config.ValidatesPathUser;
@@ -70,8 +70,10 @@ public class UsersController {
     @GetMapping("/{id}/collection")
     @RequiresOwnerOrAdmin
     @ValidatesPathUser
-    public ResponseEntity<List<CollectionCard>> getCollection(@PathVariable String id) throws NotFoundException {
-        return ResponseEntity.ok(userService.getUserCardCollection(id));
+    public ResponseEntity<List<CollectionCardDto>> getCollection(@PathVariable String id) throws NotFoundException {
+        return ResponseEntity.ok(userService.getUserCardCollection(id).stream()
+                .map(CollectionCardDto::from)
+                .toList());
     }
 
     /**
@@ -79,18 +81,18 @@ public class UsersController {
      * Devuelve 201 si la figurita se agregó por primera vez, 200 si se incrementó la cantidad.
      * @param id ID del user
      * @param request body con el ID de la figurita a agregar
-     * @return el {@link CollectionCard} actualizado
+     * @return el {@link CollectionCardDto} actualizado
      */
     @PostMapping("/{id}/collection")
     @RequiresOwnerOrAdmin
     @ValidatesPathUser
-    public ResponseEntity<CollectionCard> addToCollection(
+    public ResponseEntity<CollectionCardDto> addToCollection(
             @PathVariable String id,
             @Valid @RequestBody AddToCollectionRequest request) throws NotFoundException, NotFoundException, NotFoundException {
         CollectionCardResult result = userService.addCardToUserCollection(id, request.cardId(), request.quantity());
         return ResponseEntity
             .status(result.created() ? HttpStatus.CREATED : HttpStatus.OK)
-            .body(result.card());
+            .body(CollectionCardDto.from(result.card()));
     }
 
     /**
@@ -119,25 +121,27 @@ public class UsersController {
     @GetMapping("/{id}/missing-cards")
     @RequiresOwnerOrAdmin
     @ValidatesPathUser
-    public ResponseEntity<List<MissingCard>> getMissingCards(@PathVariable String id) throws NotFoundException {
-        return ResponseEntity.ok(userService.getUserMissingCards(id));
+    public ResponseEntity<List<MissingCardDto>> getMissingCards(@PathVariable String id) throws NotFoundException {
+        return ResponseEntity.ok(userService.getUserMissingCards(id).stream()
+                .map(MissingCardDto::from)
+                .toList());
     }
 
     /**
      * Marca una figurita como faltante para el user. No hace nada si ya está en la lista.
      * @param id ID del user
      * @param request body con el ID de la figurita a marcar como faltante
-     * @return 201 con la entrada {@link MissingCard} creada
+     * @return 201 con la entrada {@link MissingCardDto} creada
      */
     @PostMapping("/{id}/missing-cards")
     @RequiresOwnerOrAdmin
     @ValidatesPathUser
-    public ResponseEntity<MissingCard> addMissingCard(
+    public ResponseEntity<MissingCardDto> addMissingCard(
             @PathVariable String id,
             @Valid @RequestBody AddMissingCardRequest request) throws NotFoundException, NotFoundException {
         return ResponseEntity
             .status(HttpStatus.CREATED)
-            .body(userService.addMissingCard(id, request.cardId()));
+            .body(MissingCardDto.from(userService.addMissingCard(id, request.cardId())));
     }
 
     /**

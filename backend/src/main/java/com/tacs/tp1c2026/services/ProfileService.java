@@ -2,6 +2,7 @@ package com.tacs.tp1c2026.services;
 
 
 import com.tacs.tp1c2026.entities.auction.Auction;
+import com.tacs.tp1c2026.entities.card.Card;
 import com.tacs.tp1c2026.entities.enums.AuctionStatus;
 import com.tacs.tp1c2026.entities.enums.PublicationStatus;
 import com.tacs.tp1c2026.entities.exchange.TradePublication;
@@ -37,18 +38,43 @@ public class ProfileService {
     private final UserService userService;
     private final PublicationRepository publicationRepository;
     private final AuctionRepository auctionRepository;
+    private final CardService cardService;
     private final ProfileProperties properties;
 
     public ProfileService(ProfileGroupRepository profileGroupRepository,
                           UserService userService,
                           PublicationRepository publicationRepository,
                           AuctionRepository auctionRepository,
+                          CardService cardService,
                           ProfileProperties properties) {
         this.profileGroupRepository = profileGroupRepository;
         this.userService = userService;
         this.publicationRepository = publicationRepository;
         this.auctionRepository = auctionRepository;
+        this.cardService = cardService;
         this.properties = properties;
+    }
+
+    /**
+     * Siembra {@code numberOfGroups} grupos de perfil si la colección está vacía (como en cloud,
+     * donde nada los inicializa). Cada grupo arranca con un perfil representativo aleatorio sobre
+     * el catálogo. Sin grupos no hay pool de candidatos y las sugerencias nunca se generan.
+     */
+    @Transactional
+    public void seedGroupsIfEmpty() {
+        if (this.profileGroupRepository.count() > 0) {
+            return;
+        }
+        List<String> catalogCardIds = this.cardService.getCatalog().stream()
+            .map(Card::getId)
+            .toList();
+        List<ProfileGroup> groups = new ArrayList<>();
+        for (int i = 0; i < this.properties.getNumberOfGroups(); i++) {
+            ProfileGroup group = new ProfileGroup();
+            group.initializeRepresentative(catalogCardIds);
+            groups.add(group);
+        }
+        this.profileGroupRepository.saveAll(groups);
     }
 
     /**
@@ -72,7 +98,17 @@ public class ProfileService {
     @Transactional
     public void updateSuggestionsForUsers() {
         List<ProfileGroup> groups = this.profileGroupRepository.findAll();
+        if (groups.isEmpty()) {
+            // Sin grupos de perfil no hay candidatos: recalcular dejaría a cada user con una lista
+            // vacía y sobrescribiría (borraría) las sugerencias existentes. Mejor no tocar nada.
+            return;
+        }
         List<User> users = userService.getAll();
+
+        // (Re)construye la pertenencia user→grupo y recalcula los representativos ANTES de generar:
+        // sin esta asignación los grupos no tienen vecinos y el pool de candidatos queda siempre vacío.
+        assignUsersToGroups(users, groups);
+        groups.forEach(ProfileGroup::updateVector);
 
         // Index de publications/auctions ACTIVE por publisher.id — una sola carga por corrida
         Map<String, List<TradePublication>> activePubsByPublisher = publicationRepository
@@ -94,11 +130,25 @@ public class ProfileService {
         }
 
         this.userService.saveAll(users);
-
-        for (ProfileGroup pfg : groups) {
-            pfg.updateVector();
-        }
         this.profileGroupRepository.saveAll(groups);
+    }
+
+    /**
+     * (Re)asigna cada user a los {@code maximumNumberOfGroupsUserCanBeIn} grupos con los que más
+     * coincide (missing cards en común con el representativo), reconstruyendo desde cero la lista
+     * de vecinos de cada grupo. Es la pieza que faltaba cablear: sin esto los grupos quedan sin
+     * vecinos y nunca hay candidatos para las sugerencias.
+     */
+    private void assignUsersToGroups(List<User> users, List<ProfileGroup> groups) {
+        groups.forEach(ProfileGroup::clearNeighbours);
+        int maxGroups = this.properties.getMaximumNumberOfGroupsUserCanBeIn();
+        for (User user : users) {
+            groups.stream()
+                .sorted(Comparator.comparingInt(
+                    (ProfileGroup g) -> Profile.agreement(g.getRepresentativeProfile(), user.getProfile())).reversed())
+                .limit(maxGroups)
+                .forEach(g -> g.addNeighbor(user));
+        }
     }
 
     private List<Suggestion> generateSuggestionsFor(
@@ -167,25 +217,5 @@ public class ProfileService {
 
         return Stream.concat(pubMatches, aucMatches);
     }
-
-    @Retryable(retryFor = { OptimisticLockingFailureException.class, DataIntegrityViolationException.class }, maxAttempts = 3, backoff = @Backoff(delay = 50, multiplier = 2))
-    @Transactional
-    public void updateProfileGroups(User user){
-        List<ProfileGroup> pfg = this.profileGroupRepository.findAll();
-
-        for (ProfileGroup p : pfg) {
-            p.removeNeighbor(user);
-        }
-
-        List<ProfileGroup> newGroups = pfg.stream()
-                .sorted(Comparator.comparingInt(g -> Profile.agreement(g.getRepresentativeProfile(), user.getProfile())))
-                .limit(this.properties.getMaximumNumberOfGroupsUserCanBeIn())
-                .toList();
-
-        newGroups.forEach(g -> g.addNeighbor(user));
-
-        this.profileGroupRepository.saveAll(pfg);
-    }
-
 
 }
