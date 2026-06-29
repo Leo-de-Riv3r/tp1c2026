@@ -1,13 +1,12 @@
 package com.tacs.tp1c2026.entities.auction.conditions;
 
 import com.tacs.tp1c2026.entities.auction.AuctionOffer;
+import com.tacs.tp1c2026.entities.auction.OfferRankingMetric;
 import com.tacs.tp1c2026.entities.user.User;
-import org.springframework.data.annotation.TypeAlias;
 
 /**
  * Condition that requires a minimum number of stickers to adjudicate an auction to an offerer.
  */
-@TypeAlias("minimal_card_count")
 public class MinimalCardCount extends AuctionCondition {
     private Integer count;
 
@@ -24,6 +23,11 @@ public class MinimalCardCount extends AuctionCondition {
   @Override
   public boolean canOffer(User user, AuctionOffer offer) {
     return count <= offer.getOfferedItems().stream().mapToInt(item -> item.getAmount()).sum();
+  }
+
+  @Override
+  public OfferRankingMetric rankingMetric() {
+    return OfferRankingMetric.QUANTITY;
   }
 }
 
