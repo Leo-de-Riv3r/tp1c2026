@@ -1,8 +1,6 @@
  package com.tacs.tp1c2026.entities.profiles;
 
  import com.tacs.tp1c2026.entities.user.User;
- import com.tacs.tp1c2026.properties.ProfileProperties;
- import jakarta.annotation.PostConstruct;
  import lombok.Getter;
  import org.springframework.data.annotation.Id;
  import org.springframework.data.annotation.TypeAlias;
@@ -11,6 +9,7 @@
 
  import java.util.HashSet;
  import java.util.LinkedHashMap;
+ import java.util.List;
  import java.util.Map;
  import java.util.Set;
 
@@ -27,13 +26,6 @@
     @DocumentReference
     @Getter
     private Set<User> neighbours = new HashSet<>();
-
-     private final ProfileProperties properties;
-
-     public ProfileGroup(ProfileProperties properties){
-         this.properties = properties;
-
-     }
 
      /**
      * Agrega un usuario como vecino del perfil.
@@ -55,6 +47,11 @@
           this.neighbours.remove(neighborUser);
      }
 
+     /** Vacía la lista de vecinos; se reconstruye en cada corrida del cron de sugerencias. */
+     public void clearNeighbours() {
+          this.neighbours.clear();
+     }
+
      /**
      * Actualiza el vector representativo del perfil calculando el promedio con signo
       * de los perfiles vectoriales recibidos.
@@ -68,18 +65,21 @@
          this.representativeProfile = Profile.averageSign(neighbours.stream().map(User::getProfile).toList());
      }
 
-     @PostConstruct
-     private Profile initializeVectorProfile() {
-         assert properties != null;
-          int maxCards = properties.getTotalNumberOfCards();
+     /**
+      * Inicializa el perfil representativo con un vector aleatorio sobre el catálogo dado
+      * (cada figurita vale -1, 0 o 1). Se usa al sembrar los grupos: arranca disperso para que
+      * los usuarios se distribuyan por similitud, y luego {@link #updateVector()} ajusta el
+      * representativo al promedio de sus vecinos.
+      *
+      * @param catalogCardIds ids de las figuritas del catálogo (dimensiones del vector)
+      */
+     public void initializeRepresentative(List<String> catalogCardIds) {
           Map<String, Integer> initialValues = new LinkedHashMap<>();
-
-          for (int index = 0; index < maxCards; index++) {
+          for (String cardId : catalogCardIds) {
               int randomValue = (int) Math.round(Math.random() * 2 - 1);
-              initialValues.put(String.valueOf(index), randomValue);
-         }
-
-         return new Profile(initialValues);
+              initialValues.put(cardId, randomValue);
+          }
+          this.representativeProfile = new Profile(initialValues);
      }
 
  }

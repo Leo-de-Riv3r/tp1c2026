@@ -100,7 +100,9 @@ public class UsersTests extends IntegrationTestBase {
     assertEquals(1, ((List<?>) JsonPath.read(body, "$")).size());
     assertEquals("FWC1", JsonPath.read(body, "$[0].cardId"));
     assertEquals(1, (Integer) JsonPath.read(body, "$[0].quantity"));
-    assertEquals(0, (Integer) JsonPath.read(body, "$[0].compromisedCount"));
+    Integer body103Qty = JsonPath.read(body, "$[0].quantity");
+    Integer body103Avail = JsonPath.read(body, "$[0].available");
+    assertEquals(0, body103Qty - body103Avail);
   }
 
   @Test

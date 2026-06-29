@@ -125,10 +125,10 @@ public class ProposalTests extends IntegrationTestBase {
             .header("Authorization", "Bearer " + pepe.token()))
         .andReturn().getResponse().getContentAsString();
     List<Integer> pepe001Qty = JsonPath.read(pepeColl, "$[?(@.cardId=='FWC1')].quantity");
-    List<Integer> pepe001Commit = JsonPath.read(pepeColl, "$[?(@.cardId=='FWC1')].compromisedCount");
+    List<Integer> pepe001Avail = JsonPath.read(pepeColl, "$[?(@.cardId=='FWC1')].available");
     List<Integer> pepe002Qty = JsonPath.read(pepeColl, "$[?(@.cardId=='FWC3')].quantity");
     assertEquals(1, (int) pepe001Qty.get(0));
-    assertEquals(1, (int) pepe001Commit.get(0));
+    assertEquals(1, pepe001Qty.get(0) - pepe001Avail.get(0));
     assertEquals(1, (int) pepe002Qty.get(0));
 
     // Moni: FWC3 quantity-1 (transferida); FWC1 recibida con quantity=1
@@ -179,7 +179,9 @@ public class ProposalTests extends IntegrationTestBase {
     MvcResult col = mockMvc.perform(get("/api/users/" + bob.userId() + "/collection")
             .header("Authorization", "Bearer " + bob.token())).andReturn();
     String body = col.getResponse().getContentAsString();
-    assertEquals(0, (Integer) JsonPath.read(body, "$[0].compromisedCount"));
+    Integer body182Qty = JsonPath.read(body, "$[0].quantity");
+    Integer body182Avail = JsonPath.read(body, "$[0].available");
+    assertEquals(0, body182Qty - body182Avail);
   }
 
   @Test
@@ -193,7 +195,10 @@ public class ProposalTests extends IntegrationTestBase {
 
     MvcResult col = mockMvc.perform(get("/api/users/" + bob.userId() + "/collection")
             .header("Authorization", "Bearer " + bob.token())).andReturn();
-    assertEquals(0, (Integer) JsonPath.read(col.getResponse().getContentAsString(), "$[0].compromisedCount"));
+    String col196Body = col.getResponse().getContentAsString();
+    Integer col196Qty = JsonPath.read(col196Body, "$[0].quantity");
+    Integer col196Avail = JsonPath.read(col196Body, "$[0].available");
+    assertEquals(0, col196Qty - col196Avail);
   }
 
   // ───────────────── OK: composición y commit de figuritas ofrecidas ─────────────────
@@ -212,7 +217,9 @@ public class ProposalTests extends IntegrationTestBase {
             .header("Authorization", "Bearer " + moni.token()))
         .andReturn().getResponse().getContentAsString();
     assertEquals(2, (Integer) JsonPath.read(moniColl, "$[0].quantity"));
-    assertEquals(1, (Integer) JsonPath.read(moniColl, "$[0].compromisedCount"));
+    Integer moni215Qty = JsonPath.read(moniColl, "$[0].quantity");
+    Integer moni215Avail = JsonPath.read(moniColl, "$[0].available");
+    assertEquals(1, moni215Qty - moni215Avail);
 
     String prop = mockMvc.perform(get("/api/proposals/" + proposalId)
             .header("Authorization", "Bearer " + moni.token()))
@@ -234,10 +241,12 @@ public class ProposalTests extends IntegrationTestBase {
     String moniColl = mockMvc.perform(get("/api/users/" + moni.userId() + "/collection")
             .header("Authorization", "Bearer " + moni.token()))
         .andReturn().getResponse().getContentAsString();
-    List<Integer> c002 = JsonPath.read(moniColl, "$[?(@.cardId=='FWC3')].compromisedCount");
-    List<Integer> c003 = JsonPath.read(moniColl, "$[?(@.cardId=='ARG1')].compromisedCount");
-    assertEquals(1, (int) c002.get(0));
-    assertEquals(1, (int) c003.get(0));
+    List<Integer> c002Qty = JsonPath.read(moniColl, "$[?(@.cardId=='FWC3')].quantity");
+    List<Integer> c002Avail = JsonPath.read(moniColl, "$[?(@.cardId=='FWC3')].available");
+    List<Integer> c003Qty = JsonPath.read(moniColl, "$[?(@.cardId=='ARG1')].quantity");
+    List<Integer> c003Avail = JsonPath.read(moniColl, "$[?(@.cardId=='ARG1')].available");
+    assertEquals(1, c002Qty.get(0) - c002Avail.get(0));
+    assertEquals(1, c003Qty.get(0) - c003Avail.get(0));
   }
 
   @Test
@@ -255,7 +264,9 @@ public class ProposalTests extends IntegrationTestBase {
             .header("Authorization", "Bearer " + moni.token()))
         .andReturn().getResponse().getContentAsString();
     assertEquals(2, (Integer) JsonPath.read(moniColl, "$[0].quantity"));
-    assertEquals(2, (Integer) JsonPath.read(moniColl, "$[0].compromisedCount"));
+    Integer moni258Qty = JsonPath.read(moniColl, "$[0].quantity");
+    Integer moni258Avail = JsonPath.read(moniColl, "$[0].available");
+    assertEquals(2, moni258Qty - moni258Avail);
   }
 
   // ─────────────── OK: cancelación con compromisos previos ───────────────
@@ -283,10 +294,12 @@ public class ProposalTests extends IntegrationTestBase {
     String moniColl = mockMvc.perform(get("/api/users/" + moni.userId() + "/collection")
             .header("Authorization", "Bearer " + moni.token()))
         .andReturn().getResponse().getContentAsString();
-    List<Integer> c002Commit = JsonPath.read(moniColl, "$[?(@.cardId=='FWC3')].compromisedCount");
-    List<Integer> c003Commit = JsonPath.read(moniColl, "$[?(@.cardId=='ARG1')].compromisedCount");
-    assertEquals(1, (int) c002Commit.get(0), "FWC3 mantiene el commit de la subasta");
-    assertEquals(0, (int) c003Commit.get(0), "ARG1 queda completamente libre");
+    List<Integer> c002CommitQty = JsonPath.read(moniColl, "$[?(@.cardId=='FWC3')].quantity");
+    List<Integer> c002CommitAvail = JsonPath.read(moniColl, "$[?(@.cardId=='FWC3')].available");
+    List<Integer> c003CommitQty = JsonPath.read(moniColl, "$[?(@.cardId=='ARG1')].quantity");
+    List<Integer> c003CommitAvail = JsonPath.read(moniColl, "$[?(@.cardId=='ARG1')].available");
+    assertEquals(1, c002CommitQty.get(0) - c002CommitAvail.get(0), "FWC3 mantiene el commit de la subasta");
+    assertEquals(0, c003CommitQty.get(0) - c003CommitAvail.get(0), "ARG1 queda completamente libre");
   }
 
   // ───────────────── Inválidos: estado de la publicación ─────────────────

@@ -110,7 +110,10 @@ public class AuctionTests extends IntegrationTestBase {
     MvcResult col = mockMvc.perform(get("/api/users/" + seller.userId() + "/collection")
         .header("Authorization", "Bearer " + seller.token())).andReturn();
 
-    assertEquals(0, (Integer) JsonPath.read(col.getResponse().getContentAsString(), "$[0].compromisedCount"));
+    String colBody = col.getResponse().getContentAsString();
+    Integer colQty = JsonPath.read(colBody, "$[0].quantity");
+    Integer colAvail = JsonPath.read(colBody, "$[0].available");
+    assertEquals(0, colQty - colAvail);
   }
 
   @Test
@@ -455,7 +458,11 @@ public class AuctionTests extends IntegrationTestBase {
     List<?> all = JsonPath.read(body, "$");
     for (int i = 0; i < all.size(); i++) {
       String cid = JsonPath.read(body, "$[" + i + "].cardId");
-      if (cardId.equals(cid)) return JsonPath.read(body, "$[" + i + "].compromisedCount");
+      if (cardId.equals(cid)) {
+        Integer quantity = JsonPath.read(body, "$[" + i + "].quantity");
+        Integer available = JsonPath.read(body, "$[" + i + "].available");
+        return quantity - available;
+      }
     }
     return null;
   }

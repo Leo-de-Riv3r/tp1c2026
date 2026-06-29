@@ -3,7 +3,6 @@ package com.tacs.tp1c2026;
 import com.jayway.jsonpath.JsonPath;
 import com.tacs.tp1c2026.entities.profiles.ProfileGroup;
 import com.tacs.tp1c2026.entities.user.User;
-import com.tacs.tp1c2026.properties.ProfileProperties;
 import com.tacs.tp1c2026.repositories.ProfileGroupRepository;
 import com.tacs.tp1c2026.services.ProfileService;
 import com.tacs.tp1c2026.support.IntegrationTestBase;
@@ -29,9 +28,6 @@ public class SuggestionTests extends IntegrationTestBase {
 
     @Autowired
     private ProfileGroupRepository profileGroupRepository;
-
-    @Autowired
-    private ProfileProperties profileProperties;
 
     @BeforeEach
     void cleanProfileGroups() {
@@ -196,7 +192,7 @@ public class SuggestionTests extends IntegrationTestBase {
         User userA = userRepository.findById(a.userId()).orElseThrow();
         User userB = userRepository.findById(b.userId()).orElseThrow();
 
-        ProfileGroup group = new ProfileGroup(profileProperties);
+        ProfileGroup group = new ProfileGroup();
         group.addNeighbor(userA);
         group.addNeighbor(userB);
         profileGroupRepository.save(group);

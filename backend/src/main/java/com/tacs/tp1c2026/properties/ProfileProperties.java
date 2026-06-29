@@ -11,6 +11,9 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "app.profile")
 public class ProfileProperties {
 
+    /** How many profile groups are seeded at startup when the collection is empty. */
+    private int numberOfGroups = 10;
+
     /** How many profile groups (the most similar to the user) are explored to build the candidate pool. */
     private int profileGroupsToCheck = 1;
 

@@ -48,6 +48,8 @@ public class UserFlowsTests extends IntegrationTestBase {
         .andReturn();
     String body = res.getResponse().getContentAsString();
     assertEquals(3, (Integer) JsonPath.read(body, "$[0].quantity"));
-    assertEquals(0, (Integer) JsonPath.read(body, "$[0].compromisedCount"));
+    Integer body51Qty = JsonPath.read(body, "$[0].quantity");
+    Integer body51Avail = JsonPath.read(body, "$[0].available");
+    assertEquals(0, body51Qty - body51Avail);
   }
 }
