@@ -223,9 +223,14 @@ public class User {
         return this.notifications.stream().filter(UserNotification::isUnread).count();
     }
 
-    /** Para dedupe de "carta disponible": ¿ya hay una noti propia sin leer apuntando a este recurso? */
+    /** ¿Ya hay una noti propia sin leer apuntando a este recurso (subasta/publicación)? */
     public boolean hasUnreadNotificationReferencing(String referenceId) {
         return this.notifications.stream().anyMatch(n -> n.isUnreadOwnReferencing(referenceId));
+    }
+
+    /** Dedupe de "carta disponible": ¿ya hay una noti propia sin leer de esta carta? */
+    public boolean hasUnreadNotificationForCard(String cardId) {
+        return this.notifications.stream().anyMatch(n -> n.isUnreadOwnForCard(cardId));
     }
 
     public void rebuildVectorProfile() {

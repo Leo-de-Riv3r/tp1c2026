@@ -63,4 +63,10 @@ public class UserNotification {
     return !isGlobal() && isUnread()
         && data != null && referenceId.equals(data.getReferenceId());
   }
+
+  /** True si es una noti propia, sin leer, de la carta dada (dedupe de "carta disponible"). */
+  public boolean isUnreadOwnForCard(String cardId) {
+    return !isGlobal() && isUnread()
+        && data != null && cardId.equals(data.getCardId());
+  }
 }

@@ -29,12 +29,13 @@ public class NotificationTests extends IntegrationTestBase {
     String wantedCardId = "URU1";
     addMissingCard(user.userId(), wantedCardId, user.token());
 
-    notificationService.deliverCardAvailable(wantedCardId, "AUCTION");
+    notificationService.deliverCardAvailable(wantedCardId, "auction-1", "AUCTION");
 
     List<UserNotification> notifications = userRepository.findOrThrow(user.userId()).getNotifications();
     assertEquals(1, notifications.size());
     UserNotification notif = notifications.get(0);
-    assertEquals(wantedCardId, notif.getData().getReferenceId(), "la noti referencia a la carta, no a la fuente");
+    assertEquals("auction-1", notif.getData().getReferenceId(), "referenceId apunta a la fuente navegable (subasta)");
+    assertEquals(wantedCardId, notif.getData().getCardId(), "cardId guarda la carta (clave de dedupe)");
     assertEquals(NotificationType.WANTED_CARD_AVAILABLE_IN_AUCTION, notif.getData().getType());
     assertTrue(notif.isUnread(), "nace sin leer");
   }
@@ -44,7 +45,7 @@ public class NotificationTests extends IntegrationTestBase {
     Session user = register("bichoFan", "cr7@java.com", "pass123");
     addMissingCard(user.userId(), "COL1", user.token());
 
-    notificationService.deliverCardAvailable("ARG1", "AUCTION");
+    notificationService.deliverCardAvailable("ARG1", "auction-x", "AUCTION");
 
     assertTrue(userRepository.findOrThrow(user.userId()).getNotifications().isEmpty());
   }
@@ -57,7 +58,7 @@ public class NotificationTests extends IntegrationTestBase {
     addMissingCard(u1.userId(), card, u1.token());
     addMissingCard(u2.userId(), card, u2.token());
 
-    notificationService.deliverCardAvailable(card, "PUBLICATION");
+    notificationService.deliverCardAvailable(card, "pub-1", "PUBLICATION");
 
     assertEquals(1, userRepository.findOrThrow(u1.userId()).getNotifications().size());
     assertEquals(1, userRepository.findOrThrow(u2.userId()).getNotifications().size());
@@ -71,11 +72,11 @@ public class NotificationTests extends IntegrationTestBase {
     String card = "BRA3";
     addMissingCard(user.userId(), card, user.token());
 
-    notificationService.deliverCardAvailable(card, "AUCTION");
-    notificationService.deliverCardAvailable(card, "PUBLICATION"); // misma carta sin leer la anterior
+    notificationService.deliverCardAvailable(card, "auc-1", "AUCTION");
+    notificationService.deliverCardAvailable(card, "pub-1", "PUBLICATION"); // misma carta, otra fuente, sin leer
 
     assertEquals(1, userRepository.findOrThrow(user.userId()).getNotifications().size(),
-        "no repite mientras haya una sin leer de la misma carta");
+        "dedupe por carta: no repite mientras haya una sin leer de la misma carta, aunque cambie la fuente");
   }
 
   @Test

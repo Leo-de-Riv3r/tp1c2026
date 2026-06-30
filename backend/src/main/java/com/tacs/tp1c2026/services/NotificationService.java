@@ -168,7 +168,7 @@ public class NotificationService {
   @Async
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void handleCardAvailableEvent(CardAvailableEvent event) {
-    deliverCardAvailable(event.cardId(), event.sourceType());
+    deliverCardAvailable(event.cardId(), event.referenceId(), event.sourceType());
   }
 
   @Async
@@ -185,8 +185,11 @@ public class NotificationService {
 
   // ---------- Lógica de notificaciones por evento (sincrónica) ----------
 
-  /** Notifica a los que buscan {@code cardId} que está disponible. Dedupe: una sin leer por carta. */
-  public void deliverCardAvailable(String cardId, String sourceType) {
+  /**
+   * Notifica a los que buscan {@code cardId} que está disponible. Dedupe: una sin leer por carta.
+   * {@code referenceId} es el id navegable de la fuente (publicación o subasta) → el FE arma el link.
+   */
+  public void deliverCardAvailable(String cardId, String referenceId, String sourceType) {
     List<User> seekers = userRepository.findUsersSeekingCard(cardId);
     if (seekers.isEmpty()) {
       return;
@@ -201,11 +204,11 @@ public class NotificationService {
 
     List<User> toSave = new ArrayList<>();
     for (User seeker : seekers) {
-      if (seeker.hasUnreadNotificationReferencing(cardId)) {
+      if (seeker.hasUnreadNotificationForCard(cardId)) {
         continue; // ya tiene una sin leer de esta carta
       }
       NotificationData data = NotificationData.builder()
-          .type(type).message(message).referenceId(cardId).build();
+          .type(type).message(message).referenceId(referenceId).cardId(cardId).build();
       seeker.receiveNotification(UserNotification.own(data));
       toSave.add(seeker);
     }
