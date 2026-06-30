@@ -1,0 +1,12 @@
+services:
+  load-test:
+    build: .
+    environment:
+      API_BASE_URL: ${API_BASE_URL:-http://host.docker.internal:8080}
+      LOAD_TEST_USER_COUNT: ${LOAD_TEST_USER_COUNT:-50}
+      LOAD_TEST_DURATION: ${LOAD_TEST_DURATION:-60}
+      LOAD_TEST_START_USERS: ${LOAD_TEST_START_USERS:-5}
+      LOAD_TEST_MAX_USERS: ${LOAD_TEST_MAX_USERS:-50}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: "no"

@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    /* Target & Environment */
+    "target": "ES2022",                          /* Output modern, highly optimized JavaScript */
+    "lib": ["ES2022"],      
+    "types": ["node"],                     /* Provide type definitions for modern JS features */
+
+    /* Modules */
+    "module": "NodeNext",                        /* Enable modern Node.js module handling (ESM + CommonJS) */
+    "moduleResolution": "NodeNext",              /* Ensure imports match modern Node resolution rules */
+
+    /* Output and Interop */
+    "outDir": "./dist",                          /* Compile output directory */
+    "rootDir": "./src",                          /* Specify the root directory of your source files */
+    "esModuleInterop": true,                     /* Smooth compatibility with older CommonJS packages */
+    "forceConsistentCasingInFileNames": true,    /* Prevent cross-operating system build bugs */
+
+    /* Strictness */
+    "strict": true,                              /* Turn on all strict type-checking options */
+    "skipLibCheck": true                         /* Speed up compilation by skipping checking external .d.ts files */
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist"]            /* Don't waste time scanning dependency or output folders */
+}
