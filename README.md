@@ -73,33 +73,7 @@ docker compose down -v
 docker compose up -d --build
 ```
 
-### Modo demo con actividad preseedeada (opcional)
-
-Para una demo más rica (dashboard admin con curvas, perfiles de usuarios poblados, todos los flows del FE testeables sin crear datos a mano):
-
-```bash
-docker compose --profile demo up -d --build
-```
-
-El profile `demo` agrega el servicio `mongo-seed-full` que corre [`seed/seed_full.js`](backend/seed/seed_full.js) **después** del seed base. Carga:
-
-- **6 publications** en los 3 estados (ACTIVA, FINALIZADA, CANCELADA).
-- **3 auctions** en los 3 estados (ACTIVE, AWARDED, CANCELLED), incluyendo offers en los 4 estados (PENDING, ACCEPTED, REJECTED, CANCELLED).
-- **6 proposals** en los 4 estados (PENDIENTE, ACEPTADA, RECHAZADA, CANCELADA).
-- **3 exchanges** (2 originados por propuesta + 1 por subasta) con feedbacks parciales para mostrar el flow de calificaciones.
-- **30 snapshots diarios** alineados con la actividad real → el dashboard admin muestra curvas con picos en los días con eventos.
-- **Missing cards repartidas** con overlap entre users → el panel "Más buscadas" del admin tiene ranking.
-
-Los `quantity` y `compromisedCount` de cada user reflejan exactamente las publications/auctions/proposals/offers activas — la base queda en un estado consistente, igual que si la actividad se hubiera hecho manualmente desde el FE.
-
-**Importante**: el administrador NO participa de intercambios (solo visualiza el dashboard). Los flows de demo usan a Pepe / Moni / Dardo.
-
-Para alternar entre modos:
-
-```bash
-docker compose down -v                          # borra el volumen
-docker compose --profile demo up -d --build     # o sin --profile para modo base
-```
+Los usuarios base quedan **solo con figuritas** (en `collection` y `missingCards`). Las publicaciones, subastas, propuestas, intercambios y notificaciones se crean a mano desde el FE durante la demo.
 
 ## Variables de entorno
 
@@ -119,7 +93,7 @@ Lo siguiente vive en la [Wiki del repo](https://github.com/Leo-de-Riv3r/tp1c2026
 
 - **Decisiones de arquitectura e implementación**: autenticación con sesiones server-side en Mongo + TTL sliding, interceptores (`@RequiresOwnerOrAdmin`, `@ValidatesPathUser`), endpoints públicos, idioma de mensajes vs identificadores.
 - **Levantar Mongo nativo (sin Docker)**: comandos bash y PowerShell para arrancar `mongod` como replica set de 1 nodo, inicializar `rs0`, correr el seed y levantar el BE con `./mvnw spring-boot:run`.
-- **Seedear MongoDB Atlas**: cómo correr `seed.js` y `seed_full.js` contra un cluster M0 cloud.
+- **Seedear MongoDB Atlas**: cómo correr `seed.js` contra un cluster M0 cloud.
 - **Gotchas del deploy en Render + Atlas M0**: connection string que funciona, `MongoHealthIndicator` deshabilitado, Network Access `0.0.0.0/0`, env vars críticas, `server.port=${PORT:8080}`, health check path.
 - **Visualizar la base**: instalación y uso de `mongosh` y MongoDB Compass para inspeccionar `tacs_db` local.
 - **Build local del FE en lugar de usar la imagen GHCR**: snippet de `docker-compose.yml` para cuando se quiere modificar código del FE y verlo reflejado en el stack.
