@@ -5,8 +5,8 @@ import com.tacs.tp1c2026.entities.auction.OfferRankingMetric;
 import com.tacs.tp1c2026.entities.user.User;
 
 /**
- * Base class for auction conditions. Concrete conditions (e.g. minimal sticker count)
- * should extend this class. Kept minimal for now.
+ * Clase base para las condiciones de subasta. Las condiciones concretas (ej. cantidad mínima de figuritas)
+ * deben extender esta clase. Se mantiene minimal por ahora.
  *
  * <p>Sin {@code @TypeAlias} a propósito: al ser embebida y polimórfica, Mongo persiste cada
  * subtipo con su {@code _class} (FQN), que resuelve siempre. Un alias en la base se heredaría a

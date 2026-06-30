@@ -76,6 +76,7 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRATION: ${JWT_EXPIRATION}
       FRONTEND_URI: ${FRONTEND_URI}
+      FOOTBALLDATA_KEY: ${FOOTBALLDATA_KEY}
     networks:
       - tacs-network
     healthcheck:

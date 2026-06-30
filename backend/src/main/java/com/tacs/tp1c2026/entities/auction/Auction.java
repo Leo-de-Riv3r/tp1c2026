@@ -54,7 +54,7 @@ public class Auction {
   @DocumentReference
   private User publisherUser;
 
-  // Snapshot of publisher (denormalized) — avoids join on read
+  // Snapshot del publisher (desnormalizado) — evita el join en lectura
   private String publisherName;
   private String publisherAvatarId;
 
@@ -103,7 +103,7 @@ public class Auction {
   public boolean checkConditions(AuctionOffer auctionOffer) {
     for (AuctionCondition condition : conditions) {
       if (!condition.canOffer(auctionOffer.getBidder(), auctionOffer)) {
-        throw new UnprocessableException("You do not meet the minimum conditions to bid");
+        throw new UnprocessableException("No cumplís las condiciones mínimas para ofertar en esta subasta");
       }
     }
     return true;
@@ -111,10 +111,10 @@ public class Auction {
 
   public void rejectOffer(AuctionOffer offer) throws NotFoundException, ConflictException {
     if (!offers.contains(offer)) {
-      throw new NotFoundException("Offer does not correspond to auction");
+      throw new NotFoundException("La oferta no pertenece a esta subasta");
     }
     if (!offer.isPending()) {
-      throw new ConflictException("Offer was already rejected");
+      throw new ConflictException("La oferta ya fue rechazada previamente");
     }
     offer.reject();
   }
@@ -125,10 +125,10 @@ public class Auction {
 
   public void acceptOffer(AuctionOffer offer) throws ConflictException, ConflictException, NotFoundException {
     if (!allowsOfferAcceptance()) {
-      throw new ConflictException("The auction does not allow accepting offers");
+      throw new ConflictException("La subasta ya está cerrada");
     }
     if (!offer.isPending()) {
-      throw new ConflictException("The offer has already been accepted or rejected");
+      throw new ConflictException("La oferta ya fue aceptada o rechazada previamente");
     }
     findOfferById(offer.getId());
     offer.accept();
@@ -289,19 +289,19 @@ public class Auction {
 
   public void validateOwner(User user) {
     if (!this.publisherUser.getId().equals(user.getId())) {
-      throw new ForbiddenException("The user is not the owner of the auction");
+      throw new ForbiddenException("Operación no permitida. No es dueño de la subasta");
     }
   }
 
   public AuctionOffer findOfferById(String offerId) {
     return this.offers.stream()
         .filter(offer -> offer.getId().equals(offerId))
-        .findFirst().orElseThrow(() -> new UnprocessableException("Offer not found"));
+        .findFirst().orElseThrow(() -> new UnprocessableException("La oferta no existe en esta subasta"));
   }
 
   public void changeBestOffer(AuctionOffer offer) {
     if (offer.getStatus().equals(AuctionOfferStatus.REJECTED)) {
-      throw new UnprocessableException("Cannot set a rejected offer as the best offer");
+      throw new UnprocessableException("No se puede elegir como mejor oferta una que ya fue rechazada");
     }
     this.setBestOffer(offer);
   }

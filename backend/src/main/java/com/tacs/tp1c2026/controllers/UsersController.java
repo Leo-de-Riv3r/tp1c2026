@@ -60,7 +60,7 @@ public class UsersController {
         return ResponseEntity.ok(UserDto.from(userService.getById(id)));
     }
 
-    /* Collection endpoints */
+    /* Endpoints de colección */
 
     /**
      * Devuelve la colección de figuritas del user.
@@ -111,7 +111,7 @@ public class UsersController {
         return ResponseEntity.noContent().build();
     }
 
-    /* Missing cards endpoints */
+    /* Endpoints de figuritas faltantes */
 
     /**
      * Devuelve la lista de figuritas que el user está buscando.
@@ -159,7 +159,7 @@ public class UsersController {
         return ResponseEntity.noContent().build();
     }
 
-    /* Suggestions endpoint */
+    /* Endpoint de sugerencias */
 
     /**
      * Devuelve las sugerencias de intercambio para un user.
@@ -180,7 +180,7 @@ public class UsersController {
         );
     }
 
-    /* Notification endpoints */
+    /* Endpoints de notificaciones */
 
     /**
      * Notificaciones del user, paginadas y filtradas por {@code status} (READ / UNREAD).

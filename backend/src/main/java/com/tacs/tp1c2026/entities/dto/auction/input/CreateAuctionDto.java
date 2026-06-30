@@ -7,7 +7,7 @@ import java.util.List;
 import lombok.Data;
 
 /**
- * DTO for creating an auction.
+ * DTO para crear una subasta.
  */
 @Data
 public class CreateAuctionDto {

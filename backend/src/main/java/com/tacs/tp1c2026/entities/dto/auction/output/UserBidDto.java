@@ -9,26 +9,26 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Flat view for "My Offers": one entry per offer made by the user,
- * with the context of the auction it belongs to.
+ * Vista plana para "Mis Ofertas": una entrada por cada oferta hecha por el usuario,
+ * con el contexto de la subasta a la que pertenece.
  */
 @Getter
 @AllArgsConstructor
 public class UserBidDto {
   private String auctionId;
-  // Card published in the auction
+  // Card publicada en la subasta
   private String cardId;
   private Integer cardNumber;
   private String cardDescription;
   private String cardCountry;
   private String cardTeam;
-  // Auction publisher
+  // Publisher de la subasta
   private String publisherUserId;
   private String publisherName;
-  // Auction status
+  // Estado de la subasta
   private AuctionStatus auctionStatus;
   private LocalDateTime closeDate;
-  // User's offer data
+  // Datos de la oferta del user
   private String offerId;
   private List<OfferItemDto> offeredItems;
   private AuctionOfferStatus offerStatus;

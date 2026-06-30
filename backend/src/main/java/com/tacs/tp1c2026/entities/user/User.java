@@ -127,7 +127,7 @@ public class User {
 
     public void removeFromCollection(String cardId, int amount) throws NotFoundException, ConflictException {
         CollectionCard item = findCollectionItem(cardId)
-            .orElseThrow(() -> new NotFoundException("User does not have card " + cardId));
+            .orElseThrow(() -> new NotFoundException("No tenés la figurita " + cardId + " en tu colección"));
         item.decrement(amount);
         if (item.getQuantity() == 0) {
             this.collection.remove(item);
@@ -147,7 +147,7 @@ public class User {
             try {
                 item.decrement(amount);
             } catch (ConflictException ignored) {
-                // Should not happen — compromise guarantees availability
+                // No debería pasar — el compromiso garantiza la disponibilidad
             }
             if (item.getQuantity() == 0) {
                 this.collection.remove(item);
@@ -211,7 +211,7 @@ public class User {
         UserNotification n = this.notifications.stream()
             .filter(it -> it.getId().equals(notificationId))
             .findFirst()
-            .orElseThrow(() -> new NotFoundException("Notification not found"));
+            .orElseThrow(() -> new NotFoundException("Notificación no encontrada"));
         n.markRead();
     }
 

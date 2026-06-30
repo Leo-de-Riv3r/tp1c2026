@@ -21,12 +21,12 @@ public class AuctionDto {
   private LocalDateTime closeDate;
   private AuctionStatus status;
   private BestOfferDto bestOffer;
-  // Publisher (denormalized in the entity; rating is resolved live from the User reference)
+  // Publisher (desnormalizado en la entidad; el rating se resuelve en vivo desde la referencia al User)
   private String publisherUserId;
   private String publisherName;
   private String publisherAvatarId;
   private Double publisherRating;
-  // Full list of offers in the auction
+  // Lista completa de ofertas en la subasta
   private List<AuctionOfferDto> offers;
   private List<AuctionConditionOutputDto> conditions;
 }

@@ -3,15 +3,15 @@ package com.tacs.tp1c2026.entities.dto.card.input;
 import com.tacs.tp1c2026.entities.enums.Category;
 
 /**
- * Parameters used when searching for a sticker. All fields are optional; the caller may
- * provide any subset to filter the search.
+ * Parámetros usados al buscar una figurita. Todos los campos son opcionales; el llamador puede
+ * proporcionar cualquier subconjunto para filtrar la búsqueda.
  *
- * Fields (in English):
- * - number: sticker number
- * - playerOrDescription: player name or free-text description to match against
- * - country: sticker selection / country
- * - team: sticker team
- * - category: sticker category (COMMON, EPIC, LEGENDARY)
+ * Campos:
+ * - number: número de la figurita
+ * - playerOrDescription: nombre del jugador o descripción de texto libre contra la cual matchear
+ * - country: selección / país de la figurita
+ * - team: equipo de la figurita
+ * - category: categoría de la figurita (COMMON, EPIC, LEGENDARY)
  */
 public record CardSearchParamsDTO(
     Integer number,

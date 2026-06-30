@@ -57,7 +57,7 @@ public class ExchangeService {
 
     public Exchange findById(String exchangeId) throws NotFoundException {
         return exchangeRepository.findById(exchangeId)
-            .orElseThrow(() -> new NotFoundException("Exchange not found: " + exchangeId));
+            .orElseThrow(() -> new NotFoundException("Intercambio no encontrado: " + exchangeId));
     }
 
     /**

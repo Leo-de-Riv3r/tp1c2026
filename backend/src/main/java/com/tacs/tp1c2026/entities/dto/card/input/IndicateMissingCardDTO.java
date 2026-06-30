@@ -1,7 +1,7 @@
 package com.tacs.tp1c2026.entities.dto.card.input;
 
 /**
- * DTO used when a user indicates a missing sticker. Contains the identifier of the sticker.
+ * DTO usado cuando un usuario indica una figurita faltante. Contiene el identificador de la figurita.
  */
 public record IndicateMissingCardDTO(
     String cardId

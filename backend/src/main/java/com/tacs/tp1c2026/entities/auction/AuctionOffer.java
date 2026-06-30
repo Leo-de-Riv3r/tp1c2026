@@ -23,7 +23,7 @@ public class AuctionOffer {
   @DocumentReference
   private User bidder;
 
-  // Snapshot of bidder id+name+rating+avatar — avoids depending on @DocumentReference hydration inside embedded array
+  // Snapshot de id+name+rating+avatar del bidder — evita depender de la hidratación de @DocumentReference dentro de un array embebido
   private String bidderId;
   private String bidderName;
   private Double bidderRating;
@@ -60,7 +60,7 @@ public class AuctionOffer {
 
   public void validateCreator(String userId) {
     if (!this.bidder.getId().equals(userId))
-      throw new ForbiddenException("Only the offer creator can perform this operation");
+      throw new ForbiddenException("Operación no permitida. No es el creador de la oferta");
   }
 
   public void cancel() {

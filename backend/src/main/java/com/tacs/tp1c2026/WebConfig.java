@@ -10,8 +10,8 @@ import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * Global MVC configuration
- * Adds the /api prefix to all @RestController endpoints automatically, so individual controllers don't need to repeat it in @RequestMapping
+ * Configuración global de MVC.
+ * Agrega el prefijo /api a todos los endpoints @RestController automáticamente, de modo que los controladores individuales no necesitan repetirlo en @RequestMapping.
  */
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
