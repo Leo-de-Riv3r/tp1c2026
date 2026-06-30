@@ -50,7 +50,7 @@ public class UserService {
             .orElseThrow(() -> new NotFoundException("No se encontró el user con id: " + userId));
     }
 
-    /* Collection */
+    /* Colección */
 
     /**
      * Devuelve la colección de figuritas de un user.
@@ -95,7 +95,7 @@ public class UserService {
         userRepository.save(user);
     }
 
-    /* Missing cards */
+    /* Figuritas faltantes */
 
     /**
      * Devuelve la lista de figuritas que el user está buscando.
@@ -138,7 +138,7 @@ public class UserService {
         userRepository.save(user);
     }
 
-    /* Suggestions */
+    /* Sugerencias */
 
     /**
      * Devuelve las sugerencias persistidas para un user.

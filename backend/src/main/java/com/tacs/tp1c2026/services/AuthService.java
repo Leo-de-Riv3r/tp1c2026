@@ -28,14 +28,14 @@ public class AuthService {
   }
 
   /**
-   * Registers a new user and returns a session ready to use (token + UserDto), so the FE can
-   * auto-login without a second round-trip.
+   * Registra un nuevo usuario y devuelve una sesión lista para usar (token + UserDto), para que el FE pueda
+   * auto-loguear sin un segundo round-trip.
    */
   public LoginResponseDto register(RegisterDTO dto) {
     String email = dto.getEmail().trim().toLowerCase();
 
     if (userRepository.existsByEmail(email)) {
-      throw new ConflictException("Email is already registered");
+      throw new ConflictException("El email ya está registrado");
     }
 
     User user = new User();
@@ -53,19 +53,19 @@ public class AuthService {
   }
 
   /**
-   * Single login endpoint. Finds the user by email in Mongo, validates the password and creates a
-   * server-side session carrying the actual User role.
-   * Admin and User share the same flow — the difference lives only in {@link User#getRole()} (seeded as {@link UserRole#ADMIN} in {@code seed.js})
+   * Endpoint único de login. Busca el usuario por email en Mongo, valida la contraseña y crea una
+   * sesión del lado del servidor que lleva el rol real del User.
+   * Admin y User comparten el mismo flujo — la diferencia vive solo en {@link User#getRole()} (sembrado como {@link UserRole#ADMIN} en {@code seed.js})
    */
   public LoginResponseDto login(LoginDTO dto) {
     if (dto == null || isBlank(dto.getEmail()) || isBlank(dto.getPassword())) {
-      throw new BadInputException("Email and password are required");
+      throw new BadInputException("El email y la contraseña son obligatorios");
     }
     String email = dto.getEmail().trim().toLowerCase();
     User user = userRepository.findByEmail(email)
-        .orElseThrow(() -> new UnauthorizedException("Invalid credentials"));
+        .orElseThrow(() -> new UnauthorizedException("Credenciales inválidas"));
     if (user.getPasswordHash() == null || !passwordEncoder.matches(dto.getPassword(), user.getPasswordHash())) {
-      throw new UnauthorizedException("Invalid credentials");
+      throw new UnauthorizedException("Credenciales inválidas");
     }
     // No tocamos lastLogin acá: el load test detectó que dos logins concurrentes del mismo user
     // chocaban en el @Version del User al hacer save() y agotaban los 3 retries del @Retryable

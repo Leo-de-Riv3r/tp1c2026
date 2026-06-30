@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Repository for Auction documents.
+ * Repositorio para documentos Auction.
  * `findByPublisherUserId` vive en el custom impl porque `publisherUser` es un
  * @DocumentReference (escalar con ObjectId, no sub-doc) — la query derivada falla.
  */

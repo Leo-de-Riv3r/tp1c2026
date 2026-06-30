@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Mapper utilities to convert input DTOs to domain objects.
+ * Utilidades de mapeo para convertir DTOs de entrada en objetos de dominio.
  */
 public class CreateAuctionDtoMapper {
 
@@ -32,7 +32,7 @@ public class CreateAuctionDtoMapper {
             if(dto.getFilterName().equals("MIN_EXCHANGES")) {
               return new MinimalExchanges(dto.getQuantity());
             }
-            throw new BadInputException("Invalid filter name: " + dto.getFilterName());
+            throw new BadInputException("Nombre de condición inválido: " + dto.getFilterName());
         }).collect(Collectors.toList());
     }
 }

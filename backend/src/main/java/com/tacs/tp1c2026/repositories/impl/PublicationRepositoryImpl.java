@@ -68,9 +68,9 @@ public class PublicationRepositoryImpl implements PublicationRepositoryCustom {
 
   @Override
   public Page<TradePublication> findByPublisherUserId(String userId, Pageable pageable) {
-    // `publisherUser` is persisted as ObjectId (User._id is ObjectId in Mongo
-    // even though the Java @Id is String). Direct match against ObjectId; use `in`
-    // with String + ObjectId in case some flow persists it as String.
+    // `publisherUser` se persiste como ObjectId (User._id es ObjectId en Mongo
+    // aunque el @Id de Java sea String). Match directo contra ObjectId; usamos `in`
+    // con String + ObjectId por si algún flujo lo persiste como String.
     Query query = new Query(Criteria.where("publisherUser").in(userId, new ObjectId(userId)));
     query.with(pageable);
     List<TradePublication> results = mongoTemplate.find(query, TradePublication.class);

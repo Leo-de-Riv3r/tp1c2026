@@ -754,7 +754,7 @@ public class AuctionTests extends IntegrationTestBase {
 
     assertEquals(403, (int) JsonPath.read(body, "$.status"));
     assertEquals("Forbidden", JsonPath.read(body, "$.error"));
-    assertEquals("Only the offer creator can perform this operation", JsonPath.read(body, "$.message"));
+    assertEquals("Operación no permitida. No es el creador de la oferta", JsonPath.read(body, "$.message"));
   }
 
   @Test

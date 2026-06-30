@@ -29,9 +29,9 @@ public class GlobalExceptionAdvice {
     }
 
     /**
-     * Spring validates DTOs annotated with @Valid and throws this exception when they fail.
-     * Concatenates field + message into a single description to keep the ApiError shape uniform with the other handlers.
-     * Primary UX validation lives in the FE; this message is defense-in-depth for non-FE clients (curl/Postman) or FE bugs.
+     * Spring valida los DTOs anotados con @Valid y lanza esta excepción cuando fallan.
+     * Concatena field + message en una única descripción para mantener la forma de ApiError uniforme con el resto de los handlers.
+     * La validación principal de UX vive en el FE; este mensaje es defensa en profundidad para clientes que no son el FE (curl/Postman) o bugs del FE.
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiError> handleValidationExceptions(MethodArgumentNotValidException ex) {
@@ -43,13 +43,13 @@ public class GlobalExceptionAdvice {
             .body(ApiError.of(
                 HttpStatus.BAD_REQUEST.value(),
                 HttpStatus.BAD_REQUEST.getReasonPhrase(),
-                "Invalid data: " + details
+                "Datos inválidos: " + details
             ));
     }
 
     /**
-     * Triggered when two concurrent transactions attempt to modify the same document and the optimistic lock version does not match.
-     * The @Retryable annotations on services have already exhausted their retries before reaching this point.
+     * Se dispara cuando dos transacciones concurrentes intentan modificar el mismo documento y la versión del optimistic lock no coincide.
+     * Las anotaciones @Retryable en los services ya agotaron sus reintentos antes de llegar a este punto.
      */
     @ExceptionHandler(OptimisticLockingFailureException.class)
     public ResponseEntity<ApiError> handleOptimisticLock(OptimisticLockingFailureException ex) {
@@ -59,7 +59,7 @@ public class GlobalExceptionAdvice {
             .body(ApiError.of(
                 HttpStatus.CONFLICT.value(),
                 HttpStatus.CONFLICT.getReasonPhrase(),
-                "The resource was modified by another operation. Please retry."
+                "El recurso fue modificado por otra operación. Reintentá."
             ));
     }
 
@@ -68,6 +68,6 @@ public class GlobalExceptionAdvice {
         log.error("Unexpected error: {}", ex.getMessage(), ex);
         return ResponseEntity
             .internalServerError()
-            .body(ApiError.of(500, "Internal Server Error", "An unexpected error occurred"));
+            .body(ApiError.of(500, "Internal Server Error", "Ocurrió un error inesperado"));
     }
 }

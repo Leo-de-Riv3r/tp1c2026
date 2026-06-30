@@ -54,15 +54,15 @@ public class CollectionCard {
     }
 
     public void increment(int amount) {
-        if (amount <= 0) throw new IllegalArgumentException("amount must be positive");
+        if (amount <= 0) throw new IllegalArgumentException("La cantidad debe ser positiva");
         this.quantity += amount;
     }
 
     public void decrement(int amount) throws ConflictException {
-        if (amount <= 0) throw new IllegalArgumentException("amount must be positive");
+        if (amount <= 0) throw new IllegalArgumentException("La cantidad debe ser positiva");
         int available = this.quantity - this.compromisedCount;
         if (available < amount) {
-            throw new ConflictException("Insufficient cards: requested " + amount + ", available " + available);
+            throw new ConflictException("No tenés suficientes figuritas: pediste " + amount + ", hay " + available + " disponibles");
         }
         this.quantity -= amount;
     }
@@ -78,10 +78,10 @@ public class CollectionCard {
      * hasta que la operación se acepte o se cancele.
      */
     public void commit(int amount) throws ConflictException {
-        if (amount <= 0) throw new IllegalArgumentException("amount must be positive");
+        if (amount <= 0) throw new IllegalArgumentException("La cantidad debe ser positiva");
         int available = this.quantity - this.compromisedCount;
         if (available < amount) {
-            throw new ConflictException("Insufficient cards: requested " + amount + ", available " + available);
+            throw new ConflictException("No tenés suficientes figuritas: pediste " + amount + ", hay " + available + " disponibles");
         }
         this.compromisedCount += amount;
     }
@@ -91,7 +91,7 @@ public class CollectionCard {
      * o se rechaza, sin que la transferencia haya ocurrido.
      */
     public void release(int amount) {
-        if (amount <= 0) throw new IllegalArgumentException("amount must be positive");
+        if (amount <= 0) throw new IllegalArgumentException("La cantidad debe ser positiva");
         this.compromisedCount = Math.max(0, this.compromisedCount - amount);
     }
 }

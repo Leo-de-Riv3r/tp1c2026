@@ -24,7 +24,7 @@ public class ValidationErrorShapeTests extends IntegrationTestBase {
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.status").value(400))
             .andExpect(jsonPath("$.error").value("Bad Request"))
-            .andExpect(jsonPath("$.message", containsString("Invalid data")))
+            .andExpect(jsonPath("$.message", containsString("Datos inválidos")))
             .andExpect(jsonPath("$.message", containsString("email")))
             .andExpect(jsonPath("$.message", containsString("password")))
             .andExpect(jsonPath("$.timestamp", notNullValue()));

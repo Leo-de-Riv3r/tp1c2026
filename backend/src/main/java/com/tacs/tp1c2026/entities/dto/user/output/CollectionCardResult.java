@@ -4,7 +4,7 @@ package com.tacs.tp1c2026.entities.dto.user.output;
 import com.tacs.tp1c2026.entities.user.embedded.CollectionCard;
 
 /**
- * Wraps the result of adding a card to a user's collection.
- * {@code created} is true if the card was new, false if the quantity was incremented.
+ * Envuelve el resultado de agregar una figurita a la colección de un usuario.
+ * {@code created} es true si la figurita era nueva, false si se incrementó la cantidad.
  */
 public record CollectionCardResult(CollectionCard card, boolean created) {}

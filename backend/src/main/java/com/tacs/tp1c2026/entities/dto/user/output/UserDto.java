@@ -3,8 +3,8 @@ package com.tacs.tp1c2026.entities.dto.user.output;
 import com.tacs.tp1c2026.entities.user.User;
 
 /**
- * Response DTO for user data. Excludes sensitive fields (passwordHash, collection, missingCards)
- * Field names match the frontend User interface
+ * DTO de respuesta para los datos del usuario. Excluye campos sensibles (passwordHash, collection, missingCards).
+ * Los nombres de los campos coinciden con la interfaz User del frontend.
  */
 public record UserDto(
         String id,

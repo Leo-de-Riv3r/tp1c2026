@@ -311,7 +311,7 @@ public class AuctionService {
       User user = userService.getById(userId);
       Auction auction = getAuctionById(auctionId);
       auction.validateOwner(user);
-      //find offer by id
+      //busca la oferta por id
       AuctionOffer offer = auction.findOfferById(offerId);
       auction.changeBestOffer(offer);
       auctionRepository.save(auction);
@@ -323,14 +323,14 @@ public class AuctionService {
       User user = userService.getById(userId);
       Auction auction = getAuctionById(auctionId);
       auction.validateOwner(user);
-      //find offer by id
+      //busca la oferta por id
       AuctionOffer rejectedOffer = auction.findOfferById(offerId);
       rejectedOffer.cancel();
       auctionRepository.save(auction);
-      // Re-fetch by bidderId: @DocumentReference does not hydrate properly inside embedded subdocs
+      // Re-leemos por bidderId: @DocumentReference no hidrata bien dentro de subdocumentos embebidos
       User bidder = userRepository.findById(rejectedOffer.getBidderId())
           .orElseThrow(() -> new NotFoundException("No se encontró el oferente: " +rejectedOffer.getBidderId()));
-      //return cards to bidder
+      //devuelve las cards al bidder
       for(AuctionItem oi : rejectedOffer.getOfferedItems()) {
         bidder.findCollectionItem(oi.getCard().getId()).ifPresent(item -> item.release(oi.getAmount()));
       }
@@ -391,9 +391,9 @@ public class AuctionService {
     }
 
     private void awardAuctionTo(Auction auction, AuctionOffer winningOffer) throws ConflictException, ConflictException, NotFoundException {
-        // @DocumentReference does not hydrate correctly inside embedded subdocuments in arrays
-        // (case of AuctionOffer.bidder within Auction.offers). Re-fetch by id to
-        // ensure the user's collection is complete before modifying it.
+        // @DocumentReference no hidrata correctamente dentro de subdocumentos embebidos en arrays
+        // (caso de AuctionOffer.bidder dentro de Auction.offers). Re-leemos por id para
+        // asegurar que la colección del user esté completa antes de modificarla.
         User publisher = userRepository.findById(auction.getPublisherUser().getId())
             .orElseThrow(() -> new NotFoundException("No se encontró el publicante"));
         User winner = userRepository.findById(winningOffer.getBidderId())
@@ -407,16 +407,16 @@ public class AuctionService {
             transferCard(winner, publisher, oi.getCard(), oi.getAmount());
         }
 
-        // Cache to avoid loading the same user multiple times: if the same bidder has
-        // multiple losing offers (or is the same as the winner/publisher), reusing the
-        // already loaded instance avoids optimistic locking conflicts when saving.
+        // Cache para no cargar el mismo user múltiples veces: si el mismo bidder tiene
+        // varias ofertas perdedoras (o es el mismo que el ganador/publisher), reusar la
+        // instancia ya cargada evita conflictos de optimistic lock al guardar.
         java.util.Map<String, User> bidderCache = new java.util.HashMap<>();
         bidderCache.put(publisher.getId(), publisher);
         bidderCache.put(winner.getId(), winner);
 
         for (AuctionOffer other : auction.getOffers()) {
-            // Compare by id, not by reference: Spring may hydrate auction.bestOffer and
-            // auction.offers[i] as distinct Java instances of the same logical offer.
+            // Comparamos por id, no por referencia: Spring puede hidratar auction.bestOffer y
+            // auction.offers[i] como instancias Java distintas de la misma oferta lógica.
             if (Objects.equals(other.getId(), winningOffer.getId())) continue;
             if (other.getStatus() != AuctionOfferStatus.CANCELLED) {
                 User bidder = bidderCache.computeIfAbsent(other.getBidderId(), id ->
@@ -435,7 +435,7 @@ public class AuctionService {
             }
         }
 
-        // Save bidders that are neither winner nor publisher (those are saved below)
+        // Guarda los bidders que no son ni el ganador ni el publisher (esos se guardan más abajo)
         for (java.util.Map.Entry<String, User> entry : bidderCache.entrySet()) {
             if (!entry.getKey().equals(winner.getId()) && !entry.getKey().equals(publisher.getId())) {
                 userRepository.save(entry.getValue());
@@ -470,8 +470,8 @@ public class AuctionService {
       AuctionOffer offer = auction.findOfferById(offerId);
       offer.validateCreator(userId);
       offer.cancel();
-      //return cards to  bidder
-      // Re-fetch by bidderId: @DocumentReference does not hydrate properly inside embedded subdocs
+      //devuelve las cards al bidder
+      // Re-leemos por bidderId: @DocumentReference no hidrata bien dentro de subdocumentos embebidos
       User bidder = userRepository.findById(offer.getBidderId())
           .orElseThrow(() -> new NotFoundException("No se encontró el oferente: " +offer.getBidderId()));
       for(AuctionItem oi : offer.getOfferedItems()) {
@@ -492,7 +492,7 @@ public class AuctionService {
                 closeExpiredAuction(a.getId());
                 closed++;
             } catch (Exception ignored) {
-                // If one fails, continue with the rest
+                // Si una falla, continúa con el resto
             }
         }
         return closed;

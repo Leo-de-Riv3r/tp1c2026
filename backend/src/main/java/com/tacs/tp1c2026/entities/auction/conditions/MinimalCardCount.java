@@ -5,7 +5,7 @@ import com.tacs.tp1c2026.entities.auction.OfferRankingMetric;
 import com.tacs.tp1c2026.entities.user.User;
 
 /**
- * Condition that requires a minimum number of stickers to adjudicate an auction to an offerer.
+ * Condición que requiere una cantidad mínima de figuritas para adjudicar una subasta a un ofertante.
  */
 public class MinimalCardCount extends AuctionCondition {
     private Integer count;

@@ -23,7 +23,7 @@ public class MinimalCategory extends AuctionCondition {
 
   @Override
   public boolean canOffer(User user, AuctionOffer offer) {
-    //check that offered cards are equal or better quality
+    //verifica que las cards ofrecidas sean de calidad igual o superior
     return offer.getOfferedItems().stream()
         .allMatch(item -> item.getCard().getCategory().ordinal() >= this.category.ordinal());
   }

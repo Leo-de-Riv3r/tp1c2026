@@ -31,7 +31,7 @@ public class TradePublication {
   @DocumentReference
   private User publisherUser;
 
-  // Snapshot of publisher (denormalized) — avoids join on read
+  // Snapshot del publisher (desnormalizado) — evita el join en lectura
   private String publisherName;
   private String publisherAvatarId;
 
@@ -45,10 +45,10 @@ public class TradePublication {
   private String cardTeam;
   private Category cardCategory;
 
-  /** Quantity offered when publishing. Immutable post-creation. */
+  /** Cantidad ofrecida al publicar. Inmutable luego de la creación. */
   private Integer initialCount;
 
-  /** Available quantity. Decremented when a proposal is accepted by its requestedCount. */
+  /** Cantidad disponible. Se decrementa cuando se acepta una propuesta, por su requestedCount. */
   private Integer remainingCount;
 
   private final LocalDateTime creationDate = LocalDateTime.now();
@@ -81,26 +81,26 @@ public class TradePublication {
   }
 
   /**
-   * Validates that the user is the owner of the publication.
+   * Valida que el usuario sea el dueño de la publicación.
    *
-   * @throws ForbiddenException if the user is not the owner (HTTP 403)
+   * @throws ForbiddenException si el usuario no es el dueño (HTTP 403)
    */
   public void validateOwner(User user) throws ForbiddenException {
     if (!Objects.equals(this.publisherUser.getId(), user.getId())) {
-      throw new ForbiddenException("The user is not the owner of the publication");
+      throw new ForbiddenException("Operación no permitida. No es dueño de la publicación");
     }
   }
 
   /**
-   * Decrements {@code remainingCount} by {@code amount} (the amount requested in the accepted proposal).
-   * If it reaches 0, marks the publication as FINALIZED. The cascade to cancel pending proposals
-   * lives in the service.
+   * Decrementa {@code remainingCount} en {@code amount} (la cantidad solicitada en la propuesta aceptada).
+   * Si llega a 0, marca la publicación como FINALIZED. La cascada para cancelar las propuestas pendientes
+   * vive en el service.
    *
-   * @throws ConflictException if {@code amount > remainingCount}
+   * @throws ConflictException si {@code amount > remainingCount}
    */
   public void decrementRemaining(int amount) {
     if (amount > this.remainingCount) {
-      throw new ConflictException("The proposal requests " + amount + " but only " + this.remainingCount + " remain");
+      throw new ConflictException("La propuesta pide " + amount + " pero solo quedan " + this.remainingCount);
     }
     this.remainingCount -= amount;
     if (this.remainingCount == 0) {
@@ -108,7 +108,7 @@ public class TradePublication {
     }
   }
 
-  /** Marks the publication as CANCELLED. The cascade of pending proposals lives in the service. */
+  /** Marca la publicación como CANCELLED. La cascada de las propuestas pendientes vive en el service. */
   public void cancel() {
     this.status = PublicationStatus.CANCELLED;
   }

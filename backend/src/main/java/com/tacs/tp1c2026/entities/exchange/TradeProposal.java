@@ -78,13 +78,13 @@ public class TradeProposal {
 
   public void validatePending() throws ConflictException {
     if (!isPending()) {
-      throw new ConflictException("The proposal has already been accepted or rejected");
+      throw new ConflictException("La propuesta ya fue aceptada o rechazada previamente");
     }
   }
 
   public void validateOwner(String userId) {
     if (!Objects.equals(this.proposerUser.getId(), userId)) {
-      throw new ForbiddenException("The user is not the owner of the proposal");
+      throw new ForbiddenException("Operación no permitida. No es dueño de la propuesta");
     }
   }
 }

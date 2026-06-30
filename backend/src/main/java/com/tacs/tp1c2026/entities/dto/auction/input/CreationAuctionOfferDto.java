@@ -3,7 +3,7 @@ package com.tacs.tp1c2026.entities.dto.auction.input;
 import java.util.List;
 
 /**
- * DTO for creating an auction offer. Contains auctionId and a list of offered items with quantities.
+ * DTO para crear una oferta de subasta. Contiene el auctionId y una lista de ítems ofrecidos con sus cantidades.
  */
 public record CreationAuctionOfferDto(
     List<Item> items
