@@ -2,9 +2,7 @@ package com.tacs.tp1c2026.entities.auction.conditions;
 
 import com.tacs.tp1c2026.entities.auction.AuctionOffer;
 import com.tacs.tp1c2026.entities.user.User;
-import org.springframework.data.annotation.TypeAlias;
 
-@TypeAlias("minimal_exchanges")
 public class MinimalExchanges extends AuctionCondition{
   private Integer quantity;
 

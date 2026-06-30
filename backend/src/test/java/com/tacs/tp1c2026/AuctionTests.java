@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class AuctionTests extends IntegrationTestBase {
@@ -114,6 +115,31 @@ public class AuctionTests extends IntegrationTestBase {
     Integer colQty = JsonPath.read(colBody, "$[0].quantity");
     Integer colAvail = JsonPath.read(colBody, "$[0].available");
     assertEquals(0, colQty - colAvail);
+  }
+
+  @Test
+  void markingInterestedTwiceDoesNotDuplicateUser() throws Exception {
+    Session seller = register("seller", "seller@java.com", "password123");
+    addToCollection(seller.userId(), "ARG4", seller.token());
+
+    MvcResult created = mockMvc.perform(post("/api/auctions")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Authorization", "Bearer " + seller.token())
+            .content(createAuctionBody("ARG4", 24, List.of())))
+        .andReturn();
+
+    String auctionId = JsonPath.read(created.getResponse().getContentAsString(), "$.data.id");
+
+    Session buyer = register("buyer", "buyer@java.com", "password123");
+    for (int i = 0; i < 2; i++) {
+      mockMvc.perform(post("/api/auctions/" + auctionId + "/interested")
+              .header("Authorization", "Bearer " + buyer.token()))
+          .andExpect(status().is2xxSuccessful());
+    }
+
+    List<User> interested = auctionService.getAuctionById(auctionId).getInterestedUsers();
+    assertEquals(1, interested.size());
+    assertEquals(buyer.userId(), interested.get(0).getId());
   }
 
   @Test
@@ -626,6 +652,62 @@ public class AuctionTests extends IntegrationTestBase {
     assertEquals("CANCELLED", JsonPath.read(detail.getResponse().getContentAsString(), "$.status"));
     assertEquals(0, compromisedCount(seller.userId(), "ARG4", seller.token()));
     assertTrue(exchangeRepository.findAll().isEmpty());
+  }
+
+  /**
+   * Camino del cron en producción: subasta REALMENTE vencida, con oferta pero SIN bestOffer manual.
+   * Antes del fix, bestOffer == null → cancel() (que tira por estar expirada) → la subasta quedaba
+   * colgada en ACTIVE. Ahora se auto-selecciona la mejor oferta y se adjudica.
+   */
+  @Test
+  void closeTrulyExpiredAuctionWithoutManualBestAutoSelectsAndAwards() throws Exception {
+    Session seller = register("seller", "seller@java.com", "password123");
+    addToCollection(seller.userId(), "ARG4", seller.token());
+    String auctionId = createAuctionAndGetId(seller.token(), "ARG4");
+
+    Session bidder = register("bidder", "bidder@java.com", "password123");
+    addToCollection(bidder.userId(), "BRA5", bidder.token());
+    placeBid(bidder.token(), auctionId, "BRA5", 1);
+
+    expireAuction(auctionId);
+    auctionService.closeExpiredAuction(auctionId);
+
+    MvcResult detail = mockMvc.perform(get("/api/auctions/" + auctionId)
+        .header("Authorization", "Bearer " + seller.token()))
+        .andReturn();
+    assertEquals("AWARDED", JsonPath.read(detail.getResponse().getContentAsString(), "$.status"));
+    assertEquals(1, exchangeRepository.findAll().size());
+    assertEquals(1, userRepository.findById(seller.userId()).get().getExchangesAmount());
+    assertEquals(1, userRepository.findById(bidder.userId()).get().getExchangesAmount());
+  }
+
+  /**
+   * Subasta REALMENTE vencida y sin ofertas: se cierra sin ganador (CANCELLED) liberando el
+   * commit del publisher, sin que el guard de expiración de cancel() la haga fallar.
+   */
+  @Test
+  void closeTrulyExpiredAuctionWithoutOffersCancelsAndReleasesCommit() throws Exception {
+    Session seller = register("seller", "seller@java.com", "password123");
+    addToCollection(seller.userId(), "ARG4", seller.token());
+    String auctionId = createAuctionAndGetId(seller.token(), "ARG4");
+    assertEquals(1, compromisedCount(seller.userId(), "ARG4", seller.token()));
+
+    expireAuction(auctionId);
+    auctionService.closeExpiredAuction(auctionId);
+
+    MvcResult detail = mockMvc.perform(get("/api/auctions/" + auctionId)
+        .header("Authorization", "Bearer " + seller.token()))
+        .andReturn();
+    assertEquals("CANCELLED", JsonPath.read(detail.getResponse().getContentAsString(), "$.status"));
+    assertEquals(0, compromisedCount(seller.userId(), "ARG4", seller.token()));
+  }
+
+  /** Fuerza el vencimiento de una subasta backdateando su closeDate vía Mongo. */
+  private void expireAuction(String auctionId) {
+    mongoTemplate.updateFirst(
+        Query.query(Criteria.where("_id").is(auctionId)),
+        Update.update("closeDate", LocalDateTime.now().minusHours(1)),
+        "auctions");
   }
 
   @Test

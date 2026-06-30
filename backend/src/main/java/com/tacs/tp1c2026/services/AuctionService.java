@@ -355,11 +355,16 @@ public class AuctionService {
             throw new ConflictException("La subasta ya está cerrada");
         }
 
+        // bestOffer puede venir seteada por accept/PUT-best manual. Si no, el cron elige
+        // automáticamente la mejor oferta pendiente (auto-selección al cierre por vencimiento).
         AuctionOffer best = auction.getBestOffer();
+        if (best == null) {
+            best = auction.selectBestOffer();
+        }
         if (best != null) {
             awardAuctionTo(auction, best);
         } else {
-            CancelResult result = auction.cancel();
+            CancelResult result = auction.closeWithoutWinner();
             applyReleases(result.releases());
             notifyCancelledBidders(auction, result.notifyBidderIds());
         }
