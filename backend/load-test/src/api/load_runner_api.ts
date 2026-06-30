@@ -17,7 +17,7 @@ import { VUser } from "../model/vuser.js";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 
-export class K6Api implements API {
+export class LoadRunnerApi implements API {
     private endpoints: Endpoints;
     readonly metrics: MetricsRegistry;
 

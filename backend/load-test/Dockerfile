@@ -15,6 +15,5 @@ RUN sed -i 's/\r$//' docker-entrypoint.sh && chmod +x docker-entrypoint.sh
 ENV API_BASE_URL=http://backend:8080
 ENV LOAD_TEST_USER_COUNT=50
 
-RUN npm run seed:users
-
+# users.json se genera en el entrypoint (docker-entrypoint.sh corre seed:users antes de start)
 ENTRYPOINT ["sh", "docker-entrypoint.sh"]
