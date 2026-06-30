@@ -3,12 +3,16 @@ package com.tacs.tp1c2026;
 import com.jayway.jsonpath.JsonPath;
 import com.tacs.tp1c2026.support.IntegrationTestBase;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -108,5 +112,40 @@ public class CardsTests extends IntegrationTestBase {
         .andReturn().getResponse().getContentAsString();
     assertEquals(1, ((java.util.List<?>) JsonPath.read(byCategory, "$.publications.data")).size());
     assertEquals(1, ((java.util.List<?>) JsonPath.read(byCategory, "$.auctions.data")).size());
+  }
+
+  @Test
+  void searchAvailableDoesNotFailWhenActiveAuctionHasBestOffer() throws Exception {
+    // Regresión: una subasta ACTIVA con bestOffer seteada (vía /best) rompía el search sin filtros.
+    // El mapper accedía a getBestOffer().getBidder().getName() — el bidder es un @DocumentReference
+    // embebido que NO hidrata → null → NPE → 500. Ahora usa el snapshot getBidderName().
+    Session moni = register("Moni Argento", "moniargento@gmail.com", "password123");
+    addToCollection(moni.userId(), "FWC3", moni.token());
+    MvcResult created = createAuction(moni.token(), "FWC3", 24);
+    String auctionId = idFromCreated(created, "id");
+
+    Session bidder = register("Bidder", "bidder@gmail.com", "password123");
+    addToCollection(bidder.userId(), "FWC1", bidder.token());
+    mockMvc.perform(post("/api/auctions/" + auctionId + "/offers")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Authorization", "Bearer " + bidder.token())
+            .content("{ \"items\": [ { \"cardId\": \"FWC1\", \"amount\": 1 } ] }"))
+        .andExpect(status().is2xxSuccessful());
+
+    String detail = mockMvc.perform(get("/api/auctions/" + auctionId)
+            .header("Authorization", "Bearer " + moni.token()))
+        .andReturn().getResponse().getContentAsString();
+    String offerId = JsonPath.read(detail, "$.offers[0].id");
+
+    // Moni marca la oferta como mejor: la subasta sigue ACTIVA con bestOffer seteada.
+    mockMvc.perform(put("/api/auctions/" + auctionId + "/offers/" + offerId + "/best")
+            .header("Authorization", "Bearer " + moni.token()))
+        .andExpect(status().isOk());
+
+    // Un tercer user busca sin filtros: debe devolver 200 (antes tiraba 500 al mapear la bestOffer).
+    Session buyer = register("Buyer", "buyer@gmail.com", "password123");
+    mockMvc.perform(get("/api/cards/search")
+            .header("Authorization", "Bearer " + buyer.token()))
+        .andExpect(status().isOk());
   }
 }

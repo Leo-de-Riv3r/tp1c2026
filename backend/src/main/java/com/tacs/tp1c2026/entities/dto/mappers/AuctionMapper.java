@@ -20,8 +20,9 @@ public class AuctionMapper {
   public AuctionDto mapAuction(Auction auction){
     BestOfferDto bestOfferDto = null;
     if (auction.getBestOffer() != null) {
-      List<CardDTO> offeredCards;
-      offeredCards = auction.getBestOffer().getOfferedItems().stream()
+      AuctionOffer best = auction.getBestOffer();
+      List<CardDTO> offeredCards = best.getOfferedItems().stream()
+          .filter(item -> item.getCard() != null)
           .map(item -> new CardDTO(
               item.getCard().getNumber(),
               item.getCard().getPlayer(),
@@ -31,7 +32,8 @@ public class AuctionMapper {
               item.getCard().getCategory())).toList();
 
       bestOfferDto = new BestOfferDto();
-      bestOfferDto.setUsername(auction.getBestOffer().getBidder().getName());
+      // Snapshot denormalizado: el bidder es un @DocumentReference embebido que no hidrata.
+      bestOfferDto.setUsername(best.getBidderName());
       bestOfferDto.setCards(offeredCards);
     }
 
