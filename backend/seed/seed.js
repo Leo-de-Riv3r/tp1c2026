@@ -67,13 +67,6 @@ if (existingUsers > 0) {
       addedAt: new Date()
     };
   };
-  const toNotification = (type, message, referenceId, status) => ({
-    id: UUID().toString(),
-    status: status || "UNREAD",
-    createdAt: new Date(),
-    data: { type, message, referenceId, link: null },
-    globalId: null
-  });
   const PASSWORD_HASH = "$2a$10$tNRX2onk9NYyT./j1Q18.OyDr16Y8K0fDpgW2IIUrKS.NleG.ntHq";
 
   // IDs predefinidos para poder referenciarlos desde otros documentos del seed
@@ -108,14 +101,7 @@ if (existingUsers > 0) {
       toMissing("FWC3"),
       toMissing("MEX7")
     ].filter(Boolean),
-    notifications: [
-      toNotification(
-        "WANTED_CARD_AVAILABLE_IN_AUCTION",
-        "La figurita ARG1 está disponible en una subasta activa.",
-        "ARG1",
-        "UNREAD"
-      )
-    ],
+    notifications: [],
     suggestions: []
   });
 
@@ -143,20 +129,7 @@ if (existingUsers > 0) {
       toMissing("FWC1"),
       toMissing("BRA3")
     ].filter(Boolean),
-    notifications: [
-      toNotification(
-        "WANTED_CARD_AVAILABLE_IN_PUBLICATION",
-        "La figurita FWC1 fue publicada para intercambio.",
-        "FWC1",
-        "UNREAD"
-      ),
-      toNotification(
-        "TRADE_PROPOSAL_RECEIVED",
-        "Recibiste una propuesta de intercambio.",
-        PUBLISHER_ID_HEX,
-        "READ"
-      )
-    ],
+    notifications: [],
     suggestions: []
   });
 
