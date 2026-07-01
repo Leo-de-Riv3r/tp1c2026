@@ -91,7 +91,7 @@ services:
       start_period: 40s
 
   frontend:
-    image: ghcr.io/salometredici/tacs-2026-c1-fe:sha-0ef458e
+    image: ghcr.io/salometredici/tacs-2026-c1-fe:sha-96b2ba7
     ports:
       - "80:80"
     networks:
