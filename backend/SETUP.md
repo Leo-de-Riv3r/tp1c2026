@@ -30,8 +30,4 @@ docker compose down -v
 docker compose up -d --build
 ```
 
-Para una demo más rica (con publicaciones, subastas, exchanges y snapshots preseedeados):
-
-```bash
-docker compose --profile demo up -d --build
-```
+Los usuarios base quedan solo con figuritas (colección + faltantes); las publicaciones, subastas, propuestas, intercambios y notificaciones se crean a mano desde el FE.

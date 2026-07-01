@@ -22,8 +22,11 @@ public class NotificationData {
 
   private String message;
 
-  /** Recurso al que apunta la noti: subasta, publicación o carta, según el {@code type}. */
+  /** Recurso navegable al que apunta la noti: subasta o publicación, según el {@code type}. */
   private String referenceId;
+
+  /** Carta involucrada (avisos de carta disponible). Clave de dedupe "1 sin leer por carta". */
+  private String cardId;
 
   /** Deep-link opcional para el FE. */
   private String link;

@@ -41,21 +41,27 @@ services:
       mongosh "mongodb://mongo:27017/tacs_db?directConnection=true" --file /seed/seed.js
     restart: "no"
 
-  # Seed con datos demo (publications, auctions, proposals, offers, exchanges, snapshots).
-  # Sólo se levanta con `docker compose --profile demo up`. Corre DESPUÉS de mongo-seed
-  # y agrega actividad encima del catálogo + 4 users base.
-  mongo-seed-full:
+  # ─── Load testing — aislado en su PROPIA base (tacs_loadtest_db); NO toca tacs_db ──────────
+  # Todo el stack de carga vive detrás del profile `load-test`. Corre con:
+  #   docker compose --profile load-test up --build load-test
+  # Eso levanta SOLO la cadena de carga (mongo compartido + este seed + backend-loadtest + runner);
+  # ni siquiera seedea tacs_db. La demo/los profes (docker compose up) quedan intactos.
+  # Seedea tacs_loadtest_db con catálogo + users base (seed.js) y 50 users de carga (seed_load_test.js).
+  mongo-seed-load-test:
     image: mongo:7.0
-    profiles: [demo]
+    profiles: [load-test]
     depends_on:
-      mongo-seed:
+      mongo-init:
         condition: service_completed_successfully
     volumes:
       - ./seed:/seed:ro
+    environment:
+      LOAD_TEST_USER_COUNT: ${LOAD_TEST_USER_COUNT:-50}
     networks:
       - tacs-network
     command: >
-      mongosh "mongodb://mongo:27017/tacs_db?directConnection=true" --file /seed/seed_full.js
+      sh -c "mongosh 'mongodb://mongo:27017/tacs_loadtest_db?directConnection=true' --file /seed/seed.js
+      && mongosh 'mongodb://mongo:27017/tacs_loadtest_db?directConnection=true' --file /seed/seed_load_test.js"
     restart: "no"
 
   backend:
@@ -72,9 +78,7 @@ services:
         condition: service_completed_successfully
     environment:
       JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF-8
-      SPRING_MONGODB_URI: ${SPRING_MONGODB_URI}
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_EXPIRATION: ${JWT_EXPIRATION}
+      SPRING_MONGODB_URI: ${SPRING_MONGODB_URI:-mongodb://mongo:27017/tacs_db}
       FRONTEND_URI: ${FRONTEND_URI}
       FOOTBALLDATA_KEY: ${FOOTBALLDATA_KEY}
     networks:
@@ -87,7 +91,7 @@ services:
       start_period: 40s
 
   frontend:
-    image: ghcr.io/salometredici/tacs-2026-c1-fe:sha-0ef458e
+    image: ghcr.io/salometredici/tacs-2026-c1-fe:sha-96b2ba7
     ports:
       - "80:80"
     networks:
@@ -100,6 +104,51 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
+
+  # Backend dedicado al load test, apuntado a tacs_loadtest_db (otro puerto: 8081).
+  # Locust también puede apuntar acá (localhost:8081) para no tocar tacs_db.
+  backend-loadtest:
+    profiles: [load-test]
+    build:
+      context: .
+    ports:
+      - "8081:8080"
+    depends_on:
+      mongo:
+        condition: service_healthy
+      mongo-init:
+        condition: service_completed_successfully
+      mongo-seed-load-test:
+        condition: service_completed_successfully
+    environment:
+      JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF-8
+      SPRING_MONGODB_URI: mongodb://mongo:27017/tacs_loadtest_db
+      FRONTEND_URI: ${FRONTEND_URI:-http://localhost}
+    networks:
+      - tacs-network
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  load-test:
+    profiles: [load-test]
+    build:
+      context: ./load-test
+    depends_on:
+      backend-loadtest:
+        condition: service_healthy
+    environment:
+      API_BASE_URL: http://backend-loadtest:8080
+      LOAD_TEST_USER_COUNT: ${LOAD_TEST_USER_COUNT:-50}
+      LOAD_TEST_DURATION: ${LOAD_TEST_DURATION:-60}
+      LOAD_TEST_START_USERS: ${LOAD_TEST_START_USERS:-5}
+      LOAD_TEST_MAX_USERS: ${LOAD_TEST_MAX_USERS:-50}
+    networks:
+      - tacs-network
+    restart: "no"
 
 networks:
   tacs-network:

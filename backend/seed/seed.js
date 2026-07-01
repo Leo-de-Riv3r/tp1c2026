@@ -58,6 +58,15 @@ if (existingUsers > 0) {
       acquisitionDate: new Date(), acquisitionOrigin: "SEED"
     };
   };
+  const toMissing = (id) => {
+    const c = seedCard(id);
+    return c && {
+      cardId: c._id, number: c.number, description: c.description,
+      country: c.country, team: c.team,
+      category: c.category,
+      addedAt: new Date()
+    };
+  };
   const PASSWORD_HASH = "$2a$10$tNRX2onk9NYyT./j1Q18.OyDr16Y8K0fDpgW2IIUrKS.NleG.ntHq";
 
   // IDs predefinidos para poder referenciarlos desde otros documentos del seed
@@ -83,11 +92,16 @@ if (existingUsers > 0) {
     exchangesAmount: 0,
     creationDate: new Date(),
     collection: [
-      toCollection("FWC1", 3),   // Official Emblem
-      toCollection("MEX1", 2),   // Team Logo México
-      toCollection("BRA3", 1)    // Bento — Brasil
+      toCollection("FWC1", 3),
+      toCollection("MEX1", 2),
+      toCollection("BRA3", 1)
     ].filter(Boolean),
-    missingCards: [],
+    missingCards: [
+      toMissing("ARG1"),
+      toMissing("FWC3"),
+      toMissing("MEX7")
+    ].filter(Boolean),
+    notifications: [],
     suggestions: []
   });
 
@@ -111,7 +125,11 @@ if (existingUsers > 0) {
       toCollection("ARG3", 1),    // Nahuel Molina
       toCollection("MEX7", 1)     // Israel Reyes
     ].filter(Boolean),
-    missingCards: [],
+    missingCards: [
+      toMissing("FWC1"),
+      toMissing("BRA3")
+    ].filter(Boolean),
+    notifications: [],
     suggestions: []
   });
 
@@ -145,8 +163,14 @@ if (existingUsers > 0) {
     rating: null,
     exchangesAmount: 0,
     creationDate: new Date(),
-    collection: [],
-    missingCards: [],
+    collection: [
+      toCollection("MEX1", 1)
+    ].filter(Boolean),
+    missingCards: [
+      toMissing("ARG3"),
+      toMissing("BRA1")
+    ].filter(Boolean),
+    notifications: [],
     suggestions: []
   });
 

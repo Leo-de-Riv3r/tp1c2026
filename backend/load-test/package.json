@@ -1,0 +1,16 @@
+{
+  "name": "load-test",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "tsx src/index.ts",
+    "seed:users": "tsx scripts/generate-users.ts"
+  },
+  "dependencies": {
+    "tsx": "^4.19.4"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.3",
+    "typescript": "^5.8.3"
+  }
+}
